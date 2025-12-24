@@ -286,6 +286,7 @@ class GPUTracker:
         print(f"  Bucket size: {bucket_size}")
         
         # Get braid library - try the lazy import first
+        global _braid_lib
         braid_lib = _get_braid_lib()
         
         # If not available, but we have a rep object from peyl, import directly
@@ -315,7 +316,6 @@ class GPUTracker:
                         'available': True
                     }
                     # Cache it
-                    global _braid_lib
                     _braid_lib = braid_lib
                 except Exception as e:
                     # Last resort: try standard imports
@@ -334,7 +334,6 @@ class GPUTracker:
                             'polymat': polymat,
                             'available': True
                         }
-                        global _braid_lib
                         _braid_lib = braid_lib
                     except Exception as e2:
                         raise RuntimeError(
