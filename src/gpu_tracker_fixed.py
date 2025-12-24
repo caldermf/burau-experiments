@@ -56,6 +56,70 @@ def symmetric_table_gpu(rep: "JonesSummand", use_gpu: bool = True):
     return table
 
 
+def evaluate_braids_of_same_length_gpu(rep: "JonesSummand", braids: List["GNF"], sym_table: Dict, use_gpu: bool = True, return_gpu: bool = False) -> np.ndarray:
+    """
+    GPU-accelerated version of evaluate_braids_of_same_length.
+    This is a critical hot path that was previously calling CPU functions.
+    
+    Args:
+        rep: Representation object
+        braids: List of braids to evaluate
+        sym_table: Precomputed symmetric table
+        use_gpu: Whether to use GPU acceleration
+        return_gpu: If True, return GPU array (for further GPU operations)
+    
+    Returns:
+        Array of evaluated braid images (on CPU unless return_gpu=True)
+    """
+    if not braids:
+        result = np.zeros((0, rep.dimension(), rep.dimension(), 1), dtype=rep.dtype())
+        return gpm.to_gpu(result) if (use_gpu and gpm.GPU_AVAILABLE and return_gpu) else result
+    
+    length = braids[0].garside_length()
+    assert all(braid.garside_length() == length for braid in braids)
+    
+    # Get factors for all braids
+    factors = [braid.canonical_factors() for braid in braids]
+    w0 = SymmetricGroup(rep.n).longest_element()
+    eye = rep.id()
+    anti = sym_table[w0]
+    
+    # Start with identity or anti based on inf
+    # Build initial images list
+    initial_images = []
+    for braid in braids:
+        img = eye if braid.inf() % 2 == 0 else anti
+        # Convert to CPU numpy if on GPU, for packing
+        if gpm.is_gpu_array(img):
+            img = gpm.to_cpu(img)
+        initial_images.append(img)
+    
+    images = gpm.pack(initial_images)
+    if use_gpu and gpm.GPU_AVAILABLE:
+        images = gpm.to_gpu(images)
+    
+    # Multiply by each factor
+    for l in range(length):
+        # Get permutation images for this level
+        perm_images_list = [sym_table[factors[i][l]] for i in range(len(braids))]
+        
+        # Convert all to CPU for packing, then back to GPU if needed
+        perm_images_cpu = [gpm.to_cpu(img) if gpm.is_gpu_array(img) else img for img in perm_images_list]
+        perm_images = gpm.pack(perm_images_cpu)
+        
+        if use_gpu and gpm.GPU_AVAILABLE:
+            perm_images = gpm.to_gpu(perm_images)
+        
+        # Multiply: images = images * perm_images
+        images = gpm.mul(images, perm_images, p=rep.p)
+        images = gpm.projectivise(images)
+    
+    # Return on GPU if requested, otherwise CPU
+    if use_gpu and gpm.GPU_AVAILABLE and return_gpu:
+        return images
+    return gpm.to_cpu(images) if gpm.is_gpu_array(images) else images
+
+
 class GPUTracker:
     """GPU-accelerated version of the reservoir sampling tracker."""
     
@@ -109,8 +173,17 @@ class GPUTracker:
             print("  Building symmetric table...", end=" ")
             self._sym_table = symmetric_table_gpu(rep, use_gpu=self.use_gpu)
             print(f"done ({len(self._sym_table)} permutations)")
+            
+            # Precompute w0 for efficiency
+            self._w0 = SymmetricGroup(rep.n).longest_element()
+            self._eye = rep.id()
+            if self.use_gpu and gpm.GPU_AVAILABLE:
+                self._eye_gpu = gpm.to_gpu(self._eye)
+                self._anti_gpu = gpm.to_gpu(self._sym_table[self._w0])
         else:
             self._sym_table = None
+            self._w0 = None
+            self._eye = None
         
     def add_braids_images(
         self,
@@ -120,15 +193,19 @@ class GPUTracker:
         """Add braids and their images to appropriate buckets."""
         if len(braids) == 0:
             return 0
-            
-        # Ensure images are on CPU for storage
-        images_cpu = gpm.to_cpu(images) if gpm.is_gpu_array(images) else images
         
-        # Compute projlens - do on GPU if available
-        if self.use_gpu:
-            images_gpu = gpm.to_gpu(images_cpu)
+        # Keep images on GPU for computation if possible
+        if self.use_gpu and gpm.GPU_AVAILABLE:
+            if not gpm.is_gpu_array(images):
+                images_gpu = gpm.to_gpu(images)
+            else:
+                images_gpu = images
+            # Compute projlens on GPU (much faster)
             projlens = gpm.to_cpu(gpm.projlen(images_gpu))
+            # Convert to CPU only once at the end
+            images_cpu = gpm.to_cpu(images_gpu)
         else:
+            images_cpu = gpm.to_cpu(images) if gpm.is_gpu_array(images) else images
             projlens = gpm.projlen(images_cpu)
             
         # Get Garside lengths
@@ -201,35 +278,42 @@ class GPUTracker:
         if not all_pairs:
             return
             
-        # Process in batches
-        batch_size = 5000
+        # Process in batches - use larger batches for GPU efficiency
+        # For GPU, larger batches are better; for CPU, smaller is fine
+        batch_size = 10000 if self.use_gpu else 5000
         
         for batch_start in range(0, len(all_pairs), batch_size):
             batch = all_pairs[batch_start:batch_start + batch_size]
             
-            # Pack base images
+            # Pack base images - keep on GPU if possible
             base_images_list = [images[idx] for idx, _, _ in batch]
             left = gpm.pack(base_images_list)
             
-            if self.use_gpu:
+            if self.use_gpu and gpm.GPU_AVAILABLE:
                 left = gpm.to_gpu(left)
                 
             # Evaluate suffixes at each length
             for k in range(1, suffix_length + 1):
                 suffix_braids = [suffix.substring(0, k) for _, _, suffix in batch]
                 
-                # Use the CPU evaluation function from braidsearch
-                from peyl.braidsearch import evaluate_braids_of_same_length
-                suffix_images = evaluate_braids_of_same_length(self.rep, suffix_braids)
+                # Use GPU-accelerated evaluation - keep on GPU if we're using GPU
+                suffix_images = evaluate_braids_of_same_length_gpu(
+                    self.rep, suffix_braids, self._sym_table, 
+                    use_gpu=self.use_gpu, return_gpu=(self.use_gpu and gpm.GPU_AVAILABLE)
+                )
                 
-                if self.use_gpu:
-                    suffix_images = gpm.to_gpu(suffix_images)
+                # Ensure both are on GPU for multiplication
+                if self.use_gpu and gpm.GPU_AVAILABLE:
+                    if not gpm.is_gpu_array(left):
+                        left = gpm.to_gpu(left)
+                    if not gpm.is_gpu_array(suffix_images):
+                        suffix_images = gpm.to_gpu(suffix_images)
                     
-                # Batch multiply
+                # Batch multiply (both should already be on GPU if use_gpu is True)
                 products = gpm.mul(left, suffix_images, p=self.p)
                 products = gpm.projectivise(products)
                 
-                # Add results
+                # Add results - this will handle CPU conversion internally
                 new_braids = [braid * suffix_k for _, braid, suffix_k in zip(batch, batch, suffix_braids)]
                 self.add_braids_images(new_braids, products)
                 
@@ -249,10 +333,14 @@ class GPUTracker:
             print(f"Bootstrapping length {length}...", end=" ")
             count = 0
             
-            # Enumerate in batches
-            from peyl.braidsearch import evaluate_braids_of_same_length, batched
-            for batch in batched(B.all_of_garside_length(length), 1000):
-                images = evaluate_braids_of_same_length(self.rep, batch)
+            # Enumerate in batches - use larger batches for GPU
+            from peyl.braidsearch import batched
+            batch_size = 5000 if self.use_gpu else 1000
+            for batch in batched(B.all_of_garside_length(length), batch_size):
+                # Use GPU-accelerated evaluation
+                images = evaluate_braids_of_same_length_gpu(
+                    self.rep, batch, self._sym_table, use_gpu=self.use_gpu
+                )
                 self.add_braids_images(batch, images)
                 count += len(batch)
                 

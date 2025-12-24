@@ -129,12 +129,27 @@ def mul(A: ArrayType, B: ArrayType, quotdeg: Optional[int] = None, p: int = 0) -
     # Allocate output
     result = xp.zeros((*prefix, I, K, P), dtype=A.dtype)
     
-    # The convolution approach: for each output degree d, sum over pairs (i, d-i)
-    # This is the main computation - benefits from GPU parallelism
+    # Vectorized approach: compute all degree combinations at once
+    # For each valid (i, d-i) pair, we need to compute A[..., i] @ B[..., d-i]
+    # We'll use broadcasting to compute all valid combinations efficiently
+    
+    # Create index arrays for all valid (i, d-i) pairs
+    # For degree d, we need i in [max(0, d-E+1), min(d+1, D))
     for d in range(P):
-        for i in range(max(0, d - E + 1), min(d + 1, D)):
-            # A[..., i] @ B[..., d-i] is a batched matrix multiply
-            result[..., d] += xp.matmul(A[..., i], B[..., d - i])
+        i_start = max(0, d - E + 1)
+        i_end = min(d + 1, D)
+        
+        if i_start >= i_end:
+            continue
+            
+        # Compute all matrix products for this degree in one go
+        # A[..., i_start:i_end] has shape (*prefix, I, J, i_end-i_start)
+        # B[..., d-i_end+1:d-i_start+1] needs to be reversed and indexed correctly
+        for i in range(i_start, i_end):
+            di = d - i
+            if di >= 0 and di < E:
+                # Batched matrix multiply: (..., I, J) @ (..., J, K) -> (..., I, K)
+                result[..., d] += xp.matmul(A[..., i], B[..., di])
     
     if p > 0:
         result = result % p
