@@ -4,6 +4,7 @@ GPU-accelerated Tracker for Burau kernel element search.
 
 import functools
 import random
+import sys
 import time
 from typing import Dict, List, Optional, Set, Tuple, Callable
 from dataclasses import dataclass
@@ -15,7 +16,31 @@ import gpu_polymat as gpm
 
 # Import from the braid library - use lazy imports to handle path issues
 def _import_braid_lib():
-    """Lazy import of braid library components."""
+    """Lazy import of braid library components. Tries multiple strategies."""
+    import sys
+    from pathlib import Path
+    
+    # Strategy 0: Check if already imported
+    if 'peyl' in sys.modules:
+        try:
+            from peyl.braid import GNF, DGNF, BraidGroup
+            from peyl.jonesrep import JonesSummand, JonesCellRep
+            from peyl.permutations import SymmetricGroup
+            from peyl import polymat
+            return {
+                'GNF': GNF,
+                'DGNF': DGNF,
+                'BraidGroup': BraidGroup,
+                'JonesSummand': JonesSummand,
+                'JonesCellRep': JonesCellRep,
+                'SymmetricGroup': SymmetricGroup,
+                'polymat': polymat,
+                'available': True
+            }
+        except (ImportError, AttributeError):
+            pass
+    
+    # Strategy 1: Try direct import
     try:
         from peyl.braid import GNF, DGNF, BraidGroup
         from peyl.jonesrep import JonesSummand, JonesCellRep
@@ -32,12 +57,22 @@ def _import_braid_lib():
             'available': True
         }
     except ImportError:
-        # Try with parent path added
-        import sys
-        from pathlib import Path
-        parent = Path(__file__).parent.parent
-        if str(parent) not in sys.path:
-            sys.path.insert(0, str(parent))
+        pass
+    
+    # Strategy 2: Add parent directory (where peyl/ lives)
+    current_file = Path(__file__).resolve()
+    parent_dir = current_file.parent.parent
+    paths_to_try = [
+        parent_dir,
+        parent_dir / 'peyl',
+        current_file.parent,
+    ]
+    
+    for path_to_add in paths_to_try:
+        path_str = str(path_to_add)
+        if path_str not in sys.path:
+            sys.path.insert(0, path_str)
+        
         try:
             from peyl.braid import GNF, DGNF, BraidGroup
             from peyl.jonesrep import JonesSummand, JonesCellRep
@@ -54,7 +89,30 @@ def _import_braid_lib():
                 'available': True
             }
         except ImportError:
-            return {'available': False}
+            continue
+    
+    # Strategy 3: Try importing from peyl package if it's installed
+    try:
+        import peyl
+        from peyl.braid import GNF, DGNF, BraidGroup
+        from peyl.jonesrep import JonesSummand, JonesCellRep
+        from peyl.permutations import SymmetricGroup
+        from peyl import polymat
+        return {
+            'GNF': GNF,
+            'DGNF': DGNF,
+            'BraidGroup': BraidGroup,
+            'JonesSummand': JonesSummand,
+            'JonesCellRep': JonesCellRep,
+            'SymmetricGroup': SymmetricGroup,
+            'polymat': polymat,
+            'available': True
+        }
+    except ImportError:
+        pass
+    
+    # All strategies failed
+    return {'available': False}
 
 # Cache the imports
 _braid_lib = None
@@ -224,21 +282,70 @@ class GPUTracker:
         print(f"  GPU enabled: {self.use_gpu}")
         print(f"  Bucket size: {bucket_size}")
         
+        # Get braid library - this will try multiple import strategies
         braid_lib = _get_braid_lib()
-        if braid_lib['available']:
-            SymmetricGroup = braid_lib['SymmetricGroup']
-            print("  Building symmetric table...", end=" ")
-            self._sym_table = symmetric_table_gpu(rep, use_gpu=self.use_gpu)
-            print(f"done ({len(self._sym_table)} permutations)")
-            
-            # Precompute w0 for efficiency
-            self._w0 = SymmetricGroup(rep.n).longest_element()
-            self._eye = rep.id()
-            if self.use_gpu and gpm.GPU_AVAILABLE:
-                self._eye_gpu = gpm.to_gpu(self._eye)
-                self._anti_gpu = gpm.to_gpu(self._sym_table[self._w0])
-        else:
-            raise RuntimeError("Braid library not available - required for GPUTracker")
+        if not braid_lib['available']:
+            # Last resort: try one more time with explicit path manipulation
+            from pathlib import Path
+            current_file = Path(__file__).resolve()
+            workspace_root = current_file.parent.parent
+            if str(workspace_root) not in sys.path:
+                sys.path.insert(0, str(workspace_root))
+            # Also try the peyl directory directly
+            peyl_dir = workspace_root / 'peyl'
+            if peyl_dir.exists() and str(peyl_dir.parent) not in sys.path:
+                sys.path.insert(0, str(peyl_dir.parent))
+            # Try again
+            global _braid_lib
+            _braid_lib = None  # Reset cache
+            braid_lib = _get_braid_lib()
+        
+        # If still not available, try importing from the rep object's module
+        if not braid_lib['available']:
+            try:
+                rep_module = rep.__class__.__module__
+                if 'peyl' in rep_module:
+                    # The rep object came from peyl, so it must be importable
+                    # Try importing using the same module path
+                    import importlib
+                    peyl_mod = importlib.import_module('peyl')
+                    from peyl.braid import GNF, DGNF, BraidGroup
+                    from peyl.jonesrep import JonesSummand, JonesCellRep
+                    from peyl.permutations import SymmetricGroup
+                    from peyl import polymat
+                    braid_lib = {
+                        'GNF': GNF,
+                        'DGNF': DGNF,
+                        'BraidGroup': BraidGroup,
+                        'JonesSummand': JonesSummand,
+                        'JonesCellRep': JonesCellRep,
+                        'SymmetricGroup': SymmetricGroup,
+                        'polymat': polymat,
+                        'available': True
+                    }
+                    _braid_lib = braid_lib
+            except Exception:
+                pass
+        
+        if not braid_lib['available']:
+            raise RuntimeError(
+                f"Braid library (peyl) not available. "
+                f"Rep object type: {type(rep)}, module: {getattr(rep.__class__, '__module__', 'unknown')}. "
+                f"Please ensure peyl is in your Python path. "
+                f"Tried paths: {[p for p in sys.path if 'burau' in p or 'peyl' in p][:5]}"
+            )
+        
+        SymmetricGroup = braid_lib['SymmetricGroup']
+        print("  Building symmetric table...", end=" ")
+        self._sym_table = symmetric_table_gpu(rep, use_gpu=self.use_gpu)
+        print(f"done ({len(self._sym_table)} permutations)")
+        
+        # Precompute w0 for efficiency
+        self._w0 = SymmetricGroup(rep.n).longest_element()
+        self._eye = rep.id()
+        if self.use_gpu and gpm.GPU_AVAILABLE:
+            self._eye_gpu = gpm.to_gpu(self._eye)
+            self._anti_gpu = gpm.to_gpu(self._sym_table[self._w0])
         
     def add_braids_images(
         self,
