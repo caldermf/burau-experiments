@@ -34,13 +34,13 @@ from dataclasses import dataclass
 import numpy as np
 
 # Import GPU polymat operations
-from . import gpu_polymat as gpm
+import gpu_polymat as gpm
 
 # These will be imported from the braid library when available
 try:
-    from .braid import GNF, DGNF, BraidGroup
-    from .jonesrep import JonesCellRep, RepBase
-    from .permutations import SymmetricGroup
+    from peyl.braid import GNF, DGNF, BraidGroup
+    from peyl.jonesrep import JonesCellRep, RepBase
+    from peyl.permutations import SymmetricGroup
     BRAID_LIB_AVAILABLE = True
 except ImportError:
     BRAID_LIB_AVAILABLE = False
