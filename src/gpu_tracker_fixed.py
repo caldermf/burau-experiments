@@ -43,7 +43,8 @@ def _import_braid_lib():
     # Strategy 1: Try direct import
     try:
         from peyl.braid import GNF, DGNF, BraidGroup
-        from peyl.jonesrep import JonesSummand, JonesCellRep
+        from peyl.jonesrep import JonesCellRep
+        from peyl.braidsearch import JonesSummand
         from peyl.permutations import SymmetricGroup
         from peyl import polymat
         return {
@@ -75,7 +76,8 @@ def _import_braid_lib():
         
         try:
             from peyl.braid import GNF, DGNF, BraidGroup
-            from peyl.jonesrep import JonesSummand, JonesCellRep
+            from peyl.jonesrep import JonesCellRep
+            from peyl.braidsearch import JonesSummand
             from peyl.permutations import SymmetricGroup
             from peyl import polymat
             return {
@@ -95,7 +97,8 @@ def _import_braid_lib():
     try:
         import peyl
         from peyl.braid import GNF, DGNF, BraidGroup
-        from peyl.jonesrep import JonesSummand, JonesCellRep
+        from peyl.jonesrep import JonesCellRep
+        from peyl.braidsearch import JonesSummand
         from peyl.permutations import SymmetricGroup
         from peyl import polymat
         return {
@@ -282,57 +285,67 @@ class GPUTracker:
         print(f"  GPU enabled: {self.use_gpu}")
         print(f"  Bucket size: {bucket_size}")
         
-        # Get braid library - this will try multiple import strategies
+        # Get braid library - try the lazy import first
         braid_lib = _get_braid_lib()
-        if not braid_lib['available']:
-            # Last resort: try one more time with explicit path manipulation
-            from pathlib import Path
-            current_file = Path(__file__).resolve()
-            workspace_root = current_file.parent.parent
-            if str(workspace_root) not in sys.path:
-                sys.path.insert(0, str(workspace_root))
-            # Also try the peyl directory directly
-            peyl_dir = workspace_root / 'peyl'
-            if peyl_dir.exists() and str(peyl_dir.parent) not in sys.path:
-                sys.path.insert(0, str(peyl_dir.parent))
-            # Try again
-            global _braid_lib
-            _braid_lib = None  # Reset cache
-            braid_lib = _get_braid_lib()
         
-        # If still not available, try importing from the rep object's module
+        # If not available, but we have a rep object from peyl, import directly
+        # Since rep is a peyl.jonesrep.JonesCellRep, peyl must be importable
         if not braid_lib['available']:
-            try:
-                rep_module = rep.__class__.__module__
-                if 'peyl' in rep_module:
-                    # The rep object came from peyl, so it must be importable
-                    # Try importing using the same module path
+            rep_module = rep.__class__.__module__
+            if 'peyl' in rep_module:
+                # Import directly - we know peyl works since rep came from there
+                try:
                     import importlib
-                    peyl_mod = importlib.import_module('peyl')
-                    from peyl.braid import GNF, DGNF, BraidGroup
-                    from peyl.jonesrep import JonesSummand, JonesCellRep
-                    from peyl.permutations import SymmetricGroup
-                    from peyl import polymat
+                    # Get the module that contains the rep class
+                    rep_class_module = importlib.import_module(rep_module)
+                    # Now import what we need
+                    peyl_braid = importlib.import_module('peyl.braid')
+                    peyl_braidsearch = importlib.import_module('peyl.braidsearch')
+                    peyl_permutations = importlib.import_module('peyl.permutations')
+                    peyl_polymat = importlib.import_module('peyl.polymat')
+                    
                     braid_lib = {
-                        'GNF': GNF,
-                        'DGNF': DGNF,
-                        'BraidGroup': BraidGroup,
-                        'JonesSummand': JonesSummand,
-                        'JonesCellRep': JonesCellRep,
-                        'SymmetricGroup': SymmetricGroup,
-                        'polymat': polymat,
+                        'GNF': peyl_braid.GNF,
+                        'DGNF': peyl_braid.DGNF,
+                        'BraidGroup': peyl_braid.BraidGroup,
+                        'JonesSummand': getattr(peyl_braidsearch, 'JonesSummand', None),
+                        'JonesCellRep': rep_class_module.JonesCellRep,
+                        'SymmetricGroup': peyl_permutations.SymmetricGroup,
+                        'polymat': peyl_polymat,
                         'available': True
                     }
+                    # Cache it
+                    global _braid_lib
                     _braid_lib = braid_lib
-            except Exception:
-                pass
+                except Exception as e:
+                    # Last resort: try standard imports
+                    try:
+                        from peyl.braid import GNF, DGNF, BraidGroup
+                        from peyl.braidsearch import JonesSummand
+                        from peyl.permutations import SymmetricGroup
+                        from peyl import polymat
+                        braid_lib = {
+                            'GNF': GNF,
+                            'DGNF': DGNF,
+                            'BraidGroup': BraidGroup,
+                            'JonesSummand': JonesSummand,
+                            'JonesCellRep': type(rep),  # Use the rep's class
+                            'SymmetricGroup': SymmetricGroup,
+                            'polymat': polymat,
+                            'available': True
+                        }
+                        global _braid_lib
+                        _braid_lib = braid_lib
+                    except Exception as e2:
+                        raise RuntimeError(
+                            f"Failed to import braid library. "
+                            f"Rep is from {rep_module}, but imports failed: {e}, {e2}"
+                        )
         
         if not braid_lib['available']:
             raise RuntimeError(
                 f"Braid library (peyl) not available. "
-                f"Rep object type: {type(rep)}, module: {getattr(rep.__class__, '__module__', 'unknown')}. "
-                f"Please ensure peyl is in your Python path. "
-                f"Tried paths: {[p for p in sys.path if 'burau' in p or 'peyl' in p][:5]}"
+                f"Rep object type: {type(rep)}, module: {getattr(rep.__class__, '__module__', 'unknown')}."
             )
         
         SymmetricGroup = braid_lib['SymmetricGroup']
