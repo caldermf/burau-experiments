@@ -13,19 +13,58 @@ import numpy as np
 # Import GPU polymat operations
 import gpu_polymat as gpm
 
-# Import from the braid library
-try:
-    from peyl.braid import GNF, DGNF, BraidGroup
-    from peyl.jonesrep import JonesSummand, JonesCellRep
-    from peyl.permutations import SymmetricGroup
-    from peyl import polymat
-    BRAID_LIB_AVAILABLE = True
-except ImportError:
-    BRAID_LIB_AVAILABLE = False
-    print("Warning: braid library not found, some features unavailable")
-    # Define dummy types for type hints
-    JonesSummand = None
-    JonesCellRep = None
+# Import from the braid library - use lazy imports to handle path issues
+def _import_braid_lib():
+    """Lazy import of braid library components."""
+    try:
+        from peyl.braid import GNF, DGNF, BraidGroup
+        from peyl.jonesrep import JonesSummand, JonesCellRep
+        from peyl.permutations import SymmetricGroup
+        from peyl import polymat
+        return {
+            'GNF': GNF,
+            'DGNF': DGNF,
+            'BraidGroup': BraidGroup,
+            'JonesSummand': JonesSummand,
+            'JonesCellRep': JonesCellRep,
+            'SymmetricGroup': SymmetricGroup,
+            'polymat': polymat,
+            'available': True
+        }
+    except ImportError:
+        # Try with parent path added
+        import sys
+        from pathlib import Path
+        parent = Path(__file__).parent.parent
+        if str(parent) not in sys.path:
+            sys.path.insert(0, str(parent))
+        try:
+            from peyl.braid import GNF, DGNF, BraidGroup
+            from peyl.jonesrep import JonesSummand, JonesCellRep
+            from peyl.permutations import SymmetricGroup
+            from peyl import polymat
+            return {
+                'GNF': GNF,
+                'DGNF': DGNF,
+                'BraidGroup': BraidGroup,
+                'JonesSummand': JonesSummand,
+                'JonesCellRep': JonesCellRep,
+                'SymmetricGroup': SymmetricGroup,
+                'polymat': polymat,
+                'available': True
+            }
+        except ImportError:
+            return {'available': False}
+
+# Cache the imports
+_braid_lib = None
+
+def _get_braid_lib():
+    """Get braid library imports, caching the result."""
+    global _braid_lib
+    if _braid_lib is None:
+        _braid_lib = _import_braid_lib()
+    return _braid_lib
 
 
 @dataclass
@@ -42,6 +81,13 @@ class SearchStats:
 
 def symmetric_table_gpu(rep, use_gpu: bool = True):
     """Build the symmetric table, optionally on GPU."""
+    braid_lib = _get_braid_lib()
+    if not braid_lib['available']:
+        raise RuntimeError("Braid library not available - cannot build symmetric table")
+    
+    SymmetricGroup = braid_lib['SymmetricGroup']
+    polymat = braid_lib['polymat']
+    
     gens, invs = rep.artin_gens_invs()
     eye = rep.id()
     
@@ -74,8 +120,14 @@ def evaluate_braids_of_same_length_gpu(rep, braids: List, sym_table: Dict, use_g
     Returns:
         Array of evaluated braid images (on CPU unless return_gpu=True)
     """
+    braid_lib = _get_braid_lib()
+    if not braid_lib['available']:
+        raise RuntimeError("Braid library not available")
+    
+    SymmetricGroup = braid_lib['SymmetricGroup']
+    
     if not braids:
-        result = np.zeros((0, rep.dimension(), rep.dimension(), 1), dtype=rep.dtype())
+        result = np.zeros((0, rep.dimension(), rep.dimension(), 1), dtype=rep.polymat_dtype())
         return gpm.to_gpu(result) if (use_gpu and gpm.GPU_AVAILABLE and return_gpu) else result
     
     length = braids[0].garside_length()
@@ -172,7 +224,9 @@ class GPUTracker:
         print(f"  GPU enabled: {self.use_gpu}")
         print(f"  Bucket size: {bucket_size}")
         
-        if BRAID_LIB_AVAILABLE:
+        braid_lib = _get_braid_lib()
+        if braid_lib['available']:
+            SymmetricGroup = braid_lib['SymmetricGroup']
             print("  Building symmetric table...", end=" ")
             self._sym_table = symmetric_table_gpu(rep, use_gpu=self.use_gpu)
             print(f"done ({len(self._sym_table)} permutations)")
@@ -184,9 +238,7 @@ class GPUTracker:
                 self._eye_gpu = gpm.to_gpu(self._eye)
                 self._anti_gpu = gpm.to_gpu(self._sym_table[self._w0])
         else:
-            self._sym_table = None
-            self._w0 = None
-            self._eye = None
+            raise RuntimeError("Braid library not available - required for GPUTracker")
         
     def add_braids_images(
         self,
@@ -322,9 +374,11 @@ class GPUTracker:
                 
     def bootstrap_exhaustive(self, upto_length: int):
         """Bootstrap by exhaustively enumerating all braids up to given length."""
-        if not BRAID_LIB_AVAILABLE:
+        braid_lib = _get_braid_lib()
+        if not braid_lib['available']:
             raise RuntimeError("Braid library not available")
-            
+        
+        BraidGroup = braid_lib['BraidGroup']
         B = BraidGroup(self.n)
         
         # Add identity
@@ -337,7 +391,21 @@ class GPUTracker:
             count = 0
             
             # Enumerate in batches - use larger batches for GPU
-            from peyl.braidsearch import batched
+            # Import batched function with fallback
+            try:
+                from peyl.braidsearch import batched
+            except ImportError:
+                # Fallback implementation
+                def batched(iterable, chunk_length):
+                    chunk = []
+                    for x in iterable:
+                        chunk.append(x)
+                        if len(chunk) == chunk_length:
+                            yield chunk
+                            chunk = []
+                    if chunk:
+                        yield chunk
+            
             batch_size = 5000 if self.use_gpu else 1000
             for batch in batched(B.all_of_garside_length(length), batch_size):
                 # Use GPU-accelerated evaluation
