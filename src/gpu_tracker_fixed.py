@@ -16,13 +16,16 @@ import gpu_polymat as gpm
 # Import from the braid library
 try:
     from peyl.braid import GNF, DGNF, BraidGroup
-    from peyl.jonesrep import JonesSummand
+    from peyl.jonesrep import JonesSummand, JonesCellRep
     from peyl.permutations import SymmetricGroup
     from peyl import polymat
     BRAID_LIB_AVAILABLE = True
 except ImportError:
     BRAID_LIB_AVAILABLE = False
     print("Warning: braid library not found, some features unavailable")
+    # Define dummy types for type hints
+    JonesSummand = None
+    JonesCellRep = None
 
 
 @dataclass
@@ -37,7 +40,7 @@ class SearchStats:
     elapsed_time: float
 
 
-def symmetric_table_gpu(rep: "JonesSummand", use_gpu: bool = True):
+def symmetric_table_gpu(rep, use_gpu: bool = True):
     """Build the symmetric table, optionally on GPU."""
     gens, invs = rep.artin_gens_invs()
     eye = rep.id()
@@ -56,7 +59,7 @@ def symmetric_table_gpu(rep: "JonesSummand", use_gpu: bool = True):
     return table
 
 
-def evaluate_braids_of_same_length_gpu(rep: "JonesSummand", braids: List["GNF"], sym_table: Dict, use_gpu: bool = True, return_gpu: bool = False) -> np.ndarray:
+def evaluate_braids_of_same_length_gpu(rep, braids: List, sym_table: Dict, use_gpu: bool = True, return_gpu: bool = False) -> np.ndarray:
     """
     GPU-accelerated version of evaluate_braids_of_same_length.
     This is a critical hot path that was previously calling CPU functions.
@@ -125,7 +128,7 @@ class GPUTracker:
     
     def __init__(
         self,
-        rep: "JonesSummand",
+        rep,
         bucket_size: int = 500,
         seed: Optional[int] = None,
         use_gpu: bool = True,
@@ -151,7 +154,7 @@ class GPUTracker:
         self.n = rep.n
         self.p = rep.p
         self.dim = rep.dimension()
-        self.dtype = rep.dtype()
+        self.dtype = rep.polymat_dtype()
         
         # Storage
         self.bucket_braids: Dict[Tuple[int, int], List] = {}
