@@ -116,8 +116,11 @@ class RepBase:
         are the images of their inverses.
         """
         gens, invs = self.artin_gens_invs()
-        matgens = polymat.pack([polymat.from_matrix(x, dtype=self.polymat_dtype()) for x in gens])
-        matinvs = polymat.pack([polymat.from_matrix(x, dtype=self.polymat_dtype()) for x in invs])
+        # Note: proj=True is needed to handle Laurent polynomials with negative powers.
+        # The generators may have non-negative valuation, but we use proj=True for consistency.
+        # The inverses definitely need proj=True since they contain v^-1 terms.
+        matgens = polymat.pack([polymat.from_matrix(x, dtype=self.polymat_dtype(), proj=True) for x in gens])
+        matinvs = polymat.pack([polymat.from_matrix(x, dtype=self.polymat_dtype(), proj=True) for x in invs])
         if self.p != 0:
             matgens %= self.p
             matinvs %= self.p
