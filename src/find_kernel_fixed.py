@@ -107,7 +107,16 @@ def find_kernel(p=2):
     print()
     
     # Load tables
-    table_path = f"/Users/com36/burau-experiments/precomputed_tables/tables_B4_r1_p{p}.pt"
+    import os
+
+    # Get the directory where the script is located (src)
+    script_dir = os.path.dirname(os.path.abspath(__file__)) 
+
+    # Move up one level to the project root and then into precomputed_tables
+    project_root = os.path.dirname(script_dir)
+    table_path_end = f"tables_B4_r1_p{p}.pt"
+    table_path = os.path.join(project_root, "precomputed_tables", table_path_end)
+
     
     try:
         simple_burau, valid_suffixes, num_valid_suffixes = load_tables_from_file(

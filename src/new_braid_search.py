@@ -34,6 +34,10 @@ from dataclasses import dataclass
 from typing import Optional
 import json
 from pathlib import Path
+import os
+
+script_dir = os.path.dirname(os.path.abspath(__file__)) 
+project_root = os.path.dirname(script_dir)
 
 
 # =============================================================================
@@ -580,7 +584,7 @@ def load_tables_from_file(config: Config, table_path: str = "precomputed_tables/
     import torch
     
     # Load the precomputed tables
-    tables = torch.load(table_path)
+    tables = torch.load(table_path, weights_only=True)
     
     # Verify parameters match
     assert tables['n'] == 4, f"Expected n=4, got {tables['n']}"
@@ -666,21 +670,6 @@ def load_tables_from_file(config: Config, table_path: str = "precomputed_tables/
     return simple_burau, valid_suffixes, num_valid_suffixes
 
 # =============================================================================
-# IN YOUR main() FUNCTION, CHANGE THIS LINE:
-# =============================================================================
-#
-# BEFORE:
-#     simple_burau, valid_suffixes, num_valid_suffixes = create_example_tables(config)
-#
-# AFTER:
-#     simple_burau, valid_suffixes, num_valid_suffixes = load_tables_from_file(
-#         config, 
-#         table_path="/Users/com36/burau-experiments/precomputed_tables/tables_B4_r1_p3.pt"
-#     )
-#
-# =============================================================================
-
-# =============================================================================
 # MAIN ENTRY POINT
 # =============================================================================
 
@@ -704,7 +693,7 @@ def main():
     # Create tables (REPLACE with your actual precomputed data)
     simple_burau, valid_suffixes, num_valid_suffixes = load_tables_from_file(
        config, 
-       table_path="/Users/com36/burau-experiments/precomputed_tables/tables_B4_r1_p5.pt"
+       table_path = os.path.join(project_root, "precomputed_tables", "tables_B4_r1_p2.pt")
    )
     
     # Add this after load_tables_from_file() call in main():
