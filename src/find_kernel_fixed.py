@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+"""
+Find kernel elements for p=2 or p=3
+
+FIXED: The verification function now correctly checks for scalar matrices.
+"""
+
+import sys
+import torch
+
+# Add paths
+sys.path.insert(0, '/Users/com36/burau-experiments')
+sys.path.insert(0, '/Users/com36/burau-experiments/src')
+
+from new_braid_search import Config, BraidSearch, load_tables_from_file
+
+# For verification
+from peyl.braid import GNF, PermTable, BraidGroup
+from peyl.jonesrep import JonesCellRep
+from peyl import polymat
+import numpy as np
+
+
+def verify_kernel_element(word_list, n=4, r=1, p=2):
+    """
+    Verify that a braid word is actually in the kernel using peyl.
+    
+    A braid is in the kernel if it evaluates to a scalar matrix c * v^k * I.
+    
+    Args:
+        word_list: list of simple indices (not tensor)
+        
+    Returns:
+        (is_kernel, message)
+    """
+    if not word_list:
+        return False, "Empty word"
+    
+    # Create the braid using peyl
+    try:
+        braid = GNF(n=n, power=0, factors=tuple(word_list))
+    except AssertionError as e:
+        return False, f"Invalid normal form: {e}"
+    
+    # Evaluate in the representation using polymat (numerical)
+    rep = JonesCellRep(n=n, r=r, p=p)
+    result = rep.polymat_evaluate_braid(braid)
+    if p > 0:
+        result = result % p
+    
+    # Check if it's a scalar matrix:
+    # - All diagonal entries must be equal
+    # - All off-diagonal entries must be zero
+    diag_poly = result[0, 0, :]
+    
+    for i in range(3):
+        for j in range(3):
+            if i == j:
+                # Diagonal: must equal [0,0] entry
+                if not np.array_equal(result[i, j, :], diag_poly):
+                    return False, f"Diagonal mismatch at [{i},{j}]"
+            else:
+                # Off-diagonal: must be all zeros
+                if np.any(result[i, j, :] != 0):
+                    return False, f"Off-diagonal nonzero at [{i},{j}]"
+    
+    # It's a scalar matrix! Find what scalar
+    nonzero_degs = np.where(diag_poly != 0)[0]
+    if len(nonzero_degs) == 0:
+        return True, "Kernel element! Evaluates to 0 (trivial)"
+    
+    # Format the scalar nicely
+    if len(nonzero_degs) == 1:
+        deg = nonzero_degs[0]
+        coeff = diag_poly[deg]
+        scalar_str = f"{coeff}*v^{deg}" if coeff != 1 else f"v^{deg}"
+    else:
+        terms = [f"{diag_poly[d]}*v^{d}" for d in nonzero_degs]
+        scalar_str = " + ".join(terms)
+    
+    return True, f"Kernel element! Evaluates to ({scalar_str}) * I"
+
+
+def find_kernel(p=2):
+    """Search for kernel elements."""
+    
+    # Configuration 
+    config = Config(
+        bucket_size=20,
+        max_length=10 if p == 2 else 25,
+        bootstrap_length=4,
+        prime=p,
+        degree_multiplier=4,
+        checkpoint_every=100,  # Don't checkpoint for short runs
+        device="cpu"
+    )
+    
+    print("="*60)
+    print(f"SEARCHING FOR p={p} KERNEL ELEMENTS")
+    print("="*60)
+    print(f"Device: {config.device}")
+    print(f"Bucket size: {config.bucket_size}")
+    print(f"Max length: {config.max_length}")
+    print(f"Bootstrap length: {config.bootstrap_length}")
+    print(f"Prime: {config.prime}")
+    print(f"Degree window: {config.degree_window}")
+    print()
+    
+    # Load tables
+    table_path = f"/Users/com36/burau-experiments/precomputed_tables/tables_B4_r1_p{p}.pt"
+    
+    try:
+        simple_burau, valid_suffixes, num_valid_suffixes = load_tables_from_file(
+            config, 
+            table_path=table_path
+        )
+    except FileNotFoundError:
+        print(f"ERROR: Table file not found at {table_path}")
+        print(f"Please generate tables with p={p}")
+        return None
+    except AssertionError as e:
+        print(f"ERROR: {e}")
+        return None
+    
+    # Verify identity matrix
+    center = config.degree_window // 2
+    assert simple_burau[0, 0, 0, center] == 1, "Identity matrix check failed"
+    print("✓ Identity matrix verified\n")
+    
+    # Run the search
+    search = BraidSearch(simple_burau, valid_suffixes, num_valid_suffixes, config)
+    kernel_braids = search.run(checkpoint_dir=None)
+    
+    # Verify found braids
+    print("\n" + "="*60)
+    print("VERIFICATION USING PEYL")
+    print("="*60)
+    
+    if not kernel_braids:
+        print("No projlen=1 braids found.")
+        return None
+    
+    verified = []
+    
+    for batch_idx, batch in enumerate(kernel_braids):
+        print(f"\nBatch {batch_idx}: {len(batch)} candidates")
+        
+        for i, word_tensor in enumerate(batch):
+            # Convert tensor to list, remove padding
+            word_list = [w.item() for w in word_tensor]
+            while word_list and word_list[-1] == 0:
+                word_list.pop()
+            
+            # Skip if somehow empty
+            if not word_list:
+                continue
+            
+            # Verify with peyl
+            is_kernel, msg = verify_kernel_element(word_list, p=p)
+            
+            if is_kernel:
+                verified.append(word_list)
+                print(f"\n  🎉 KERNEL ELEMENT #{len(verified)} 🎉")
+                print(f"    Factors: {word_list}")
+                print(f"    Length: {len(word_list)}")
+                print(f"    {msg}")
+                
+                # Get Artin word for Magma verification
+                braid = GNF(n=4, power=0, factors=tuple(word_list))
+                print(f"    Artin word: {braid.magma_artin_word()}")
+            elif i < 5:  # Only show first few failures
+                print(f"  Braid {i}: {word_list[:8]}{'...' if len(word_list) > 8 else ''} - {msg}")
+    
+    print(f"\n{'='*60}")
+    print(f"SUMMARY")
+    print("="*60)
+    print(f"Total candidates with projlen=1: {sum(len(b) for b in kernel_braids)}")
+    print(f"Verified kernel elements: {len(verified)}")
+    
+    if verified:
+        print(f"\n✓ SUCCESS! Found {len(verified)} kernel elements for p={p}")
+    else:
+        print(f"\n✗ No kernel elements verified (this shouldn't happen)")
+    
+    return verified
+
+
+if __name__ == "__main__":
+    import sys
+    
+    p = int(sys.argv[1]) if len(sys.argv) > 1 else 2
+    find_kernel(p=p)

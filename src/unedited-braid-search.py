@@ -1,0 +1,640 @@
+"""
+GPU-accelerated reservoir sampling for braids with low projlen.
+
+This implements the algorithm for finding 4-strand braids whose Burau 
+representation (mod p) has low projective length.
+
+PRECOMPUTED DATA YOU NEED TO PROVIDE:
+=====================================
+
+1. simple_burau: torch.Tensor of shape (24, 3, 3, D)
+   - Burau matrices for each of the 24 simple braids (including identity at index 0)
+   - Entry [s, i, j, d] is the coefficient of v^(d + min_degree) in the (i,j) entry
+   - The identity (index 0) should have 1s on diagonal at degree 0
+   - All coefficients are mod p
+
+2. valid_suffixes: torch.Tensor of shape (24, max_suffixes), dtype=torch.int32
+   - valid_suffixes[s, :] lists the simple braid indices that can follow simple s
+     while maintaining Garside normal form
+   - Padded with -1 for unused slots
+   - Example: if simple 5 can be followed by simples 2, 7, 11, then
+     valid_suffixes[5] = [2, 7, 11, -1, -1, -1, ...]
+
+3. num_valid_suffixes: torch.Tensor of shape (24,), dtype=torch.int32
+   - num_valid_suffixes[s] = number of valid suffixes for simple s
+   - Example: num_valid_suffixes[5] = 3 in the above case
+
+The degree window is [-D//2, D//2] where D = 4 * max_length by default.
+Index d in the tensor corresponds to degree (d - D//2).
+"""
+
+import torch
+import torch.nn.functional as F
+from dataclasses import dataclass
+from typing import Optional
+import json
+from pathlib import Path
+
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+@dataclass
+class Config:
+    """Algorithm parameters."""
+    bucket_size: int = 50000       # max braids per bucket (k in the paper)
+    max_length: int = 50           # maximum Garside length to explore
+    bootstrap_length: int = 5      # exhaustive enumeration until this length
+    prime: int = 5                 # modular arithmetic mod p
+    degree_multiplier: int = 4     # degree window = [-mult*max_len, mult*max_len]
+    checkpoint_every: int = 5      # save checkpoints every N levels
+    device: str = "cuda"           # "cuda" or "cpu"
+    
+    @property
+    def degree_window(self) -> int:
+        """Total size of degree coefficient array."""
+        return 2 * self.degree_multiplier * self.max_length + 1
+    
+    @property
+    def degree_offset(self) -> int:
+        """Index offset: degree d is stored at index d + degree_offset."""
+        return self.degree_multiplier * self.max_length
+
+
+# =============================================================================
+# CORE POLYNOMIAL OPERATIONS
+# =============================================================================
+
+def poly_multiply_batch(a: torch.Tensor, b: torch.Tensor, p: int) -> torch.Tensor:
+    """
+    Batch polynomial multiplication using FFT convolution.
+    
+    Args:
+        a: (N, D) - N polynomials, each with D coefficients
+        b: (N, D) - N polynomials to multiply with
+        p: prime modulus
+    
+    Returns:
+        (N, 2D-1) - convolution results, mod p
+    """
+    N, D = a.shape
+    
+    # Pad to avoid circular convolution artifacts
+    # FFT size should be >= 2D-1, use next power of 2 for efficiency
+    fft_size = 1 << (2 * D - 1).bit_length()
+    
+    # FFT-based convolution
+    a_fft = torch.fft.rfft(a.float(), n=fft_size, dim=-1)
+    b_fft = torch.fft.rfft(b.float(), n=fft_size, dim=-1)
+    c_fft = a_fft * b_fft
+    c = torch.fft.irfft(c_fft, n=fft_size, dim=-1)
+    
+    # Round to integers and take mod p
+    c = torch.round(c).long() % p
+    
+    # Trim to actual convolution length
+    return c[:, :2*D-1]
+
+
+def poly_matmul_batch(A: torch.Tensor, B: torch.Tensor, p: int) -> torch.Tensor:
+    """
+    Batch 3x3 matrix multiplication over polynomial ring (Z/pZ)[v, v^-1].
+    
+    Args:
+        A: (N, 3, 3, D) - N matrices with polynomial entries
+        B: (N, 3, 3, D) - N matrices to multiply with
+        p: prime modulus
+    
+    Returns:
+        (N, 3, 3, 2D-1) - product matrices, mod p
+    """
+    N, _, _, D = A.shape
+    out_D = 2 * D - 1
+    C = torch.zeros(N, 3, 3, out_D, dtype=torch.long, device=A.device)
+    
+    # C[i,j] = sum_k A[i,k] * B[k,j]
+    # Loop over matrix indices (only 27 iterations, negligible overhead)
+    for i in range(3):
+        for j in range(3):
+            for k in range(3):
+                # Extract the (N,D) batches of polynomials
+                a_ik = A[:, i, k, :]  # (N, D)
+                b_kj = B[:, k, j, :]  # (N, D)
+                
+                # Convolve and accumulate
+                conv = poly_multiply_batch(a_ik, b_kj, p)  # (N, 2D-1)
+                C[:, i, j, :] = (C[:, i, j, :] + conv) % p
+    
+    return C
+
+
+def compute_projlen_batch(matrices: torch.Tensor) -> torch.Tensor:
+    """
+    Compute projective length for a batch of matrices.
+    
+    projlen = (max degree with nonzero coeff) - (min degree with nonzero coeff)
+    
+    Args:
+        matrices: (N, 3, 3, D) - polynomial matrices
+    
+    Returns:
+        (N,) - projlen for each matrix
+    """
+    N, _, _, D = matrices.shape
+    
+    # Flatten to (N, 9*D) to find nonzero positions
+    flat = matrices.reshape(N, -1)  # (N, 9*D)
+    
+    # For each matrix, find min and max degree with nonzero coefficient
+    # Degree index d means actual degree = d (we'll adjust for offset elsewhere)
+    
+    # Create degree indices: for flattened array, degree of position p is p % D
+    degree_indices = torch.arange(9 * D, device=matrices.device) % D  # (9*D,)
+    
+    # Mask for nonzero entries
+    nonzero_mask = (flat != 0)  # (N, 9*D)
+    
+    # For min: set zeros to large value, then take min
+    degrees_for_min = torch.where(nonzero_mask, degree_indices.unsqueeze(0), D + 1)
+    min_degrees = degrees_for_min.min(dim=-1).values  # (N,)
+    
+    # For max: set zeros to small value, then take max
+    degrees_for_max = torch.where(nonzero_mask, degree_indices.unsqueeze(0), -1)
+    max_degrees = degrees_for_max.max(dim=-1).values  # (N,)
+    
+    # projlen = max - min (or 0 if matrix is all zeros, which shouldn't happen)
+    projlen = max_degrees - min_degrees
+    projlen = torch.clamp(projlen, min=0)
+    
+    return projlen
+
+
+# =============================================================================
+# RESERVOIR SAMPLING ON GPU
+# =============================================================================
+
+def reservoir_sample_gpu(
+    matrices: torch.Tensor,
+    words: torch.Tensor,
+    word_lengths: torch.Tensor,
+    projlens: torch.Tensor,
+    bucket_size: int,
+    is_bootstrap: bool
+) -> dict[int, tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+    """
+    Perform reservoir sampling grouped by projlen, entirely on GPU.
+    
+    Args:
+        matrices: (N, 3, 3, D) - all candidate matrices
+        words: (N, max_len) - Garside words for each candidate
+        word_lengths: (N,) - length of each word
+        projlens: (N,) - projlen of each candidate
+        bucket_size: max items per bucket (ignored if is_bootstrap)
+        is_bootstrap: if True, keep everything (no sampling)
+    
+    Returns:
+        Dictionary mapping projlen -> (matrices, words, word_lengths) for that bucket
+    """
+    device = matrices.device
+    unique_projlens = torch.unique(projlens).tolist()
+    
+    buckets = {}
+    
+    if is_bootstrap:
+        # Keep everything, just group by projlen
+        for m in unique_projlens:
+            mask = (projlens == m)
+            buckets[m] = (
+                matrices[mask],
+                words[mask],
+                word_lengths[mask]
+            )
+    else:
+        # Priority-based reservoir sampling
+        priorities = torch.rand(len(matrices), device=device)
+        
+        for m in unique_projlens:
+            mask = (projlens == m)
+            indices = torch.where(mask)[0]
+            
+            if len(indices) <= bucket_size:
+                # Bucket not full, keep all
+                selected = indices
+            else:
+                # Select bucket_size items with lowest priority
+                group_priorities = priorities[indices]
+                _, topk_local = torch.topk(group_priorities, bucket_size, largest=False)
+                selected = indices[topk_local]
+            
+            buckets[m] = (
+                matrices[selected],
+                words[selected],
+                word_lengths[selected]
+            )
+    
+    return buckets
+
+
+# =============================================================================
+# MAIN ALGORITHM
+# =============================================================================
+
+class BraidSearch:
+    """
+    GPU-accelerated search for braids with low projlen.
+    """
+    
+    def __init__(
+        self,
+        simple_burau: torch.Tensor,
+        valid_suffixes: torch.Tensor,
+        num_valid_suffixes: torch.Tensor,
+        config: Config
+    ):
+        """
+        Args:
+            simple_burau: (24, 3, 3, D) Burau matrices for simple braids
+            valid_suffixes: (24, max_suffixes) valid suffix indices, padded with -1
+            num_valid_suffixes: (24,) count of valid suffixes per simple
+            config: algorithm parameters
+        """
+        self.config = config
+        self.device = torch.device(config.device)
+        
+        # Store precomputed tables on GPU
+        self.simple_burau = simple_burau.to(self.device)
+        self.valid_suffixes = valid_suffixes.to(self.device)
+        self.num_valid_suffixes = num_valid_suffixes.to(self.device)
+        
+        # Degree window info
+        self.D = simple_burau.shape[-1]
+        
+        # Current level's buckets: projlen -> (matrices, words, word_lengths)
+        self.buckets: dict[int, tuple[torch.Tensor, torch.Tensor, torch.Tensor]] = {}
+        
+        # Track exciting discoveries
+        self.zero_projlen_braids: list[torch.Tensor] = []
+        
+        # Statistics
+        self.stats = {"candidates_per_level": [], "buckets_per_level": []}
+    
+    def initialize(self):
+        """Start with the identity braid in bucket (0, 0)."""
+        # Identity matrix: 1s on diagonal at degree = 0, which is index degree_offset
+        identity_matrix = torch.zeros(1, 3, 3, self.D, dtype=torch.long, device=self.device)
+        center = self.D // 2  # degree 0 is at center of window
+        for i in range(3):
+            identity_matrix[0, i, i, center] = 1
+        
+        # Identity word: length 0 (or we can use simple index 0 if that's identity)
+        identity_word = torch.zeros(1, self.config.max_length, dtype=torch.long, device=self.device)
+        identity_length = torch.zeros(1, dtype=torch.long, device=self.device)
+        
+        # projlen of identity is 0
+        self.buckets[0] = (identity_matrix, identity_word, identity_length)
+        
+        print(f"Initialized with identity braid in bucket (0, 0)")
+        print(f"Degree window: [-{self.D//2}, {self.D//2}] ({self.D} coefficients)")
+        print(f"Config: bucket_size={self.config.bucket_size}, "
+              f"bootstrap_length={self.config.bootstrap_length}, "
+              f"max_length={self.config.max_length}")
+    
+    def gather_level_braids(self) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Gather all braids from current buckets into flat tensors.
+        
+        Returns:
+            matrices: (total_braids, 3, 3, D)
+            words: (total_braids, max_length)
+            word_lengths: (total_braids,)
+            last_simples: (total_braids,) - last simple in each word (for suffix lookup)
+        """
+        all_matrices = []
+        all_words = []
+        all_lengths = []
+        
+        for projlen, (matrices, words, lengths) in self.buckets.items():
+            all_matrices.append(matrices)
+            all_words.append(words)
+            all_lengths.append(lengths)
+        
+        if not all_matrices:
+            raise RuntimeError("No braids to process!")
+        
+        matrices = torch.cat(all_matrices, dim=0)
+        words = torch.cat(all_words, dim=0)
+        lengths = torch.cat(all_lengths, dim=0)
+        
+        # Extract last simple from each word
+        # For length-0 (identity), we need a convention. Use index 0 (identity).
+        batch_indices = torch.arange(len(lengths), device=self.device)
+        last_positions = torch.clamp(lengths - 1, min=0)
+        last_simples = words[batch_indices, last_positions]
+        # For identity (length 0), set last_simple to 0
+        last_simples = torch.where(lengths > 0, last_simples, torch.zeros_like(last_simples))
+        
+        return matrices, words, lengths, last_simples
+    
+    def expand_candidates(
+        self,
+        matrices: torch.Tensor,
+        words: torch.Tensor,
+        lengths: torch.Tensor,
+        last_simples: torch.Tensor,
+        new_length: int
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Generate all valid (braid, suffix) pairs and compute products.
+        
+        Returns:
+            new_matrices: (num_candidates, 3, 3, D_out)
+            new_words: (num_candidates, max_length)
+            new_lengths: (num_candidates,)
+            suffix_indices: (num_candidates,) - which suffix was appended
+        """
+        device = self.device
+        num_braids = len(matrices)
+        
+        # Build list of (braid_idx, suffix_idx) pairs
+        braid_indices = []
+        suffix_indices = []
+        
+        for i in range(num_braids):
+            last_simple = last_simples[i].item()
+            n_suffixes = self.num_valid_suffixes[last_simple].item()
+            for j in range(n_suffixes):
+                suffix = self.valid_suffixes[last_simple, j].item()
+                braid_indices.append(i)
+                suffix_indices.append(suffix)
+        
+        if not braid_indices:
+            # No valid expansions (shouldn't happen in practice)
+            return (
+                torch.empty(0, 3, 3, 2*self.D-1, dtype=torch.long, device=device),
+                torch.empty(0, self.config.max_length, dtype=torch.long, device=device),
+                torch.empty(0, dtype=torch.long, device=device),
+                torch.empty(0, dtype=torch.long, device=device)
+            )
+        
+        braid_indices = torch.tensor(braid_indices, dtype=torch.long, device=device)
+        suffix_indices = torch.tensor(suffix_indices, dtype=torch.long, device=device)
+        num_candidates = len(braid_indices)
+        
+        # Gather matrices for multiplication
+        parent_matrices = matrices[braid_indices]          # (num_candidates, 3, 3, D)
+        suffix_matrices = self.simple_burau[suffix_indices]  # (num_candidates, 3, 3, D)
+        
+        # Batch polynomial matrix multiplication
+        new_matrices = poly_matmul_batch(parent_matrices, suffix_matrices, self.config.prime)
+        
+        # Build new words by appending suffix
+        parent_words = words[braid_indices]                # (num_candidates, max_length)
+        parent_lengths = lengths[braid_indices]            # (num_candidates,)
+        
+        new_words = parent_words.clone()
+        # Set position [length] to the new suffix
+        batch_indices = torch.arange(num_candidates, device=device)
+        new_words[batch_indices, parent_lengths] = suffix_indices
+        new_lengths = parent_lengths + 1
+        
+        return new_matrices, new_words, new_lengths, suffix_indices
+    
+    def recenter_matrices(self, matrices: torch.Tensor) -> torch.Tensor:
+        """
+        Recenter polynomial matrices to keep coefficients in valid degree window.
+        
+        After multiplication, degree window expands. We need to either:
+        1. Check that all coefficients fit in our target window
+        2. Or shift to recenter
+        
+        For simplicity, we just truncate/check bounds here.
+        In practice, you may want to shift based on actual degree range.
+        """
+        # Current size after multiplication
+        current_D = matrices.shape[-1]
+        target_D = self.D
+        
+        if current_D <= target_D:
+            # Pad if somehow smaller (shouldn't happen)
+            pad_total = target_D - current_D
+            pad_left = pad_total // 2
+            pad_right = pad_total - pad_left
+            return F.pad(matrices, (pad_left, pad_right), value=0)
+        
+        # Trim symmetrically from both ends
+        trim_total = current_D - target_D
+        trim_left = trim_total // 2
+        trim_right = current_D - trim_left
+        
+        # Check for coefficient loss (warn if trimming nonzero values)
+        left_loss = matrices[..., :trim_left].abs().sum()
+        right_loss = matrices[..., trim_right:].abs().sum()
+        if left_loss > 0 or right_loss > 0:
+            print(f"  WARNING: Trimming nonzero coefficients! Loss: left={left_loss}, right={right_loss}")
+            print(f"  Consider increasing degree_multiplier in config.")
+        
+        return matrices[..., trim_left:trim_right]
+    
+    def process_level(self, level: int):
+        """
+        Process one level of the BFS: expand all braids and reservoir sample.
+        """
+        is_bootstrap = (level <= self.config.bootstrap_length)
+        mode = "BOOTSTRAP (exhaustive)" if is_bootstrap else "SAMPLING"
+        
+        print(f"\n{'='*60}")
+        print(f"Level {level} - {mode}")
+        print(f"{'='*60}")
+        
+        # Gather all braids from previous level
+        matrices, words, lengths, last_simples = self.gather_level_braids()
+        print(f"  Starting braids: {len(matrices)}")
+        
+        # Generate all candidates
+        new_matrices, new_words, new_lengths, _ = self.expand_candidates(
+            matrices, words, lengths, last_simples, level
+        )
+        print(f"  Candidates generated: {len(new_matrices)}")
+        
+        if len(new_matrices) == 0:
+            print("  No candidates! Algorithm terminates.")
+            return False
+        
+        # Recenter to maintain degree window
+        new_matrices = self.recenter_matrices(new_matrices)
+        
+        # Compute projlen for all candidates
+        projlens = compute_projlen_batch(new_matrices)
+        
+        # Check for projlen = 0 discoveries!
+        zero_mask = (projlens == 0)
+        num_zeros = zero_mask.sum().item()
+        if num_zeros > 0:
+            print(f"\n  🎉 FOUND {num_zeros} BRAIDS WITH PROJLEN = 0! 🎉")
+            self.zero_projlen_braids.append(new_words[zero_mask].cpu())
+        
+        # Report projlen distribution
+        unique_projlens, counts = torch.unique(projlens, return_counts=True)
+        print(f"  Projlen distribution:")
+        for pl, count in zip(unique_projlens.tolist(), counts.tolist()):
+            print(f"    projlen={pl}: {count} braids")
+        
+        # Reservoir sampling (or exhaustive if bootstrap)
+        self.buckets = reservoir_sample_gpu(
+            new_matrices, new_words, new_lengths, projlens,
+            self.config.bucket_size, is_bootstrap
+        )
+        
+        # Report bucket sizes
+        total_kept = sum(m.shape[0] for m, _, _ in self.buckets.values())
+        print(f"  Braids kept: {total_kept} (in {len(self.buckets)} buckets)")
+        
+        # Update stats
+        self.stats["candidates_per_level"].append(len(new_matrices))
+        self.stats["buckets_per_level"].append(len(self.buckets))
+        
+        return True
+    
+    def save_checkpoint(self, level: int, path: str):
+        """Save current state to disk."""
+        checkpoint = {
+            "level": level,
+            "config": self.config.__dict__,
+            "stats": self.stats,
+            "buckets": {},
+            "zero_projlen_braids": [w.tolist() for w in self.zero_projlen_braids]
+        }
+        
+        for projlen, (matrices, words, lengths) in self.buckets.items():
+            checkpoint["buckets"][projlen] = {
+                "matrices": matrices.cpu().tolist(),
+                "words": words.cpu().tolist(),
+                "lengths": lengths.cpu().tolist()
+            }
+        
+        with open(path, 'w') as f:
+            json.dump(checkpoint, f)
+        print(f"  Checkpoint saved to {path}")
+    
+    def run(self, checkpoint_dir: Optional[str] = None):
+        """
+        Run the full search algorithm.
+        """
+        self.initialize()
+        
+        if checkpoint_dir:
+            Path(checkpoint_dir).mkdir(exist_ok=True)
+        
+        for level in range(1, self.config.max_length + 1):
+            success = self.process_level(level)
+            
+            if not success:
+                break
+            
+            # Checkpoint periodically
+            if checkpoint_dir and (level % self.config.checkpoint_every == 0):
+                self.save_checkpoint(level, f"{checkpoint_dir}/checkpoint_level_{level}.json")
+        
+        print(f"\n{'='*60}")
+        print("SEARCH COMPLETE")
+        print(f"{'='*60}")
+        print(f"Total projlen=0 braids found: {sum(len(w) for w in self.zero_projlen_braids)}")
+        
+        return self.zero_projlen_braids
+
+
+# =============================================================================
+# EXAMPLE: HOW TO CREATE THE PRECOMPUTED TABLES
+# =============================================================================
+
+def create_example_tables(config: Config):
+    """
+    Example showing the EXACT format for precomputed tables.
+    
+    YOU NEED TO REPLACE THIS with actual computation from your Peyl library.
+    """
+    D = config.degree_window
+    center = D // 2  # degree 0 is at index center
+    
+    # simple_burau: (24, 3, 3, D)
+    # Index 0 = identity, indices 1-23 = the 23 nontrivial simple braids
+    simple_burau = torch.zeros(24, 3, 3, D, dtype=torch.long)
+    
+    # Identity matrix at index 0
+    for i in range(3):
+        simple_burau[0, i, i, center] = 1
+    
+    # TODO: Fill in the actual Burau matrices for simples 1-23
+    # For simple s, the (i,j) entry is a polynomial sum_d c_d * v^d
+    # Store coefficient c_d at simple_burau[s, i, j, center + d]
+    # All coefficients should be reduced mod p
+    
+    # For now, just identity matrices as placeholders
+    for s in range(1, 24):
+        for i in range(3):
+            simple_burau[s, i, i, center] = 1
+    
+    # valid_suffixes: (24, max_suffixes)
+    # For each simple s, list which simples can follow it in normal form
+    # Pad with -1
+    max_suffixes = 14  # adjust based on actual max
+    valid_suffixes = torch.full((24, max_suffixes), -1, dtype=torch.int32)
+    
+    # TODO: Fill in actual valid suffixes from your lookup table
+    # For identity (index 0), all 23 nontrivial simples are valid
+    for j in range(23):
+        valid_suffixes[0, j] = j + 1
+    
+    # For other simples, fill in based on your precomputed table
+    # Example placeholder: each simple can be followed by simples 1-5
+    for s in range(1, 24):
+        for j in range(5):
+            valid_suffixes[s, j] = (s + j) % 23 + 1
+    
+    # num_valid_suffixes: (24,)
+    num_valid_suffixes = torch.zeros(24, dtype=torch.int32)
+    num_valid_suffixes[0] = 23  # identity can go to any simple
+    for s in range(1, 24):
+        num_valid_suffixes[s] = 5  # placeholder
+    
+    return simple_burau, valid_suffixes, num_valid_suffixes
+
+
+# =============================================================================
+# MAIN ENTRY POINT
+# =============================================================================
+
+def main():
+    """Example usage."""
+    
+    # Configure the search
+    config = Config(
+        bucket_size=50000,
+        max_length=50,
+        bootstrap_length=5,
+        prime=5,
+        degree_multiplier=4,
+        checkpoint_every=5,
+        device="cuda" if torch.cuda.is_available() else "cpu"
+    )
+    
+    print(f"Using device: {config.device}")
+    print(f"Degree window size: {config.degree_window}")
+    
+    # Create tables (REPLACE with your actual precomputed data)
+    simple_burau, valid_suffixes, num_valid_suffixes = create_example_tables(config)
+    
+    # Run the search
+    search = BraidSearch(simple_burau, valid_suffixes, num_valid_suffixes, config)
+    zero_braids = search.run(checkpoint_dir="checkpoints")
+    
+    # Print any projlen=0 braids found
+    for i, words in enumerate(zero_braids):
+        print(f"\nBatch {i}: {len(words)} braids with projlen=0")
+        for word in words[:5]:  # show first 5
+            print(f"  Garside word: {word.tolist()}")
+
+
+if __name__ == "__main__":
+    main()
