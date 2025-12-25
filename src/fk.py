@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """
-Find kernel elements for p=2 or p=3
+Find kernel elements for various primes p.
 
 FIXED: The verification function now correctly checks for scalar matrices.
+
+Usage examples:
+    python find_kernel.py --p 2
+    python find_kernel.py --p 3 --bucket-size 8000 --bootstrap-length 5
+    python find_kernel.py --p 5 --bucket-size 10000 --max-length 30 --device cuda
 """
 
 import sys
+import argparse
 import torch
 
 # Add paths
@@ -81,18 +87,29 @@ def verify_kernel_element(word_list, n=4, r=1, p=2):
     return True, f"Kernel element! Evaluates to ({scalar_str}) * I"
 
 
-def find_kernel(p=2):
-    """Search for kernel elements."""
+def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, device="cpu"):
+    """Search for kernel elements.
+    
+    Args:
+        p: Prime for the representation
+        bucket_size: Number of braids to keep per projlen bucket
+        bootstrap_length: Length of initial exhaustive search
+        max_length: Maximum braid length to search (default: 10 for p=2, 25 otherwise)
+        device: "cpu" or "cuda"
+    """
+    
+    if max_length is None:
+        max_length = 10 if p == 2 else 25
     
     # Configuration 
     config = Config(
-        bucket_size=4000,
-        max_length=10 if p == 2 else 25,
-        bootstrap_length=4,
+        bucket_size=bucket_size,
+        max_length=max_length,
+        bootstrap_length=bootstrap_length,
         prime=p,
         degree_multiplier=4,
         checkpoint_every=100,  # Don't checkpoint for short runs
-        device="cpu"
+        device=device
     )
     
     print("="*60)
@@ -194,8 +211,65 @@ def find_kernel(p=2):
     return verified
 
 
-if __name__ == "__main__":
-    import sys
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Search for kernel elements in Burau representations",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s --p 2
+  %(prog)s --p 3 --bucket-size 8000
+  %(prog)s --p 5 --bucket-size 10000 --bootstrap-length 5 --max-length 30
+  %(prog)s --p 7 --device cuda
+        """
+    )
     
-    p = int(sys.argv[1]) if len(sys.argv) > 1 else 2
-    find_kernel(p=p)
+    parser.add_argument(
+        "--p", "-p",
+        type=int,
+        default=2,
+        help="Prime for the representation (default: 2)"
+    )
+    
+    parser.add_argument(
+        "--bucket-size", "-b",
+        type=int,
+        default=4000,
+        help="Number of braids to keep per projlen bucket (default: 4000)"
+    )
+    
+    parser.add_argument(
+        "--bootstrap-length", "-l",
+        type=int,
+        default=4,
+        help="Length of initial exhaustive search (default: 4)"
+    )
+    
+    parser.add_argument(
+        "--max-length", "-m",
+        type=int,
+        default=None,
+        help="Maximum braid length to search (default: 10 for p=2, 25 otherwise)"
+    )
+    
+    parser.add_argument(
+        "--device", "-d",
+        type=str,
+        default="cpu",
+        choices=["cpu", "cuda"],
+        help="Device to use for computation (default: cpu)"
+    )
+    
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    
+    find_kernel(
+        p=args.p,
+        bucket_size=args.bucket_size,
+        bootstrap_length=args.bootstrap_length,
+        max_length=args.max_length,
+        device=args.device
+    )
