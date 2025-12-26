@@ -26,7 +26,7 @@ export PYTHONUNBUFFERED=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 # 3. Run the script
 $PYTHON_PATH find_kernel.py \
-    --p 5 \
+    --p 7 \
     --bucket-size 80000 \
     --chunk-size 90000 \
     --device cuda \
