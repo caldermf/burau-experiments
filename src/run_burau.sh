@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=burau_p5
-#SBATCH --partition=devel_gpu           # Request the GPU partition
+#SBATCH --partition=gpu_devel           # Request the GPU partition
 #SBATCH --gres=gpu:1              # Request 1 GPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
