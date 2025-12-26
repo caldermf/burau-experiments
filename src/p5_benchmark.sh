@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=burau_h200_test
-#SBATCH --partition=gpu_h200           # Request the GPU partition
+#SBATCH --partition=gpu_devel           # Request the GPU partition
 #SBATCH --gres=gpu:1              # Request 1 GPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -18,15 +18,14 @@ module purge
 module load miniconda
 
 # Manually (re-)initialize conda *after* module load
-source /apps/software/2022b/software/miniconda/24.11.3/etc/profile.d/conda.sh
+# source /apps/software/2022b/software/miniconda/24.11.3/etc/profile.d/conda.sh
 
-# Now activate
-conda activate burau_gpu
+PYTHON_PATH="/home/com36/.conda/envs/burau_gpu/bin/python"
 
 export PYTHONUNBUFFERED=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 # 3. Run the script
-python find_kernel.py \
+$PYTHON_PATH find_kernel.py \
     --p 5 \
     --bucket-size 15000 \
     --chunk-size 120000 \
