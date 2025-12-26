@@ -230,7 +230,7 @@ def build_expansion_indices_vectorized(
     # Now look up actual suffix values from the table
     # valid_suffixes[last_simples[braid], local_suffix_index]
     last_simples_expanded = last_simples[braid_indices]  # (total_expansions,)
-    suffix_indices = valid_suffixes[last_simples_expanded, local_suffix_indices]
+    suffix_indices = valid_suffixes[last_simples_expanded, local_suffix_indices].long()
     
     return braid_indices, suffix_indices
 
