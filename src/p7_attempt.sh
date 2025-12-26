@@ -30,9 +30,9 @@ $PYTHON_PATH find_kernel.py \
     --bucket-size 80000 \
     --chunk-size 90000 \
     --device cuda \
-    --use-best 30000 \
-    --bootstrap-length 12 \
-    --max-length 200 \
+    --use-best 50000 \
+    --bootstrap-length 6 \
+    --max-length 150 \
     --checkpoint-dir "checkpoints/h200_test_${SLURM_JOB_ID}"
 
 module --force purge
