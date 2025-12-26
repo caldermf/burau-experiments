@@ -4,7 +4,7 @@
 #SBATCH --gres=gpu:1              # Request 1 GPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16         # CPU cores for data loading/overhead
+#SBATCH --cpus-per-task=12         # CPU cores for data loading/overhead
 #SBATCH --mem=32G                 # RAM (increase if you hit OOM)
 #SBATCH --time=0:06:00           # Max runtime (hh:mm:ss)
 #SBATCH --output=slurm_logs/p5_benchmark_%j.out   # Saves standard output (print statements)
