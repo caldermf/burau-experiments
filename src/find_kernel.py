@@ -18,7 +18,7 @@ import torch
 sys.path.insert(0, '/Users/com36/burau-experiments')
 sys.path.insert(0, '/Users/com36/burau-experiments/src')
 
-from new_braid_search_vectorized import Config, BraidSearch, load_tables_from_file
+from new_braid_search_v2 import Config, BraidSearch, load_tables_from_file
 
 # For verification
 from peyl.braid import GNF, PermTable, BraidGroup
