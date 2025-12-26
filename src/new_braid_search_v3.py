@@ -466,6 +466,8 @@ class BraidSearch:
         projlen_counts: dict[int, int] = {}
         
         for chunk_idx in range(num_chunks):
+            if self.device.type == 'cuda':
+                torch.cuda.empty_cache()
             start = chunk_idx * chunk_size
             end = min(start + chunk_size, num_candidates)
             
