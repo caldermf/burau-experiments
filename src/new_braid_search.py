@@ -54,6 +54,7 @@ class Config:
     degree_multiplier: int = 4     # degree window = [-mult*max_len, mult*max_len]
     checkpoint_every: int = 5      # save checkpoints every N levels
     device: str = "cuda"           # "cuda" or "cpu"
+    expansion_chunk_size: int = 50000  # max candidates to process at once in expand_candidates
     
     @property
     def degree_window(self) -> int:
@@ -304,7 +305,8 @@ class BraidSearch:
         print(f"Degree window: [-{self.D//2}, {self.D//2}] ({self.D} coefficients)")
         print(f"Config: bucket_size={self.config.bucket_size}, "
               f"bootstrap_length={self.config.bootstrap_length}, "
-              f"max_length={self.config.max_length}")
+              f"max_length={self.config.max_length}, "
+              f"expansion_chunk_size={self.config.expansion_chunk_size}")
     
     def gather_level_braids(self) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
@@ -342,6 +344,50 @@ class BraidSearch:
         
         return matrices, words, lengths, last_simples
     
+    def expand_candidates_chunk(
+        self,
+        matrices: torch.Tensor,
+        words: torch.Tensor,
+        lengths: torch.Tensor,
+        last_simples: torch.Tensor,
+        braid_indices: torch.Tensor,
+        suffix_indices: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Expand a chunk of (braid, suffix) pairs.
+        
+        Args:
+            matrices, words, lengths, last_simples: full arrays for the level
+            braid_indices: which parent braids to expand (indices into matrices)
+            suffix_indices: which suffix to append to each
+            
+        Returns:
+            new_matrices: (chunk_size, 3, 3, 2D-1)
+            new_words: (chunk_size, max_length)
+            new_lengths: (chunk_size,)
+        """
+        device = self.device
+        num_candidates = len(braid_indices)
+        
+        # Gather matrices for multiplication
+        parent_matrices = matrices[braid_indices]          # (chunk_size, 3, 3, D)
+        suffix_matrices = self.simple_burau[suffix_indices]  # (chunk_size, 3, 3, D)
+        
+        # Batch polynomial matrix multiplication
+        new_matrices = poly_matmul_batch(parent_matrices, suffix_matrices, self.config.prime)
+        
+        # Build new words by appending suffix
+        parent_words = words[braid_indices]                # (chunk_size, max_length)
+        parent_lengths = lengths[braid_indices]            # (chunk_size,)
+        
+        new_words = parent_words.clone()
+        # Set position [length] to the new suffix
+        batch_idx = torch.arange(num_candidates, device=device)
+        new_words[batch_idx, parent_lengths] = suffix_indices
+        new_lengths = parent_lengths + 1
+        
+        return new_matrices, new_words, new_lengths
+    
     def expand_candidates(
         self,
         matrices: torch.Tensor,
@@ -352,6 +398,7 @@ class BraidSearch:
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Generate all valid (braid, suffix) pairs and compute products.
+        Uses chunked processing to avoid OOM on large bucket sizes.
         
         Returns:
             new_matrices: (num_candidates, 3, 3, D_out)
@@ -361,20 +408,21 @@ class BraidSearch:
         """
         device = self.device
         num_braids = len(matrices)
+        chunk_size = self.config.expansion_chunk_size
         
         # Build list of (braid_idx, suffix_idx) pairs
-        braid_indices = []
-        suffix_indices = []
+        braid_indices_list = []
+        suffix_indices_list = []
         
         for i in range(num_braids):
             last_simple = last_simples[i].item()
             n_suffixes = self.num_valid_suffixes[last_simple].item()
             for j in range(n_suffixes):
                 suffix = self.valid_suffixes[last_simple, j].item()
-                braid_indices.append(i)
-                suffix_indices.append(suffix)
+                braid_indices_list.append(i)
+                suffix_indices_list.append(suffix)
         
-        if not braid_indices:
+        if not braid_indices_list:
             # No valid expansions (shouldn't happen in practice)
             return (
                 torch.empty(0, 3, 3, 2*self.D-1, dtype=torch.long, device=device),
@@ -383,28 +431,51 @@ class BraidSearch:
                 torch.empty(0, dtype=torch.long, device=device)
             )
         
-        braid_indices = torch.tensor(braid_indices, dtype=torch.long, device=device)
-        suffix_indices = torch.tensor(suffix_indices, dtype=torch.long, device=device)
-        num_candidates = len(braid_indices)
+        all_braid_indices = torch.tensor(braid_indices_list, dtype=torch.long, device=device)
+        all_suffix_indices = torch.tensor(suffix_indices_list, dtype=torch.long, device=device)
+        num_candidates = len(all_braid_indices)
         
-        # Gather matrices for multiplication
-        parent_matrices = matrices[braid_indices]          # (num_candidates, 3, 3, D)
-        suffix_matrices = self.simple_burau[suffix_indices]  # (num_candidates, 3, 3, D)
+        # Process in chunks to avoid OOM
+        if num_candidates <= chunk_size:
+            # Small enough to do in one shot
+            new_matrices, new_words, new_lengths = self.expand_candidates_chunk(
+                matrices, words, lengths, last_simples,
+                all_braid_indices, all_suffix_indices
+            )
+        else:
+            # Process in chunks and accumulate
+            all_new_matrices = []
+            all_new_words = []
+            all_new_lengths = []
+            
+            num_chunks = (num_candidates + chunk_size - 1) // chunk_size
+            print(f"    Processing {num_candidates} expansions in {num_chunks} chunks...")
+            
+            for chunk_idx in range(num_chunks):
+                start = chunk_idx * chunk_size
+                end = min(start + chunk_size, num_candidates)
+                
+                chunk_braid_idx = all_braid_indices[start:end]
+                chunk_suffix_idx = all_suffix_indices[start:end]
+                
+                chunk_matrices, chunk_words, chunk_lengths = self.expand_candidates_chunk(
+                    matrices, words, lengths, last_simples,
+                    chunk_braid_idx, chunk_suffix_idx
+                )
+                
+                all_new_matrices.append(chunk_matrices)
+                all_new_words.append(chunk_words)
+                all_new_lengths.append(chunk_lengths)
+                
+                # Free memory between chunks
+                if device.type == 'cuda':
+                    torch.cuda.empty_cache()
+            
+            new_matrices = torch.cat(all_new_matrices, dim=0)
+            new_words = torch.cat(all_new_words, dim=0)
+            new_lengths = torch.cat(all_new_lengths, dim=0)
         
-        # Batch polynomial matrix multiplication
-        new_matrices = poly_matmul_batch(parent_matrices, suffix_matrices, self.config.prime)
-        
-        # Build new words by appending suffix
-        parent_words = words[braid_indices]                # (num_candidates, max_length)
-        parent_lengths = lengths[braid_indices]            # (num_candidates,)
-        
-        new_words = parent_words.clone()
-        # Set position [length] to the new suffix
-        batch_indices = torch.arange(num_candidates, device=device)
-        new_words[batch_indices, parent_lengths] = suffix_indices
-        new_lengths = parent_lengths + 1
-        
-        return new_matrices, new_words, new_lengths, suffix_indices
+        return new_matrices, new_words, new_lengths, all_suffix_indices
     
     def recenter_matrices(self, matrices: torch.Tensor) -> torch.Tensor:
         """
@@ -457,7 +528,7 @@ class BraidSearch:
         matrices, words, lengths, last_simples = self.gather_level_braids()
         print(f"  Starting braids: {len(matrices)}")
         
-        # Generate all candidates
+        # Generate all candidates (now with chunking for large expansions)
         new_matrices, new_words, new_lengths, _ = self.expand_candidates(
             matrices, words, lengths, last_simples, level
         )
@@ -684,7 +755,8 @@ def main():
         prime=5,
         degree_multiplier=4,
         checkpoint_every=5,
-        device="cuda" if torch.cuda.is_available() else "cpu"
+        device="cuda" if torch.cuda.is_available() else "cpu",
+        expansion_chunk_size=50000
     )
     
     print(f"Using device: {config.device}")
@@ -713,7 +785,6 @@ def main():
         print(f"\nBatch {i}: {len(words)} braids with projlen=0")
         for word in words[:5]:  # show first 5
             print(f"  Garside word: {word.tolist()}")
-
 
 if __name__ == "__main__":
     main()
