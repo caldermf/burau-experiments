@@ -1,0 +1,27 @@
+#!/bin/bash
+#SBATCH --job-name=burau_p5
+#SBATCH --partition=devel_gpu           # Request the GPU partition
+#SBATCH --gres=gpu:1              # Request 1 GPU
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8         # CPU cores for data loading/overhead
+#SBATCH --mem=64G                 # RAM (increase if you hit OOM)
+#SBATCH --time=1:00:00           # Max runtime (hh:mm:ss)
+#SBATCH --output=slurm_logs/burau_%j.out   # Saves standard output (print statements)
+#SBATCH --error=slurm_logs/burau_%j.err    # Saves errors
+
+# 1. Prepare environment
+module load miniconda             # Load Conda module (common on Yale HPC)
+source ~/.bashrc                  # Ensure conda command is available
+conda activate burau_gpu
+
+# 3. Run the script
+python find_kernel.py \
+    --p 5 \
+    --bucket-size 20000 \
+    --chunk-size 40000 \
+    --device cuda \
+    --use-best 40000 \
+    --bootstrap-length 5 \
+    --max-length 80 \
+    --checkpoint-dir "checkpoints/run_p5_m80_${SLURM_JOB_ID}"

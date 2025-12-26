@@ -87,7 +87,7 @@ def verify_kernel_element(word_list, n=4, r=1, p=2):
     return True, f"Kernel element! Evaluates to ({scalar_str}) * I"
 
 
-def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, device="cpu", chunk_size=50000, use_best=0):
+def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, device="cpu", chunk_size=50000, use_best=0, checkpoint_dir=None):
     """Search for kernel elements.
     
     Args:
@@ -160,7 +160,7 @@ def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, devi
     
     # Run the search
     search = BraidSearch(simple_burau, valid_suffixes, num_valid_suffixes, config)
-    kernel_braids = search.run(checkpoint_dir=None)
+    kernel_braids = search.run(checkpoint_dir=checkpoint_dir)
     
     # Verify found braids
     print("\n" + "="*60)
@@ -279,6 +279,13 @@ Examples:
         default=0,
         help="Max braids to expand per level, prioritizing low projlen (default: 0 = no limit). Like peyl's --use-best."
     )
+
+    parser.add_argument(
+        "--checkpoint-dir",
+        type=str,
+        default=None,
+        help="Directory to save JSON checkpoints"
+    )
     
     return parser.parse_args()
 
@@ -293,5 +300,6 @@ if __name__ == "__main__":
         max_length=args.max_length,
         device=args.device,
         chunk_size=args.chunk_size,
-        use_best=args.use_best
+        use_best=args.use_best,
+        checkpoint_dir=args.checkpoint_dir
     )
