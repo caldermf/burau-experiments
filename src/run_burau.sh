@@ -10,10 +10,14 @@
 #SBATCH --output=slurm_logs/burau_%j.out   # Saves standard output (print statements)
 #SBATCH --error=slurm_logs/burau_%j.err    # Saves errors
 
-# 1. Prepare environment
-module load miniconda             # Load Conda module (common on Yale HPC)
-source ~/.bashrc                  # Ensure conda command is available
+# 1. Prepare environment (FIXED)
+module load miniconda
+# This line initializes conda for the batch shell properly:
+eval "$(conda shell.bash hook)" 
 conda activate burau_gpu
+
+# Force Python to print immediately (disable buffering)
+export PYTHONUNBUFFERED=1
 
 # 3. Run the script
 python find_kernel.py \
