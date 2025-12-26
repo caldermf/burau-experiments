@@ -87,7 +87,7 @@ def verify_kernel_element(word_list, n=4, r=1, p=2):
     return True, f"Kernel element! Evaluates to ({scalar_str}) * I"
 
 
-def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, device="cpu"):
+def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, device="cpu", chunk_size=50000):
     """Search for kernel elements.
     
     Args:
@@ -96,6 +96,7 @@ def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, devi
         bootstrap_length: Length of initial exhaustive search
         max_length: Maximum braid length to search (default: 10 for p=2, 25 otherwise)
         device: "cpu" or "cuda"
+        chunk_size: Max candidates to process at once (lower = less memory, slower)
     """
     
     if max_length is None:
@@ -109,7 +110,8 @@ def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, devi
         prime=p,
         degree_multiplier=4,
         checkpoint_every=100,  # Don't checkpoint for short runs
-        device=device
+        device=device,
+        expansion_chunk_size=chunk_size
     )
     
     print("="*60)
@@ -260,6 +262,13 @@ Examples:
         help="Device to use for computation (default: cpu)"
     )
     
+    parser.add_argument(
+        "--chunk-size", "-c",
+        type=int,
+        default=50000,
+        help="Max candidates to process at once in expansion step (default: 50000). Lower = less memory usage."
+    )
+    
     return parser.parse_args()
 
 
@@ -271,5 +280,6 @@ if __name__ == "__main__":
         bucket_size=args.bucket_size,
         bootstrap_length=args.bootstrap_length,
         max_length=args.max_length,
-        device=args.device
+        device=args.device,
+        chunk_size=args.chunk_size
     )
