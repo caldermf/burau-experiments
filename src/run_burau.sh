@@ -11,12 +11,18 @@
 #SBATCH --error=slurm_logs/burau_%j.err    # Saves errors
 
 # 1. Prepare environment (FIXED)
+
+set -e  # optional but recommended
+
+module purge
 module load miniconda
-# This line initializes conda for the batch shell properly:
-eval "$(conda shell.bash hook)" 
+
+# Manually (re-)initialize conda *after* module load
+source /apps/software/2022b/software/miniconda/24.11.3/etc/profile.d/conda.sh
+
+# Now activate
 conda activate burau_gpu
 
-# Force Python to print immediately (disable buffering)
 export PYTHONUNBUFFERED=1
 
 # 3. Run the script
