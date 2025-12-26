@@ -35,3 +35,5 @@ python find_kernel.py \
     --bootstrap-length 5 \
     --max-length 80 \
     --checkpoint-dir "checkpoints/run_p5_m80_${SLURM_JOB_ID}"
+
+module --force purge
