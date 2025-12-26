@@ -87,7 +87,7 @@ def verify_kernel_element(word_list, n=4, r=1, p=2):
     return True, f"Kernel element! Evaluates to ({scalar_str}) * I"
 
 
-def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, device="cpu", chunk_size=50000):
+def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, device="cpu", chunk_size=50000, use_best=0):
     """Search for kernel elements.
     
     Args:
@@ -97,6 +97,7 @@ def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, devi
         max_length: Maximum braid length to search (default: 10 for p=2, 25 otherwise)
         device: "cpu" or "cuda"
         chunk_size: Max candidates to process at once (lower = less memory, slower)
+        use_best: Max braids to expand per level, prioritizing low projlen (0 = no limit)
     """
     
     if max_length is None:
@@ -111,7 +112,8 @@ def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, devi
         degree_multiplier=4,
         checkpoint_every=100,  # Don't checkpoint for short runs
         device=device,
-        expansion_chunk_size=chunk_size
+        expansion_chunk_size=chunk_size,
+        use_best=use_best
     )
     
     print("="*60)
@@ -123,6 +125,7 @@ def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, devi
     print(f"Bootstrap length: {config.bootstrap_length}")
     print(f"Prime: {config.prime}")
     print(f"Degree window: {config.degree_window}")
+    print(f"Use best: {config.use_best if config.use_best > 0 else 'unlimited'}")
     print()
     
     # Load tables
@@ -223,6 +226,7 @@ Examples:
   %(prog)s --p 3 --bucket-size 8000
   %(prog)s --p 5 --bucket-size 10000 --bootstrap-length 5 --max-length 30
   %(prog)s --p 7 --device cuda
+  %(prog)s --p 5 --use-best 50000 --bucket-size 15000 -d cuda  # Like peyl's use-best
         """
     )
     
@@ -269,6 +273,13 @@ Examples:
         help="Max candidates to process at once in expansion step (default: 50000). Lower = less memory usage."
     )
     
+    parser.add_argument(
+        "--use-best", "-u",
+        type=int,
+        default=0,
+        help="Max braids to expand per level, prioritizing low projlen (default: 0 = no limit). Like peyl's --use-best."
+    )
+    
     return parser.parse_args()
 
 
@@ -281,5 +292,6 @@ if __name__ == "__main__":
         bootstrap_length=args.bootstrap_length,
         max_length=args.max_length,
         device=args.device,
-        chunk_size=args.chunk_size
+        chunk_size=args.chunk_size,
+        use_best=args.use_best
     )

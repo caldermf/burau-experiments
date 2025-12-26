@@ -55,6 +55,7 @@ class Config:
     checkpoint_every: int = 5      # save checkpoints every N levels
     device: str = "cuda"           # "cuda" or "cpu"
     expansion_chunk_size: int = 50000  # max candidates to process at once in expand_candidates
+    use_best: int = 0              # max braids to expand per level (0 = no limit, use all)
     
     @property
     def degree_window(self) -> int:
@@ -306,11 +307,19 @@ class BraidSearch:
         print(f"Config: bucket_size={self.config.bucket_size}, "
               f"bootstrap_length={self.config.bootstrap_length}, "
               f"max_length={self.config.max_length}, "
-              f"expansion_chunk_size={self.config.expansion_chunk_size}")
+              f"expansion_chunk_size={self.config.expansion_chunk_size}, "
+              f"use_best={self.config.use_best if self.config.use_best > 0 else 'unlimited'}")
     
-    def gather_level_braids(self) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def gather_level_braids(self, use_best: int = 0) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
-        Gather all braids from current buckets into flat tensors.
+        Gather braids from current buckets into flat tensors.
+        
+        If use_best > 0, selects up to use_best braids prioritizing lowest projlen first.
+        This implements the "use-best" strategy from peyl: expand the most promising
+        braids first (those with lowest projlen).
+        
+        Args:
+            use_best: Max braids to return (0 = no limit, return all)
         
         Returns:
             matrices: (total_braids, 3, 3, D)
@@ -318,17 +327,58 @@ class BraidSearch:
             word_lengths: (total_braids,)
             last_simples: (total_braids,) - last simple in each word (for suffix lookup)
         """
+        if not self.buckets:
+            raise RuntimeError("No braids to process!")
+        
+        # Sort buckets by projlen (ascending) to prioritize low projlen
+        sorted_projlens = sorted(self.buckets.keys())
+        
         all_matrices = []
         all_words = []
         all_lengths = []
+        total_selected = 0
+        selection_info = []  # For logging
         
-        for projlen, (matrices, words, lengths) in self.buckets.items():
-            all_matrices.append(matrices)
-            all_words.append(words)
-            all_lengths.append(lengths)
+        for projlen in sorted_projlens:
+            matrices, words, lengths = self.buckets[projlen]
+            bucket_count = len(matrices)
+            
+            if use_best > 0:
+                # Check how many more we can take
+                remaining_budget = use_best - total_selected
+                if remaining_budget <= 0:
+                    break
+                
+                if bucket_count <= remaining_budget:
+                    # Take all from this bucket
+                    all_matrices.append(matrices)
+                    all_words.append(words)
+                    all_lengths.append(lengths)
+                    total_selected += bucket_count
+                    selection_info.append((projlen, bucket_count, bucket_count))
+                else:
+                    # Take only remaining_budget from this bucket (random selection)
+                    indices = torch.randperm(bucket_count, device=self.device)[:remaining_budget]
+                    all_matrices.append(matrices[indices])
+                    all_words.append(words[indices])
+                    all_lengths.append(lengths[indices])
+                    total_selected += remaining_budget
+                    selection_info.append((projlen, remaining_budget, bucket_count))
+                    break
+            else:
+                # No limit, take all
+                all_matrices.append(matrices)
+                all_words.append(words)
+                all_lengths.append(lengths)
+                total_selected += bucket_count
+                selection_info.append((projlen, bucket_count, bucket_count))
         
-        if not all_matrices:
-            raise RuntimeError("No braids to process!")
+        # Log selection if use_best was applied
+        if use_best > 0:
+            total_available = sum(m.shape[0] for m, _, _ in self.buckets.values())
+            print(f"  use_best selection: {total_selected}/{total_available} braids")
+            print(f"    Selected by projlen: ", end="")
+            print(", ".join(f"pl={pl}:{sel}/{avail}" for pl, sel, avail in selection_info))
         
         matrices = torch.cat(all_matrices, dim=0)
         words = torch.cat(all_words, dim=0)
@@ -525,8 +575,10 @@ class BraidSearch:
         print(f"Level {level} - {mode}")
         print(f"{'='*60}")
         
-        # Gather all braids from previous level
-        matrices, words, lengths, last_simples = self.gather_level_braids()
+        # Gather braids from previous level
+        # During bootstrap, use all braids; after bootstrap, apply use_best limit
+        use_best_limit = 0 if is_bootstrap else self.config.use_best
+        matrices, words, lengths, last_simples = self.gather_level_braids(use_best=use_best_limit)
         num_starting = len(matrices)
         print(f"  Starting braids: {num_starting}")
         
