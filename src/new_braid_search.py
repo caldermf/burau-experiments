@@ -516,7 +516,7 @@ class BraidSearch:
     def process_level(self, level: int):
         """
         Process one level of the BFS: expand all braids and reservoir sample.
-        Uses fully chunked processing to avoid OOM on large expansions.
+        Uses fully chunked processing with incremental reservoir sampling to bound memory.
         """
         is_bootstrap = (level <= self.config.bootstrap_length)
         mode = "BOOTSTRAP (exhaustive)" if is_bootstrap else "SAMPLING"
@@ -558,18 +558,14 @@ class BraidSearch:
         if num_chunks > 1:
             print(f"    Processing in {num_chunks} chunks...")
         
-        # For collecting results across chunks
-        # We'll do reservoir sampling incrementally per chunk
-        # to avoid ever materializing all candidates at once
-        
         # Track projlen distribution
         projlen_counts = {}
         total_candidates = 0
         
-        # For reservoir sampling, we need to process all chunks and sample
-        # We'll accumulate into buckets, doing sampling as we go
-        accumulated_buckets: dict[int, tuple[list, list, list, list]] = {}
-        # Each bucket: (matrices_list, words_list, lengths_list, priorities_list)
+        # Incremental reservoir sampling: keep at most bucket_size per projlen
+        # Each bucket stores (matrices, words, lengths, priorities) on CPU
+        # We maintain the invariant: each bucket has at most bucket_size items (unless bootstrap)
+        accumulated_buckets: dict[int, tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]] = {}
         
         for chunk_idx in range(num_chunks):
             start = chunk_idx * chunk_size
@@ -607,21 +603,50 @@ class BraidSearch:
             # Generate priorities for this chunk (for reservoir sampling)
             chunk_priorities = torch.rand(len(chunk_matrices), device=self.device)
             
-            # Add to accumulated buckets
-            for pl in unique_pls.tolist():
-                mask = (chunk_projlens == pl)
-                if pl not in accumulated_buckets:
-                    accumulated_buckets[pl] = ([], [], [], [])
-                
-                accumulated_buckets[pl][0].append(chunk_matrices[mask].cpu())
-                accumulated_buckets[pl][1].append(chunk_words[mask].cpu())
-                accumulated_buckets[pl][2].append(chunk_lengths[mask].cpu())
-                accumulated_buckets[pl][3].append(chunk_priorities[mask].cpu())
+            # Move chunk data to CPU
+            chunk_matrices_cpu = chunk_matrices.cpu()
+            chunk_words_cpu = chunk_words.cpu()
+            chunk_lengths_cpu = chunk_lengths.cpu()
+            chunk_priorities_cpu = chunk_priorities.cpu()
+            chunk_projlens_cpu = chunk_projlens.cpu()
             
-            # Free GPU memory
+            # Free GPU memory immediately
             del chunk_matrices, chunk_words, chunk_lengths, chunk_projlens, chunk_priorities
             if self.device.type == 'cuda':
                 torch.cuda.empty_cache()
+            
+            # Incremental reservoir sampling: merge chunk into accumulated buckets
+            for pl in unique_pls.tolist():
+                mask = (chunk_projlens_cpu == pl)
+                new_mat = chunk_matrices_cpu[mask]
+                new_words = chunk_words_cpu[mask]
+                new_lengths = chunk_lengths_cpu[mask]
+                new_priorities = chunk_priorities_cpu[mask]
+                
+                if pl not in accumulated_buckets:
+                    # First time seeing this projlen
+                    accumulated_buckets[pl] = (new_mat, new_words, new_lengths, new_priorities)
+                else:
+                    # Merge with existing bucket
+                    old_mat, old_words, old_lengths, old_priorities = accumulated_buckets[pl]
+                    
+                    merged_mat = torch.cat([old_mat, new_mat], dim=0)
+                    merged_words = torch.cat([old_words, new_words], dim=0)
+                    merged_lengths = torch.cat([old_lengths, new_lengths], dim=0)
+                    merged_priorities = torch.cat([old_priorities, new_priorities], dim=0)
+                    
+                    # If not bootstrap and over bucket_size, sample down
+                    if not is_bootstrap and len(merged_mat) > self.config.bucket_size:
+                        _, topk_indices = torch.topk(merged_priorities, self.config.bucket_size, largest=False)
+                        merged_mat = merged_mat[topk_indices]
+                        merged_words = merged_words[topk_indices]
+                        merged_lengths = merged_lengths[topk_indices]
+                        merged_priorities = merged_priorities[topk_indices]
+                    
+                    accumulated_buckets[pl] = (merged_mat, merged_words, merged_lengths, merged_priorities)
+            
+            # Free chunk CPU memory
+            del chunk_matrices_cpu, chunk_words_cpu, chunk_lengths_cpu, chunk_priorities_cpu, chunk_projlens_cpu
         
         print(f"  Candidates generated: {total_candidates}")
         
@@ -630,35 +655,17 @@ class BraidSearch:
         for pl in sorted(projlen_counts.keys()):
             print(f"    projlen={pl}: {projlen_counts[pl]} braids")
         
-        # Now do final reservoir sampling from accumulated buckets
+        # Move final buckets to GPU (already sampled down)
         self.buckets = {}
-        
-        for pl, (mat_list, word_list, len_list, pri_list) in accumulated_buckets.items():
-            # Concatenate all chunks for this projlen
-            all_mat = torch.cat(mat_list, dim=0)
-            all_words = torch.cat(word_list, dim=0)
-            all_lengths = torch.cat(len_list, dim=0)
-            all_priorities = torch.cat(pri_list, dim=0)
-            
-            n_items = len(all_mat)
-            
-            if is_bootstrap or n_items <= self.config.bucket_size:
-                # Keep all
-                selected_indices = torch.arange(n_items)
-            else:
-                # Reservoir sample: keep bucket_size items with lowest priority
-                _, topk_indices = torch.topk(all_priorities, self.config.bucket_size, largest=False)
-                selected_indices = topk_indices
-            
-            # Move selected items back to GPU
+        for pl, (mat, words, lengths, _) in accumulated_buckets.items():
             self.buckets[pl] = (
-                all_mat[selected_indices].to(self.device),
-                all_words[selected_indices].to(self.device),
-                all_lengths[selected_indices].to(self.device)
+                mat.to(self.device),
+                words.to(self.device),
+                lengths.to(self.device)
             )
-            
-            # Free CPU memory
-            del all_mat, all_words, all_lengths, all_priorities
+        
+        # Free CPU memory
+        del accumulated_buckets
         
         # Report bucket sizes
         total_kept = sum(m.shape[0] for m, _, _ in self.buckets.values())
