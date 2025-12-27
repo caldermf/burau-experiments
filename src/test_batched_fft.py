@@ -184,23 +184,28 @@ def test_edge_cases():
     
     # Test 2: Identity-like (diagonal with 1s at center)
     print("  Testing identity-like matrices...")
-    A = torch.zeros(10, 3, 3, 50, dtype=torch.long, device=device)
-    B = torch.zeros(10, 3, 3, 50, dtype=torch.long, device=device)
-    center = 25
+    D = 50
+    A = torch.zeros(10, 3, 3, D, dtype=torch.long, device=device)
+    B = torch.zeros(10, 3, 3, D, dtype=torch.long, device=device)
+    center = D // 2  # 25
     for i in range(3):
         A[:, i, i, center] = 1
         B[:, i, i, center] = 1
     C_ref = poly_matmul_batch_reference(A, B, 5)
     C_fast = poly_matmul_batch_fast(A, B, 5)
     if torch.equal(C_ref, C_fast):
-        # Result should also be identity
+        # Result should be identity, but at index 2*center (convolution adds degrees)
+        # Output shape is (N, 3, 3, 2*D-1), and convolving index center with center gives 2*center
+        out_center = 2 * center
         expected = torch.zeros_like(C_ref)
         for i in range(3):
-            expected[:, i, i, center] = 1
+            expected[:, i, i, out_center] = 1
         if torch.equal(C_ref, expected):
             print("    ✓ Identity-like matrices")
         else:
             print("    ✗ Identity result wrong")
+            # Debug info
+            print(f"      Expected nonzero at index {out_center}, C_ref shape: {C_ref.shape}")
             all_passed = False
     else:
         print("    ✗ Identity-like matrices MISMATCH")
