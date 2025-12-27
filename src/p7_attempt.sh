@@ -6,9 +6,9 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16         # CPU cores for data loading/overhead
 #SBATCH --mem=32G                 # RAM (increase if you hit OOM)
-#SBATCH --time=00:10:00           # Max runtime (hh:mm:ss)
-#SBATCH --output=slurm_logs/p7_%j.out   # Saves standard output (print statements)
-#SBATCH --error=slurm_logs/p7_%j.err    # Saves errors
+#SBATCH --time=00:20:00           # Max runtime (hh:mm:ss)
+#SBATCH --output=slurm_logs/p7_dec27_%j.out   # Saves standard output (print statements)
+#SBATCH --error=slurm_logs/p7_dec27_%j.err    # Saves errors
 
 # 1. Prepare environment (FIXED)
 
@@ -28,11 +28,11 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 $PYTHON_PATH find_kernel.py \
     --p 7 \
     --bucket-size 80000 \
-    --chunk-size 90000 \
+    --chunk-size 100000 \
     --device cuda \
-    --use-best 50000 \
+    --use-best 60000 \
     --bootstrap-length 6 \
-    --max-length 150 \
+    --max-length 200 \
     --checkpoint-dir "checkpoints/h200_test_${SLURM_JOB_ID}"
 
 module --force purge
