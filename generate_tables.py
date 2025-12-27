@@ -252,13 +252,14 @@ def verify_multiplication(tables: dict, n: int, r: int, p: int):
 # Example usage
 # =========================================================================
 if __name__ == "__main__":
-    # Generate tables for B_4 with representation mod 2
+    # Generate tables for B_4 with representation mod p = prime
+    prime = 0
     tables = generate_tables(
         n=4,
         r=1,
-        p=2,
+        p=prime,
         degree_window=64,
-        output_dir="./precomputed_tables"
+        output_dir="../precomputed_tables"
     )
     
     # Print info about a few simples
@@ -266,7 +267,7 @@ if __name__ == "__main__":
     print_simple_info(tables, 1)                    # A nontrivial simple
     
     # Verify correctness
-    verify_multiplication(tables, n=4, r=1, p=3)
+    verify_multiplication(tables, n=4, r=1, p=prime)
     
     print("\n" + "="*60)
     print("DONE! Tables are ready for GPU use.")

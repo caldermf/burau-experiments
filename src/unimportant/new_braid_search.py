@@ -54,6 +54,8 @@ class Config:
     degree_multiplier: int = 4     # degree window = [-mult*max_len, mult*max_len]
     checkpoint_every: int = 5      # save checkpoints every N levels
     device: str = "cuda"           # "cuda" or "cpu"
+    expansion_chunk_size: int = 50000  # max candidates to process at once in expand_candidates
+    use_best: int = 0              # max braids to expand per level (0 = no limit, use all)
     
     @property
     def degree_window(self) -> int:
@@ -304,11 +306,20 @@ class BraidSearch:
         print(f"Degree window: [-{self.D//2}, {self.D//2}] ({self.D} coefficients)")
         print(f"Config: bucket_size={self.config.bucket_size}, "
               f"bootstrap_length={self.config.bootstrap_length}, "
-              f"max_length={self.config.max_length}")
+              f"max_length={self.config.max_length}, "
+              f"expansion_chunk_size={self.config.expansion_chunk_size}, "
+              f"use_best={self.config.use_best if self.config.use_best > 0 else 'unlimited'}")
     
-    def gather_level_braids(self) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def gather_level_braids(self, use_best: int = 0) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
-        Gather all braids from current buckets into flat tensors.
+        Gather braids from current buckets into flat tensors.
+        
+        If use_best > 0, selects up to use_best braids prioritizing lowest projlen first.
+        This implements the "use-best" strategy from peyl: expand the most promising
+        braids first (those with lowest projlen).
+        
+        Args:
+            use_best: Max braids to return (0 = no limit, return all)
         
         Returns:
             matrices: (total_braids, 3, 3, D)
@@ -316,17 +327,58 @@ class BraidSearch:
             word_lengths: (total_braids,)
             last_simples: (total_braids,) - last simple in each word (for suffix lookup)
         """
+        if not self.buckets:
+            raise RuntimeError("No braids to process!")
+        
+        # Sort buckets by projlen (ascending) to prioritize low projlen
+        sorted_projlens = sorted(self.buckets.keys())
+        
         all_matrices = []
         all_words = []
         all_lengths = []
+        total_selected = 0
+        selection_info = []  # For logging
         
-        for projlen, (matrices, words, lengths) in self.buckets.items():
-            all_matrices.append(matrices)
-            all_words.append(words)
-            all_lengths.append(lengths)
+        for projlen in sorted_projlens:
+            matrices, words, lengths = self.buckets[projlen]
+            bucket_count = len(matrices)
+            
+            if use_best > 0:
+                # Check how many more we can take
+                remaining_budget = use_best - total_selected
+                if remaining_budget <= 0:
+                    break
+                
+                if bucket_count <= remaining_budget:
+                    # Take all from this bucket
+                    all_matrices.append(matrices)
+                    all_words.append(words)
+                    all_lengths.append(lengths)
+                    total_selected += bucket_count
+                    selection_info.append((projlen, bucket_count, bucket_count))
+                else:
+                    # Take only remaining_budget from this bucket (random selection)
+                    indices = torch.randperm(bucket_count, device=self.device)[:remaining_budget]
+                    all_matrices.append(matrices[indices])
+                    all_words.append(words[indices])
+                    all_lengths.append(lengths[indices])
+                    total_selected += remaining_budget
+                    selection_info.append((projlen, remaining_budget, bucket_count))
+                    break
+            else:
+                # No limit, take all
+                all_matrices.append(matrices)
+                all_words.append(words)
+                all_lengths.append(lengths)
+                total_selected += bucket_count
+                selection_info.append((projlen, bucket_count, bucket_count))
         
-        if not all_matrices:
-            raise RuntimeError("No braids to process!")
+        # Log selection if use_best was applied
+        if use_best > 0:
+            total_available = sum(m.shape[0] for m, _, _ in self.buckets.values())
+            print(f"  use_best selection: {total_selected}/{total_available} braids")
+            print(f"    Selected by projlen: ", end="")
+            print(", ".join(f"pl={pl}:{sel}/{avail}" for pl, sel, avail in selection_info))
         
         matrices = torch.cat(all_matrices, dim=0)
         words = torch.cat(all_words, dim=0)
@@ -342,6 +394,50 @@ class BraidSearch:
         
         return matrices, words, lengths, last_simples
     
+    def expand_candidates_chunk(
+        self,
+        matrices: torch.Tensor,
+        words: torch.Tensor,
+        lengths: torch.Tensor,
+        last_simples: torch.Tensor,
+        braid_indices: torch.Tensor,
+        suffix_indices: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Expand a chunk of (braid, suffix) pairs.
+        
+        Args:
+            matrices, words, lengths, last_simples: full arrays for the level
+            braid_indices: which parent braids to expand (indices into matrices)
+            suffix_indices: which suffix to append to each
+            
+        Returns:
+            new_matrices: (chunk_size, 3, 3, 2D-1)
+            new_words: (chunk_size, max_length)
+            new_lengths: (chunk_size,)
+        """
+        device = self.device
+        num_candidates = len(braid_indices)
+        
+        # Gather matrices for multiplication
+        parent_matrices = matrices[braid_indices]          # (chunk_size, 3, 3, D)
+        suffix_matrices = self.simple_burau[suffix_indices]  # (chunk_size, 3, 3, D)
+        
+        # Batch polynomial matrix multiplication
+        new_matrices = poly_matmul_batch(parent_matrices, suffix_matrices, self.config.prime)
+        
+        # Build new words by appending suffix
+        parent_words = words[braid_indices]                # (chunk_size, max_length)
+        parent_lengths = lengths[braid_indices]            # (chunk_size,)
+        
+        new_words = parent_words.clone()
+        # Set position [length] to the new suffix
+        batch_idx = torch.arange(num_candidates, device=device)
+        new_words[batch_idx, parent_lengths] = suffix_indices
+        new_lengths = parent_lengths + 1
+        
+        return new_matrices, new_words, new_lengths
+    
     def expand_candidates(
         self,
         matrices: torch.Tensor,
@@ -352,6 +448,7 @@ class BraidSearch:
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Generate all valid (braid, suffix) pairs and compute products.
+        Uses chunked processing to avoid OOM on large bucket sizes.
         
         Returns:
             new_matrices: (num_candidates, 3, 3, D_out)
@@ -361,20 +458,21 @@ class BraidSearch:
         """
         device = self.device
         num_braids = len(matrices)
+        chunk_size = self.config.expansion_chunk_size
         
         # Build list of (braid_idx, suffix_idx) pairs
-        braid_indices = []
-        suffix_indices = []
+        braid_indices_list = []
+        suffix_indices_list = []
         
         for i in range(num_braids):
             last_simple = last_simples[i].item()
             n_suffixes = self.num_valid_suffixes[last_simple].item()
             for j in range(n_suffixes):
                 suffix = self.valid_suffixes[last_simple, j].item()
-                braid_indices.append(i)
-                suffix_indices.append(suffix)
+                braid_indices_list.append(i)
+                suffix_indices_list.append(suffix)
         
-        if not braid_indices:
+        if not braid_indices_list:
             # No valid expansions (shouldn't happen in practice)
             return (
                 torch.empty(0, 3, 3, 2*self.D-1, dtype=torch.long, device=device),
@@ -383,28 +481,51 @@ class BraidSearch:
                 torch.empty(0, dtype=torch.long, device=device)
             )
         
-        braid_indices = torch.tensor(braid_indices, dtype=torch.long, device=device)
-        suffix_indices = torch.tensor(suffix_indices, dtype=torch.long, device=device)
-        num_candidates = len(braid_indices)
+        all_braid_indices = torch.tensor(braid_indices_list, dtype=torch.long, device=device)
+        all_suffix_indices = torch.tensor(suffix_indices_list, dtype=torch.long, device=device)
+        num_candidates = len(all_braid_indices)
         
-        # Gather matrices for multiplication
-        parent_matrices = matrices[braid_indices]          # (num_candidates, 3, 3, D)
-        suffix_matrices = self.simple_burau[suffix_indices]  # (num_candidates, 3, 3, D)
+        # Process in chunks to avoid OOM
+        if num_candidates <= chunk_size:
+            # Small enough to do in one shot
+            new_matrices, new_words, new_lengths = self.expand_candidates_chunk(
+                matrices, words, lengths, last_simples,
+                all_braid_indices, all_suffix_indices
+            )
+        else:
+            # Process in chunks and accumulate
+            all_new_matrices = []
+            all_new_words = []
+            all_new_lengths = []
+            
+            num_chunks = (num_candidates + chunk_size - 1) // chunk_size
+            print(f"    Processing {num_candidates} expansions in {num_chunks} chunks...")
+            
+            for chunk_idx in range(num_chunks):
+                start = chunk_idx * chunk_size
+                end = min(start + chunk_size, num_candidates)
+                
+                chunk_braid_idx = all_braid_indices[start:end]
+                chunk_suffix_idx = all_suffix_indices[start:end]
+                
+                chunk_matrices, chunk_words, chunk_lengths = self.expand_candidates_chunk(
+                    matrices, words, lengths, last_simples,
+                    chunk_braid_idx, chunk_suffix_idx
+                )
+                
+                all_new_matrices.append(chunk_matrices)
+                all_new_words.append(chunk_words)
+                all_new_lengths.append(chunk_lengths)
+                
+                # Free memory between chunks
+                if device.type == 'cuda':
+                    torch.cuda.empty_cache()
+            
+            new_matrices = torch.cat(all_new_matrices, dim=0)
+            new_words = torch.cat(all_new_words, dim=0)
+            new_lengths = torch.cat(all_new_lengths, dim=0)
         
-        # Batch polynomial matrix multiplication
-        new_matrices = poly_matmul_batch(parent_matrices, suffix_matrices, self.config.prime)
-        
-        # Build new words by appending suffix
-        parent_words = words[braid_indices]                # (num_candidates, max_length)
-        parent_lengths = lengths[braid_indices]            # (num_candidates,)
-        
-        new_words = parent_words.clone()
-        # Set position [length] to the new suffix
-        batch_indices = torch.arange(num_candidates, device=device)
-        new_words[batch_indices, parent_lengths] = suffix_indices
-        new_lengths = parent_lengths + 1
-        
-        return new_matrices, new_words, new_lengths, suffix_indices
+        return new_matrices, new_words, new_lengths, all_suffix_indices
     
     def recenter_matrices(self, matrices: torch.Tensor) -> torch.Tensor:
         """
@@ -445,6 +566,7 @@ class BraidSearch:
     def process_level(self, level: int):
         """
         Process one level of the BFS: expand all braids and reservoir sample.
+        Uses fully chunked processing with incremental reservoir sampling to bound memory.
         """
         is_bootstrap = (level <= self.config.bootstrap_length)
         mode = "BOOTSTRAP (exhaustive)" if is_bootstrap else "SAMPLING"
@@ -453,51 +575,156 @@ class BraidSearch:
         print(f"Level {level} - {mode}")
         print(f"{'='*60}")
         
-        # Gather all braids from previous level
-        matrices, words, lengths, last_simples = self.gather_level_braids()
-        print(f"  Starting braids: {len(matrices)}")
+        # Gather braids from previous level
+        # During bootstrap, use all braids; after bootstrap, apply use_best limit
+        use_best_limit = 0 if is_bootstrap else self.config.use_best
+        matrices, words, lengths, last_simples = self.gather_level_braids(use_best=use_best_limit)
+        num_starting = len(matrices)
+        print(f"  Starting braids: {num_starting}")
         
-        # Generate all candidates
-        new_matrices, new_words, new_lengths, _ = self.expand_candidates(
-            matrices, words, lengths, last_simples, level
-        )
-        print(f"  Candidates generated: {len(new_matrices)}")
+        # Build list of all (braid_idx, suffix_idx) pairs
+        braid_indices_list = []
+        suffix_indices_list = []
         
-        if len(new_matrices) == 0:
+        for i in range(num_starting):
+            last_simple = last_simples[i].item()
+            n_suffixes = self.num_valid_suffixes[last_simple].item()
+            for j in range(n_suffixes):
+                suffix = self.valid_suffixes[last_simple, j].item()
+                braid_indices_list.append(i)
+                suffix_indices_list.append(suffix)
+        
+        num_candidates = len(braid_indices_list)
+        print(f"  Candidates to generate: {num_candidates}")
+        
+        if num_candidates == 0:
             print("  No candidates! Algorithm terminates.")
             return False
         
-        # Recenter to maintain degree window
-        new_matrices = self.recenter_matrices(new_matrices)
+        all_braid_indices = torch.tensor(braid_indices_list, dtype=torch.long, device=self.device)
+        all_suffix_indices = torch.tensor(suffix_indices_list, dtype=torch.long, device=self.device)
         
-        # Compute projlen for all candidates
-        projlens = compute_projlen_batch(new_matrices)
+        chunk_size = self.config.expansion_chunk_size
+        num_chunks = (num_candidates + chunk_size - 1) // chunk_size
         
-        # Check for projlen = 1 discoveries!
-        one_mask = (projlens == 1)
-        num_ones = one_mask.sum().item()
-        if num_ones > 0:
-            print(f"\n  🎉 FOUND {num_ones} BRAIDS WITH PROJLEN = 1 (KERNEL ELEMENTS)! 🎉")
-            self.kernel_braids.append(new_words[one_mask].cpu())
+        if num_chunks > 1:
+            print(f"    Processing in {num_chunks} chunks...")
+        
+        # Track projlen distribution
+        projlen_counts = {}
+        total_candidates = 0
+        
+        # Incremental reservoir sampling: keep at most bucket_size per projlen
+        # Each bucket stores (matrices, words, lengths, priorities) on CPU
+        # We maintain the invariant: each bucket has at most bucket_size items (unless bootstrap)
+        accumulated_buckets: dict[int, tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]] = {}
+        
+        for chunk_idx in range(num_chunks):
+            start = chunk_idx * chunk_size
+            end = min(start + chunk_size, num_candidates)
+            
+            chunk_braid_idx = all_braid_indices[start:end]
+            chunk_suffix_idx = all_suffix_indices[start:end]
+            
+            # Expand this chunk
+            chunk_matrices, chunk_words, chunk_lengths = self.expand_candidates_chunk(
+                matrices, words, lengths, last_simples,
+                chunk_braid_idx, chunk_suffix_idx
+            )
+            
+            # Recenter
+            chunk_matrices = self.recenter_matrices(chunk_matrices)
+            
+            # Compute projlen
+            chunk_projlens = compute_projlen_batch(chunk_matrices)
+            
+            # Check for kernel elements (projlen = 1)
+            one_mask = (chunk_projlens == 1)
+            num_ones = one_mask.sum().item()
+            if num_ones > 0:
+                print(f"\n  🎉 FOUND {num_ones} BRAIDS WITH PROJLEN = 1 (KERNEL ELEMENTS)! 🎉")
+                self.kernel_braids.append(chunk_words[one_mask].cpu())
+            
+            # Update projlen distribution
+            unique_pls, counts = torch.unique(chunk_projlens, return_counts=True)
+            for pl, count in zip(unique_pls.tolist(), counts.tolist()):
+                projlen_counts[pl] = projlen_counts.get(pl, 0) + count
+            
+            total_candidates += len(chunk_matrices)
+            
+            # Generate priorities for this chunk (for reservoir sampling)
+            chunk_priorities = torch.rand(len(chunk_matrices), device=self.device)
+            
+            # Move chunk data to CPU
+            chunk_matrices_cpu = chunk_matrices.cpu()
+            chunk_words_cpu = chunk_words.cpu()
+            chunk_lengths_cpu = chunk_lengths.cpu()
+            chunk_priorities_cpu = chunk_priorities.cpu()
+            chunk_projlens_cpu = chunk_projlens.cpu()
+            
+            # Free GPU memory immediately
+            del chunk_matrices, chunk_words, chunk_lengths, chunk_projlens, chunk_priorities
+            if self.device.type == 'cuda':
+                torch.cuda.empty_cache()
+            
+            # Incremental reservoir sampling: merge chunk into accumulated buckets
+            for pl in unique_pls.tolist():
+                mask = (chunk_projlens_cpu == pl)
+                new_mat = chunk_matrices_cpu[mask]
+                new_words = chunk_words_cpu[mask]
+                new_lengths = chunk_lengths_cpu[mask]
+                new_priorities = chunk_priorities_cpu[mask]
+                
+                if pl not in accumulated_buckets:
+                    # First time seeing this projlen
+                    accumulated_buckets[pl] = (new_mat, new_words, new_lengths, new_priorities)
+                else:
+                    # Merge with existing bucket
+                    old_mat, old_words, old_lengths, old_priorities = accumulated_buckets[pl]
+                    
+                    merged_mat = torch.cat([old_mat, new_mat], dim=0)
+                    merged_words = torch.cat([old_words, new_words], dim=0)
+                    merged_lengths = torch.cat([old_lengths, new_lengths], dim=0)
+                    merged_priorities = torch.cat([old_priorities, new_priorities], dim=0)
+                    
+                    # If not bootstrap and over bucket_size, sample down
+                    if not is_bootstrap and len(merged_mat) > self.config.bucket_size:
+                        _, topk_indices = torch.topk(merged_priorities, self.config.bucket_size, largest=False)
+                        merged_mat = merged_mat[topk_indices]
+                        merged_words = merged_words[topk_indices]
+                        merged_lengths = merged_lengths[topk_indices]
+                        merged_priorities = merged_priorities[topk_indices]
+                    
+                    accumulated_buckets[pl] = (merged_mat, merged_words, merged_lengths, merged_priorities)
+            
+            # Free chunk CPU memory
+            del chunk_matrices_cpu, chunk_words_cpu, chunk_lengths_cpu, chunk_priorities_cpu, chunk_projlens_cpu
+        
+        print(f"  Candidates generated: {total_candidates}")
         
         # Report projlen distribution
-        unique_projlens, counts = torch.unique(projlens, return_counts=True)
         print(f"  Projlen distribution:")
-        for pl, count in zip(unique_projlens.tolist(), counts.tolist()):
-            print(f"    projlen={pl}: {count} braids")
+        for pl in sorted(projlen_counts.keys()):
+            print(f"    projlen={pl}: {projlen_counts[pl]} braids")
         
-        # Reservoir sampling (or exhaustive if bootstrap)
-        self.buckets = reservoir_sample_gpu(
-            new_matrices, new_words, new_lengths, projlens,
-            self.config.bucket_size, is_bootstrap
-        )
+        # Move final buckets to GPU (already sampled down)
+        self.buckets = {}
+        for pl, (mat, words, lengths, _) in accumulated_buckets.items():
+            self.buckets[pl] = (
+                mat.to(self.device),
+                words.to(self.device),
+                lengths.to(self.device)
+            )
+        
+        # Free CPU memory
+        del accumulated_buckets
         
         # Report bucket sizes
         total_kept = sum(m.shape[0] for m, _, _ in self.buckets.values())
         print(f"  Braids kept: {total_kept} (in {len(self.buckets)} buckets)")
         
         # Update stats
-        self.stats["candidates_per_level"].append(len(new_matrices))
+        self.stats["candidates_per_level"].append(total_candidates)
         self.stats["buckets_per_level"].append(len(self.buckets))
         
         return True
@@ -684,7 +911,8 @@ def main():
         prime=5,
         degree_multiplier=4,
         checkpoint_every=5,
-        device="cuda" if torch.cuda.is_available() else "cpu"
+        device="cuda" if torch.cuda.is_available() else "cpu",
+        expansion_chunk_size=50000
     )
     
     print(f"Using device: {config.device}")
@@ -713,7 +941,6 @@ def main():
         print(f"\nBatch {i}: {len(words)} braids with projlen=0")
         for word in words[:5]:  # show first 5
             print(f"  Garside word: {word.tolist()}")
-
 
 if __name__ == "__main__":
     main()
