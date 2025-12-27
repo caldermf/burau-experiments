@@ -27,10 +27,10 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 # 3. Run the script
 $PYTHON_PATH find_kernel.py \
     --p 7 \
-    --bucket-size 60000 \
+    --bucket-size 50000 \
     --chunk-size 100000 \
     --device cuda \
-    --use-best 100000 \
+    --use-best 80000 \
     --bootstrap-length 6 \
     --max-length 300 \
     --checkpoint-dir "checkpoints/h200_test_${SLURM_JOB_ID}"
