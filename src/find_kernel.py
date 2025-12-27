@@ -110,7 +110,7 @@ def find_kernel(p=2, bucket_size=4000, bootstrap_length=4, max_length=None, devi
         bootstrap_length=bootstrap_length,
         prime=p,
         degree_multiplier=3,
-        checkpoint_every=max_length + 1,  # Don't checkpoint for short runs
+        checkpoint_every=max_length + 1,  # Don't checkpoint for now
         device=device,
         expansion_chunk_size=chunk_size,
         use_best=use_best
