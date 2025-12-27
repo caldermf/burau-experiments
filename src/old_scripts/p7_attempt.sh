@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=burau_h200_test
-#SBATCH --partition=gpu_h200           # Request the GPU partition
+#SBATCH --job-name=burau_h200_scavenge_test
+#SBATCH --partition=scavenge_gpu           # Request the GPU partition
 #SBATCH --gres=gpu:1              # Request 1 GPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
