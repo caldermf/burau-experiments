@@ -12,7 +12,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=128G                 # CRITICAL: Need lots of CPU RAM for checkpointing
-#SBATCH --time=01:00:00            # Scavenge allows longer times
+#SBATCH --time=12:00:00            # Scavenge allows longer times
 #SBATCH --output=slurm_logs/p7_h200_%j.out
 #SBATCH --error=slurm_logs/p7_h200_%j.err
 
@@ -43,8 +43,8 @@ $PYTHON_PATH find_kernel.py \
     --bootstrap-length 5 \
     --max-length 1600 \
     --degree-multiplier 3 \
-    --checkpoint-every 50 \
+    --checkpoint-every 400 \
     --checkpoint-dir "checkpoints/p7_h200_${SLURM_JOB_ID}" \
-    --resume-from "checkpoints/p7_h200_3754608/final_state_level_33.pt"
+    --resume-from "checkpoints/p7_h200_3754994/final_state_level_600.pt"
 
 echo "Job completed. Check for kernel elements!"
