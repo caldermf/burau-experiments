@@ -12,7 +12,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=128G                 # CRITICAL: Need lots of CPU RAM for checkpointing
-#SBATCH --time=12:00:00            # Scavenge allows longer times
+#SBATCH --time=08:00:00            # Scavenge allows longer times
 #SBATCH --output=slurm_logs/p7_h200_%j.out
 #SBATCH --error=slurm_logs/p7_h200_%j.err
 
@@ -34,17 +34,20 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 # Plus working memory for matmul: ~40GB
 # Total: ~92GB - safe margin on 140GB
 
+
+#     --resume-from "checkpoints/p7_h200_3754994/final_state_level_600.pt"
+
 $PYTHON_PATH find_kernel.py \
     --p 7 \
-    --bucket-size 28000 \
-    --chunk-size 20000 \
+    --bucket-size 15000 \
+    --chunk-size 30000 \
     --device cuda \
-    --use-best 50000 \
+    --use-best 40000 \
     --bootstrap-length 5 \
     --max-length 1600 \
     --degree-multiplier 3 \
     --checkpoint-every 300 \
     --checkpoint-dir "checkpoints/p7_h200_${SLURM_JOB_ID}" \
-    --resume-from "checkpoints/p7_h200_3754994/final_state_level_600.pt"
 
-echo "Job completed. Check for kernel elements!"
+
+echo "JOB COMPLETED!"
