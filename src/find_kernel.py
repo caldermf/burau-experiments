@@ -2,8 +2,6 @@
 """
 Find kernel elements for various primes p.
 
-v3: Uses int16/int32 memory optimization for ~4x memory savings.
-
 Usage examples:
     python find_kernel.py --p 2
     python find_kernel.py --p 5 --bucket-size 100000 --max-length 70 --device cuda

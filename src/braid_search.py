@@ -1,12 +1,5 @@
 """
 GPU-accelerated reservoir sampling for braids with low projlen.
-
-VECTORIZED VERSION v3.4 - Memory-optimized with int16/int32 storage.
-
-Key optimization: Store matrices as int16 (values are 0-6 after mod p),
-store words as int32 (indices 0-23), upcast to int32 during computation.
-
-Memory savings: ~4× reduction in bucket storage.
 """
 
 import torch
@@ -59,7 +52,6 @@ STORAGE_DTYPE_LENGTH = torch.int32   # Lengths 0-600, fits in int16 but int32 fo
 
 # Compute types (for arithmetic operations)
 COMPUTE_DTYPE_INT = torch.int32      # For matmul accumulation before mod p
-
 
 # =============================================================================
 # CORE POLYNOMIAL OPERATIONS

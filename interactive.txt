@@ -1,9 +1,0 @@
-python find_kernel.py \
-    --p 5 \
-    --bucket-size 15000 \
-    --chunk-size 100000 \
-    --device cuda \
-    --use-best 30000 \
-    --bootstrap-length 5 \
-    --max-length 70 \
-    --checkpoint-dir checkpoints
