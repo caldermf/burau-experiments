@@ -36,14 +36,14 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 $PYTHON_PATH find_kernel.py \
     --p 7 \
-    --bucket-size 40000 \
-    --chunk-size 40000 \
+    --bucket-size 28000 \
+    --chunk-size 20000 \
     --device cuda \
-    --use-best 40000 \
+    --use-best 50000 \
     --bootstrap-length 5 \
     --max-length 1600 \
     --degree-multiplier 3 \
-    --checkpoint-every 400 \
+    --checkpoint-every 300 \
     --checkpoint-dir "checkpoints/p7_h200_${SLURM_JOB_ID}" \
     --resume-from "checkpoints/p7_h200_3754994/final_state_level_600.pt"
 
