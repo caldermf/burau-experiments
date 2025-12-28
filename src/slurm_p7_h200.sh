@@ -39,6 +39,11 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 #     --resume-from "checkpoints/p7_h200_3754994/final_state_level_600.pt"
 
+$PYTHON_PATH downsample_checkpoint.py \
+    checkpoints/p7_h200_3761608/final_state_level_1600.pt \
+    checkpoints/p7_small.pt \
+    --bucket-size 10000
+
 $PYTHON_PATH find_kernel.py \
     --p 7 \
     --bucket-size 12000 \
@@ -50,7 +55,7 @@ $PYTHON_PATH find_kernel.py \
     --degree-multiplier 3 \
     --checkpoint-every 300 \
     --checkpoint-dir "checkpoints/p7_${SLURM_JOB_ID}" \
-    --resume-from "checkpoints/p7_h200_3761608/final_state_level_1600.pt"
+    --resume-from "checkpoints/p7_small.pt"
 
 
 echo "JOB COMPLETED!"
