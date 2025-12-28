@@ -4,11 +4,11 @@
 #SBATCH --gres=gpu:1              # Request 1 GPU
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8         # CPU cores for data loading/overhead
+#SBATCH --cpus-per-task=16         # CPU cores for data loading/overhead
 #SBATCH --mem=32G                 # RAM (increase if you hit OOM)
-#SBATCH --time=02:00:00           # Max runtime (hh:mm:ss)
-#SBATCH --output=slurm_logs/p7_dec27_%j.out   # Saves standard output (print statements)
-#SBATCH --error=slurm_logs/p7_dec27_%j.err    # Saves errors
+#SBATCH --time=0:06:00           # Max runtime (hh:mm:ss)
+#SBATCH --output=slurm_logs/p5_benchmark_%j.out   # Saves standard output (print statements)
+#SBATCH --error=slurm_logs/p5_benchmark_%j.err    # Saves errors
 
 # 1. Prepare environment (FIXED)
 
@@ -26,13 +26,13 @@ export PYTHONUNBUFFERED=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 # 3. Run the script
 $PYTHON_PATH find_kernel.py \
-    --p 7 \
-    --bucket-size 60000 \
-    --chunk-size 50000 \
+    --p 5 \
+    --bucket-size 15000 \
+    --chunk-size 120000 \
     --device cuda \
-    --use-best 90000 \
+    --use-best 30000 \
     --bootstrap-length 5 \
-    --max-length 600 \
+    --max-length 70 \
     --checkpoint-dir "checkpoints/h200_test_${SLURM_JOB_ID}"
 
 module --force purge
