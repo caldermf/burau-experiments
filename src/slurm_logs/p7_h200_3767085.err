@@ -2,3 +2,22 @@ The following modules were not unloaded:
   (Use "module --force purge" to unload all):
 
   1) StdEnv
+Traceback (most recent call last):
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/src/braid_search.py", line 728, in run
+    success = self.process_level(level)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/src/braid_search.py", line 683, in process_level
+    print(f"  Projlen distribution:")
+OSError: [Errno 116] Stale file handle
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/src/find_kernel.py", line 250, in <module>
+    find_kernel(
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/src/find_kernel.py", line 146, in find_kernel
+    kernel_braids = search.run(checkpoint_dir=checkpoint_dir, resume_from=resume_from)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/src/braid_search.py", line 743, in run
+    print(f"\n{'='*60}")
+OSError: [Errno 116] Stale file handle
