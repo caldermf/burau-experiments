@@ -43,7 +43,7 @@ $PYTHON_PATH find_kernel.py \
     --bootstrap-length 5 \
     --max-length 1600 \
     --degree-multiplier 3 \
-    --checkpoint-every 400 \
+    --checkpoint-every 300 \
     --checkpoint-dir "checkpoints/p7_h200_${SLURM_JOB_ID}" \
     --resume-from "checkpoints/p7_h200_3754994/final_state_level_600.pt"
 
