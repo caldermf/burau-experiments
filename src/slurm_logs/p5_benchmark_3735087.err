@@ -1,8 +1,0 @@
-The following modules were not unloaded:
-  (Use "module --force purge" to unload all):
-
-  1) StdEnv
-Traceback (most recent call last):
-  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/src/find_kernel.py", line 15, in <module>
-    import torch
-ModuleNotFoundError: No module named 'torch'
