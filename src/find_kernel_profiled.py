@@ -6,14 +6,14 @@ Usage examples:
     # Basic run
     python find_kernel.py --p 5 --bucket-size 100000 --max-length 100
     
+    # Run only 10 levels (for quick profiling tests)
+    python find_kernel.py --p 5 --bucket-size 100000 --max-length 100 --runs 10 --profile
+    
     # With memory profiling (generates .pickle for memviz + .csv for quick plots)
     python find_kernel.py --p 5 --bucket-size 100000 --max-length 100 --profile
     
     # Profile to specific directory
     python find_kernel.py --p 7 --bucket-size 200000 --profile --profile-dir /scratch/mem_profiles
-    
-    # On cluster with GPU
-    python find_kernel.py --p 5 --bucket-size 500000 --max-length 150 --device cuda --profile
 """
 
 import sys
@@ -22,7 +22,7 @@ import torch
 import time
 import os
 
-# Add paths
+# Add paths - adjust these for your setup
 sys.path.insert(0, '/Users/com36/burau-experiments')
 sys.path.insert(0, '/Users/com36/burau-experiments/src')
 
@@ -91,7 +91,8 @@ def find_kernel(
     degree_multiplier=4,
     resume_from=None,
     profile=False,
-    profile_dir="mem_profiles"
+    profile_dir="mem_profiles",
+    run_levels=0  # NEW: 0 = run to max_length, >0 = stop after this many levels
 ):
     """Search for kernel elements with optional memory profiling."""
     
@@ -107,7 +108,8 @@ def find_kernel(
         checkpoint_every=checkpoint_every,
         device=device,
         expansion_chunk_size=chunk_size,
-        use_best=use_best
+        use_best=use_best,
+        run_levels=run_levels  # NEW
     )
     
     # Build params dict for profiler
@@ -119,6 +121,7 @@ def find_kernel(
         "use_best": use_best,
         "chunk_size": chunk_size,
         "degree_multiplier": degree_multiplier,
+        "run_levels": run_levels,
     }
     
     print("="*60)
@@ -134,6 +137,8 @@ def find_kernel(
     print(f"Use best: {config.use_best if config.use_best > 0 else 'unlimited'}")
     print(f"Checkpoint every: {config.checkpoint_every} levels")
     print(f"Memory optimization: int16 matrices, int32 words")
+    if run_levels > 0:
+        print(f"Run levels: {run_levels} (early stop for profiling)")
     if profile:
         print(f"Memory profiling: ENABLED → {profile_dir}/")
     if resume_from:
@@ -250,9 +255,9 @@ Examples:
   %(prog)s --p 7 --device cuda --degree-multiplier 3
   %(prog)s --p 7 --resume-from checkpoints/final_state_level_50.pt --max-length 200
   
-Memory profiling (generates .pickle for memviz + .csv for plotting):
-  %(prog)s --p 5 --bucket-size 100000 --max-length 100 --device cuda --profile
-  %(prog)s --p 5 --bucket-size 200000 --profile --profile-dir /scratch/profiles
+Quick profiling (run only a few levels to check memory):
+  %(prog)s --p 5 --bucket-size 100000 --max-length 150 --runs 10 --device cuda --profile
+  %(prog)s --p 5 --bucket-size 200000 --max-length 150 --runs 15 --profile
         """
     )
     
@@ -266,7 +271,7 @@ Memory profiling (generates .pickle for memviz + .csv for plotting):
                         help="Length of initial exhaustive search (default: 5)")
     
     parser.add_argument("--max-length", "-m", type=int, default=None,
-                        help="Maximum braid length to search (default: 10 for p=2, 25 otherwise)")
+                        help="Maximum braid length / tensor size (default: 10 for p=2, 25 otherwise)")
     
     parser.add_argument("--device", "-d", type=str, default="cpu", choices=["cpu", "cuda"],
                         help="Device to use for computation (default: cpu)")
@@ -296,6 +301,11 @@ Memory profiling (generates .pickle for memviz + .csv for plotting):
     parser.add_argument("--profile-dir", type=str, default="mem_profiles",
                         help="Directory for memory profile outputs (default: mem_profiles)")
     
+    # NEW: run_levels for early stopping
+    parser.add_argument("--runs", type=int, default=0,
+                        help="Number of levels to run (0 = run to max_length). "
+                             "Use for quick profiling tests, e.g. --runs 10")
+    
     return parser.parse_args()
 
 
@@ -315,5 +325,6 @@ if __name__ == "__main__":
         degree_multiplier=args.degree_multiplier,
         resume_from=args.resume_from,
         profile=args.profile,
-        profile_dir=args.profile_dir
+        profile_dir=args.profile_dir,
+        run_levels=args.runs  # NEW
     )
