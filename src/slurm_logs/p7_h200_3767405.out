@@ -1,0 +1,52 @@
+============================================================
+SEARCHING FOR p=7 KERNEL ELEMENTS
+============================================================
+Device: cuda
+Bucket size: 10000
+Max length: 4000
+Bootstrap length: 5
+Prime: 7
+Degree multiplier: 3
+Degree window: 24001
+Use best: 12000
+Checkpoint every: 300 levels
+Memory optimization: int16 matrices, int32 words
+Resuming from: checkpoints/p7_small.pt
+
+Loaded tables from /nfs/roberts/project/pi_com36/com36/burau-experiments/precomputed_tables/tables_B4_r1_p7.pt
+  Re-centered: degree_window=24001
+  Storage dtype: torch.int16
+  Identity suffixes fixed: 22 valid
+✓ Identity matrix verified
+
+Loading checkpoint from checkpoints/p7_small.pt...
+  Resizing tensors:
+    Matrices: D=9601 → D=24001
+    Words: length=1600 → length=4000
+  Loaded level 1600
+  Buckets: 12 projlen values, 57722 total braids
+  Bucket memory: 25.86 GB
+  Kernel elements found so far: 0
+  Resuming from level 1601
+
+============================================================
+Level 1601 - SAMPLING
+============================================================
+  Starting braids: 12000
+  Candidates to generate: 67734 (index build: 0.105s)
+  Processing in 10 chunks...
+
+============================================================
+SEARCH STOPPED
+============================================================
+Final level: 1600
+Total time: 0.52s
+Avg time per level: 0.52s
+Total matmul time: 13681.25s
+Total sampling time: 1215.73s
+Total kernel elements (projlen=1) found: 0
+  Saving checkpoint to checkpoints/p7_3767405/final_state_level_1600.pt...
+  Checkpoint saved: checkpoints/p7_3767405/final_state_level_1600.pt
+
+Final state saved to checkpoints/p7_3767405/final_state_level_1600.pt
+To resume: use --resume-from checkpoints/p7_3767405/final_state_level_1600.pt

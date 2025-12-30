@@ -1,0 +1,23 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) StdEnv
+Traceback (most recent call last):
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/src/find_kernel.py", line 250, in <module>
+    find_kernel(
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/src/find_kernel.py", line 146, in find_kernel
+    kernel_braids = search.run(checkpoint_dir=checkpoint_dir, resume_from=resume_from)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/src/braid_search.py", line 728, in run
+    success = self.process_level(level)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/src/braid_search.py", line 648, in process_level
+    chunk_matrices, chunk_words, chunk_lengths = self.expand_and_multiply_chunk(
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/src/braid_search.py", line 564, in expand_and_multiply_chunk
+    new_matrices = poly_matmul_batch(parent_matrices, suffix_matrices, self.config.prime)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/src/braid_search.py", line 109, in poly_matmul_batch
+    C = torch.zeros(N, 3, 3, out_D, dtype=COMPUTE_DTYPE_INT, device=device)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 10.73 GiB. GPU 0 has a total capacity of 44.40 GiB of which 5.68 GiB is free. Including non-PyTorch memory, this process has 38.71 GiB memory in use. Of the allocated memory 38.18 GiB is allocated by PyTorch, and 46.58 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

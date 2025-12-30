@@ -4,8 +4,10 @@ Find kernel elements for various primes p.
 
 Usage examples:
     python find_kernel.py --p 2
+    python beta.py --p 5 --bucket-size 15000 --use-best 30000 --device cuda --chunk-size 50000 --max_length 160
+    python find_kernel.py --p 5 --bucket-size 15000 --use-best 30000 --max-length 500 --chunk-size 10000 --device cuda
     python find_kernel.py --p 5 --bucket-size 100000 --max-length 70 --device cuda
-    python find_kernel.py --p 7 --max-length 150 --bucket-size 100000 --use-best 100000 --chunk-size 50000 --device cuda
+    python find_kernel.py --p 7 --resume-from checkpoints/final_state_level_50.pt --max-length 200
 """
 
 import sys
@@ -16,7 +18,7 @@ import torch
 sys.path.insert(0, '/Users/com36/burau-experiments')
 sys.path.insert(0, '/Users/com36/burau-experiments/src')
 
-from braid_search import Config, BraidSearch, load_tables_from_file
+from braid_search_beta import Config, BraidSearch, load_tables_from_file
 
 # For verification
 from peyl.braid import GNF, PermTable, BraidGroup
@@ -212,8 +214,8 @@ Examples:
     parser.add_argument("--bucket-size", "-b", type=int, default=4000,
                         help="Number of braids to keep per projlen bucket (default: 4000)")
     
-    parser.add_argument("--bootstrap-length", "-l", type=int, default=5,
-                        help="Length of initial exhaustive search (default: 5)")
+    parser.add_argument("--bootstrap-length", "-l", type=int, default=4,
+                        help="Length of initial exhaustive search (default: 4)")
     
     parser.add_argument("--max-length", "-m", type=int, default=None,
                         help="Maximum braid length to search (default: 10 for p=2, 25 otherwise)")

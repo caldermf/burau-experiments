@@ -1,0 +1,25 @@
+============================================================
+SEARCHING FOR p=7 KERNEL ELEMENTS
+============================================================
+Device: cuda
+Bucket size: 12000
+Max length: 4000
+Bootstrap length: 5
+Prime: 7
+Degree multiplier: 3
+Degree window: 24001
+Use best: 30000
+Checkpoint every: 300 levels
+Memory optimization: int16 matrices, int32 words
+Resuming from: checkpoints/p7_h200_3761608/final_state_level_1600.pt
+
+Loaded tables from /nfs/roberts/project/pi_com36/com36/burau-experiments/precomputed_tables/tables_B4_r1_p7.pt
+  Re-centered: degree_window=24001
+  Storage dtype: torch.int16
+  Identity suffixes fixed: 22 valid
+✓ Identity matrix verified
+
+Loading checkpoint from checkpoints/p7_h200_3761608/final_state_level_1600.pt...
+  Resizing tensors:
+    Matrices: D=9601 → D=24001
+    Words: length=1600 → length=4000

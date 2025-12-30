@@ -1,0 +1,113 @@
+============================================================
+SEARCHING FOR p=7 KERNEL ELEMENTS
+============================================================
+Device: cuda
+Bucket size: 10000
+Max length: 1600
+Bootstrap length: 5
+Prime: 7
+Degree multiplier: 2
+Degree window: 6401
+Use best: 20000
+Checkpoint every: 300 levels
+Memory optimization: int16 matrices, int32 words
+
+Loaded tables from /nfs/roberts/project/pi_com36/com36/burau-experiments/precomputed_tables/tables_B4_r1_p7.pt
+  Re-centered: degree_window=6401
+  Storage dtype: torch.int16
+  Identity suffixes fixed: 22 valid
+✓ Identity matrix verified
+
+Initialized with identity braid
+Degree window: [-3200, 3200] (6401 coefficients)
+Storage types: matrix=torch.int16, word=torch.int32
+Config: bucket_size=10000, bootstrap=5, max_length=1600, chunk_size=25000, use_best=20000
+
+============================================================
+Level 1 - BOOTSTRAP
+============================================================
+  Starting braids: 1
+  Candidates to generate: 22 (index build: 0.078s)
+  Projlen distribution:
+    projlen=3: 10 braids
+    projlen=4: 12 braids
+  Braids kept: 22 (in 2 buckets, 0.00 GB)
+  Timing: matmul=0.38s, sampling=0.01s, total=0.72s
+
+============================================================
+Level 2 - BOOTSTRAP
+============================================================
+  Starting braids: 22
+  Candidates to generate: 164 (index build: 0.000s)
+  Projlen distribution:
+    projlen=5: 56 braids
+    projlen=6: 76 braids
+    projlen=7: 32 braids
+  Braids kept: 164 (in 3 buckets, 0.02 GB)
+  Timing: matmul=0.01s, sampling=0.00s, total=0.13s
+
+============================================================
+Level 3 - BOOTSTRAP
+============================================================
+  Starting braids: 164
+  Candidates to generate: 982 (index build: 0.000s)
+  Projlen distribution:
+    projlen=7: 270 braids
+    projlen=8: 364 braids
+    projlen=9: 288 braids
+    projlen=10: 60 braids
+  Braids kept: 982 (in 4 buckets, 0.12 GB)
+  Timing: matmul=0.07s, sampling=0.00s, total=0.20s
+
+============================================================
+Level 4 - BOOTSTRAP
+============================================================
+  Starting braids: 982
+  Candidates to generate: 5528 (index build: 0.001s)
+  Projlen distribution:
+    projlen=9: 1256 braids
+    projlen=10: 1672 braids
+    projlen=11: 1784 braids
+    projlen=12: 700 braids
+    projlen=13: 116 braids
+  Braids kept: 5528 (in 5 buckets, 0.67 GB)
+  Timing: matmul=0.49s, sampling=0.01s, total=0.78s
+
+============================================================
+Level 5 - BOOTSTRAP
+============================================================
+  Starting braids: 5528
+  Candidates to generate: 30478 (index build: 0.003s)
+  Processing in 2 chunks...
+  Projlen distribution:
+    projlen=10: 4 braids
+    projlen=11: 5798 braids
+    projlen=12: 7672 braids
+    projlen=13: 9864 braids
+    projlen=14: 5236 braids
+    projlen=15: 1716 braids
+    projlen=16: 188 braids
+  Braids kept: 30478 (in 7 buckets, 3.71 GB)
+  Timing: matmul=2.68s, sampling=0.04s, total=3.89s
+
+============================================================
+Level 6 - SAMPLING
+============================================================
+  Starting braids: 20000
+  Candidates to generate: 111256 (index build: 0.011s)
+  Processing in 5 chunks...
+
+============================================================
+SEARCH STOPPED
+============================================================
+Final level: 5
+Total time: 9.15s
+Avg time per level: 1.83s
+Total matmul time: 3.62s
+Total sampling time: 0.06s
+Total kernel elements (projlen=1) found: 0
+  Saving checkpoint to checkpoints/p7_a100_fresh_3767489/final_state_level_5.pt...
+  Checkpoint saved: checkpoints/p7_a100_fresh_3767489/final_state_level_5.pt
+
+Final state saved to checkpoints/p7_a100_fresh_3767489/final_state_level_5.pt
+To resume: use --resume-from checkpoints/p7_a100_fresh_3767489/final_state_level_5.pt
