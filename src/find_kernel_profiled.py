@@ -26,7 +26,7 @@ import os
 sys.path.insert(0, '/Users/com36/burau-experiments')
 sys.path.insert(0, '/Users/com36/burau-experiments/src')
 
-from braid_search import Config, BraidSearch, load_tables_from_file
+from braid_search_beta import Config, BraidSearch, load_tables_from_file
 
 # For verification
 from peyl.braid import GNF, PermTable, BraidGroup
