@@ -81,36 +81,62 @@ def poly_multiply_batch(a: torch.Tensor, b: torch.Tensor, p: int) -> torch.Tenso
     return c[:, :2*D-1]
 
 
-def poly_matmul_batch(A: torch.Tensor, B: torch.Tensor, p: int) -> torch.Tensor:
+def poly_matmul_batch(A: torch.Tensor, B: torch.Tensor, p: int, sub_batch_size: int = 4096) -> torch.Tensor:
     """
-    Batch 3x3 matrix multiplication over polynomial ring.
+    Computes A @ B for matrices of polynomials using FFT with TILING.
     
-    Input: int16 or int32 tensors (will be converted to int32 for computation)
-    Output: int32 tensor
+    Prevents OOM by processing the large batch N in smaller chunks (sub_batch_size).
     """
     N, _, _, D = A.shape
-    out_D = 2 * D - 1
     device = A.device
     
-    # Ensure inputs are int32 for accumulation
-    if A.dtype != COMPUTE_DTYPE_INT:
-        A = A.to(COMPUTE_DTYPE_INT)
-    if B.dtype != COMPUTE_DTYPE_INT:
-        B = B.to(COMPUTE_DTYPE_INT)
+    # 1. Determine Output Shape and Allocate Memory
+    out_D = 2 * D - 1
+    # Pre-allocate output to avoid memory spikes from concatenation
+    # We use int32 for the stored result to save space
+    C_final = torch.empty((N, 3, 3, out_D), dtype=torch.int32, device=device)
     
-    # Accumulator in int32
-    C = torch.zeros(N, 3, 3, out_D, dtype=COMPUTE_DTYPE_INT, device=device)
+    # 2. Calculate FFT Parameters
+    fft_size = 1 << (out_D).bit_length()
     
-    for i in range(3):
-        for j in range(3):
-            for k in range(3):
-                a_ik = A[:, i, k, :]
-                b_kj = B[:, k, j, :]
-                conv = poly_multiply_batch(a_ik, b_kj, p)
-                # Accumulate and mod p to keep values small
-                C[:, i, j, :] = (C[:, i, j, :] + conv) % p
-    
-    return C
+    # 3. Tiled Processing
+    # We iterate over the batch dimension N in safe chunks
+    for start in range(0, N, sub_batch_size):
+        end = min(start + sub_batch_size, N)
+        
+        # a. Slice the input batches (Views, no copy)
+        # Cast to float32 here to save memory in the main 'A' tensor storage
+        a_chunk = A[start:end].float()
+        b_chunk = B[start:end].float()
+        
+        # b. FFT (Result is Complex64)
+        # Shape: (sub_batch, 3, 3, fft_size)
+        a_fft = torch.fft.rfft(a_chunk, n=fft_size, dim=-1)
+        b_fft = torch.fft.rfft(b_chunk, n=fft_size, dim=-1)
+        
+        # c. Matrix Multiply in Frequency Domain
+        # Permute to (sub_batch, F, 3, 3) for efficient matmul
+        a_fft = a_fft.permute(0, 3, 1, 2)
+        b_fft = b_fft.permute(0, 3, 1, 2)
+        
+        c_fft = torch.matmul(a_fft, b_fft)
+        
+        # d. Inverse FFT
+        c_fft = c_fft.permute(0, 2, 3, 1) # Back to (sub_batch, 3, 3, F)
+        c_chunk = torch.fft.irfft(c_fft, n=fft_size, dim=-1)
+        
+        # e. Post-process and Store
+        # Trim padding, round, mod p, and cast to int32
+        c_chunk = c_chunk[..., :out_D]
+        c_chunk = torch.round(c_chunk).to(torch.int32) % p
+        
+        # Store result in pre-allocated tensor
+        C_final[start:end] = c_chunk
+        
+        # Explicitly delete intermediates to ensure memory is freed before next loop
+        del a_chunk, b_chunk, a_fft, b_fft, c_fft, c_chunk
+
+    return C_final
 
 
 def compute_projlen_batch(matrices: torch.Tensor) -> torch.Tensor:
