@@ -68,20 +68,19 @@ def get_fft_tier(level: int, degree_multiplier: int = 4) -> tuple[int, int, int]
     Returns: (D, fft_size, tier_max_level)
     
     The idea: at level L, max degree span is ~2*L. We add margin and round up.
-    """
-    # Degree span at level L is at most 2*L (each simple adds at most 2)
-    # We use degree_multiplier as safety margin
     
-    # Define tiers with their FFT sizes (powers of 2 for efficiency)
-    # (max_level_for_tier, D, fft_size)
+    IMPORTANT: fft_size must be >= 2*D - 1 for correct convolution!
+    """
+    # Define tiers: (max_level_for_tier, D, fft_size)
+    # fft_size must be >= 2*D - 1, so for D=65, need fft_size >= 129 -> 256
     tiers = [
-        (15, 65, 128),      # Levels 1-15: tiny FFT
-        (30, 129, 256),     # Levels 16-30: small FFT  
-        (50, 257, 512),     # Levels 31-50: medium FFT
-        (80, 513, 1024),    # Levels 51-80: large FFT
-        (120, 1025, 2048),  # Levels 81-120: very large FFT
-        (200, 2049, 4096),  # Levels 121-200: huge FFT
-        (400, 4097, 8192),  # Levels 201-400: massive FFT
+        (15, 33, 128),       # Levels 1-15: D=33, out_D=65, fft=128 ✓
+        (30, 65, 256),       # Levels 16-30: D=65, out_D=129, fft=256 ✓
+        (50, 129, 512),      # Levels 31-50: D=129, out_D=257, fft=512 ✓
+        (80, 257, 1024),     # Levels 51-80: D=257, out_D=513, fft=1024 ✓
+        (120, 513, 2048),    # Levels 81-120: D=513, out_D=1025, fft=2048 ✓
+        (200, 1025, 4096),   # Levels 121-200: D=1025, out_D=2049, fft=4096 ✓
+        (400, 2049, 8192),   # Levels 201-400: D=2049, out_D=4097, fft=8192 ✓
     ]
     
     for max_level, D, fft_size in tiers:
@@ -89,7 +88,7 @@ def get_fft_tier(level: int, degree_multiplier: int = 4) -> tuple[int, int, int]
             return D, fft_size, max_level
     
     # Beyond all tiers
-    return 4097, 8192, 9999
+    return 2049, 8192, 9999
 
 
 class AdaptiveFFTManager:
@@ -217,6 +216,10 @@ class AdaptiveFFTManager:
         fft_size = self.current_fft_size
         out_D = 2 * D - 1
         
+        # The irfft output size is fft_size, but we only need out_D coefficients
+        # Make sure fft_size >= out_D (it should be by construction)
+        assert fft_size >= out_D, f"fft_size {fft_size} < out_D {out_D}"
+        
         C = torch.zeros(N, 3, 3, out_D, dtype=COMPUTE_DTYPE_INT, device=self.device)
         
         for start in range(0, N, chunk_size):
@@ -246,11 +249,11 @@ class AdaptiveFFTManager:
             
             del A_fft, B_fft
             
-            # IFFT
+            # IFFT - output has fft_size elements
             C_real = torch.fft.irfft(C_fft, n=fft_size, dim=-1)
             del C_fft
             
-            # Truncate, round, mod p
+            # Truncate to out_D, round, mod p
             C_int = torch.round(C_real[..., :out_D]).to(COMPUTE_DTYPE_INT) % self.prime
             del C_real
             
