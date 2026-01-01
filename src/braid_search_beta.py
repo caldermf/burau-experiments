@@ -1,6 +1,7 @@
 """
 GPU-accelerated reservoir sampling for braids with low projlen.
 OPTIMIZED: Tiled FFT Matrix Multiplication + Pre-computed Suffixes
+FIXED: FFT Size Calculation
 """
 
 import torch
@@ -83,8 +84,9 @@ def poly_matmul_fft_precomputed(
     # We use int32 for the stored result to save space
     C_final = torch.empty((N, 3, 3, out_D), dtype=torch.int32, device=device)
     
-    # FFT size must match the pre-computed table
-    fft_size = suffix_fft_table.shape[-1]
+    # FIX: Correctly reconstruct the original FFT size (N) from the frequency dimension (N/2 + 1)
+    stored_freq_dim = suffix_fft_table.shape[-1]
+    fft_size = (stored_freq_dim - 1) * 2
     
     # Process in safe tiles
     for start in range(0, N, sub_batch_size):
@@ -348,7 +350,7 @@ class BraidSearch:
             n=fft_size, 
             dim=-1
         )
-        print(f"  FFT Size: {fft_size}")
+        print(f"  FFT Size: {fft_size} (freq dim: {self.suffix_fft_table.shape[-1]})")
         print(f"  Table Memory: {self.suffix_fft_table.numel() * 8 / 1e6:.1f} MB")
     
     def initialize(self):
@@ -382,9 +384,7 @@ class BraidSearch:
                 else:
                     self.kernel_braids.append(w.to(self.device))
         
-        # Simplified loading - assumes dimensions match.
-        # Use find_kernel logic if complex resizing is needed, or the original code.
-        # Here we assume compatibility for the optimized run.
+        # Assume compatibility for optimized run
         self.buckets = {}
         for pl, bucket_data in checkpoint['buckets'].items():
             pl = int(pl)
