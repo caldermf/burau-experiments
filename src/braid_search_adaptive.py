@@ -71,19 +71,23 @@ def get_fft_tier(level: int, degree_multiplier: int = 4) -> tuple[int, int, int]
     So we need D >= 2 * degree_multiplier * L + 1 = 8*L + 1 (for degree_multiplier=4)
     
     Also: fft_size must be >= 2*D - 1 for correct convolution!
-    """
-    # For degree_multiplier=4, at level L we need D >= 8*L + 1
-    # D must satisfy: D >= 8 * max_level + 1
-    # fft_size must satisfy: fft_size >= 2 * D - 1
     
+    Tier boundaries: D covers up to level (D-1)/8
+    - D=65 covers up to level 8 (65 >= 8*8+1=65)
+    - D=129 covers up to level 16 (129 >= 8*16+1=129)
+    - D=257 covers up to level 32 (257 >= 8*32+1=257)
+    - D=513 covers up to level 64 (513 >= 8*64+1=513)
+    - D=1025 covers up to level 128 (1025 >= 8*128+1=1025)
+    - D=2049 covers up to level 256 (2049 >= 8*256+1=2049)
+    """
     tiers = [
         # (max_level, D, fft_size)
-        (7, 65, 256),        # L=7: need D>=57, use 65, out_D=129, fft=256 ✓
-        (15, 129, 512),      # L=15: need D>=121, use 129, out_D=257, fft=512 ✓
-        (31, 257, 1024),     # L=31: need D>=249, use 257, out_D=513, fft=1024 ✓
-        (63, 513, 2048),     # L=63: need D>=505, use 513, out_D=1025, fft=2048 ✓
-        (127, 1025, 4096),   # L=127: need D>=1017, use 1025, out_D=2049, fft=4096 ✓
-        (255, 2049, 8192),   # L=255: need D>=2041, use 2049, out_D=4097, fft=8192 ✓
+        (8, 65, 256),        # D=65 >= 8*8+1=65, out_D=129, fft=256 ✓
+        (16, 129, 512),      # D=129 >= 8*16+1=129, out_D=257, fft=512 ✓
+        (32, 257, 1024),     # D=257 >= 8*32+1=257, out_D=513, fft=1024 ✓
+        (64, 513, 2048),     # D=513 >= 8*64+1=513, out_D=1025, fft=2048 ✓
+        (128, 1025, 4096),   # D=1025 >= 8*128+1=1025, out_D=2049, fft=4096 ✓
+        (256, 2049, 8192),   # D=2049 >= 8*256+1=2049, out_D=4097, fft=8192 ✓
     ]
     
     for max_level, D, fft_size in tiers:
@@ -170,21 +174,34 @@ class AdaptiveFFTManager:
         simple_fft, _ = self.tier_cache[self.current_fft_size]
         return simple_fft[suffix_indices]
     
-    def compact_matrices(self, matrices: torch.Tensor, from_D: int) -> torch.Tensor:
+    def compact_matrices(self, matrices: torch.Tensor, to_D: int) -> torch.Tensor:
         """
-        Extract the central from_D coefficients from full-size matrices.
+        Extract or expand matrices to working size to_D.
+        
+        If to_D < stored_D: extract central to_D coefficients
+        If to_D > stored_D: zero-pad to to_D coefficients
+        If to_D == stored_D: return as-is
         """
-        if matrices.shape[-1] == from_D:
+        stored_D = matrices.shape[-1]
+        
+        if stored_D == to_D:
             return matrices
         
-        full_D = matrices.shape[-1]
-        full_center = full_D // 2
-        half_D = from_D // 2
+        stored_center = stored_D // 2
+        to_center = to_D // 2
         
-        start = full_center - half_D
-        end = start + from_D
-        
-        return matrices[..., start:end]
+        if to_D < stored_D:
+            # Extract central to_D coefficients
+            start = stored_center - to_center
+            end = start + to_D
+            return matrices[..., start:end]
+        else:
+            # Expand: zero-pad to to_D coefficients
+            N = matrices.shape[0]
+            result = torch.zeros(N, 3, 3, to_D, dtype=matrices.dtype, device=matrices.device)
+            offset = to_center - stored_center
+            result[..., offset:offset + stored_D] = matrices
+            return result
     
     def expand_matrices(self, matrices: torch.Tensor, to_D: int) -> torch.Tensor:
         """
