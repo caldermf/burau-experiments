@@ -67,27 +67,30 @@ def get_fft_tier(level: int, degree_multiplier: int = 4) -> tuple[int, int, int]
     
     Returns: (D, fft_size, tier_max_level)
     
-    The idea: at level L, max degree span is ~2*L. We add margin and round up.
+    CRITICAL: At level L, max degree span = 2 * degree_multiplier * L
+    So we need D >= 2 * degree_multiplier * L + 1 = 8*L + 1 (for degree_multiplier=4)
     
-    IMPORTANT: fft_size must be >= 2*D - 1 for correct convolution!
+    Also: fft_size must be >= 2*D - 1 for correct convolution!
     """
-    # Define tiers: (max_level_for_tier, D, fft_size)
-    # fft_size must be >= 2*D - 1, so for D=65, need fft_size >= 129 -> 256
+    # For degree_multiplier=4, at level L we need D >= 8*L + 1
+    # D must satisfy: D >= 8 * max_level + 1
+    # fft_size must satisfy: fft_size >= 2 * D - 1
+    
     tiers = [
-        (15, 33, 128),       # Levels 1-15: D=33, out_D=65, fft=128 ✓
-        (30, 65, 256),       # Levels 16-30: D=65, out_D=129, fft=256 ✓
-        (50, 129, 512),      # Levels 31-50: D=129, out_D=257, fft=512 ✓
-        (80, 257, 1024),     # Levels 51-80: D=257, out_D=513, fft=1024 ✓
-        (120, 513, 2048),    # Levels 81-120: D=513, out_D=1025, fft=2048 ✓
-        (200, 1025, 4096),   # Levels 121-200: D=1025, out_D=2049, fft=4096 ✓
-        (400, 2049, 8192),   # Levels 201-400: D=2049, out_D=4097, fft=8192 ✓
+        # (max_level, D, fft_size)
+        (7, 65, 256),        # L=7: need D>=57, use 65, out_D=129, fft=256 ✓
+        (15, 129, 512),      # L=15: need D>=121, use 129, out_D=257, fft=512 ✓
+        (31, 257, 1024),     # L=31: need D>=249, use 257, out_D=513, fft=1024 ✓
+        (63, 513, 2048),     # L=63: need D>=505, use 513, out_D=1025, fft=2048 ✓
+        (127, 1025, 4096),   # L=127: need D>=1017, use 1025, out_D=2049, fft=4096 ✓
+        (255, 2049, 8192),   # L=255: need D>=2041, use 2049, out_D=4097, fft=8192 ✓
     ]
     
     for max_level, D, fft_size in tiers:
         if level <= max_level:
             return D, fft_size, max_level
     
-    # Beyond all tiers
+    # Beyond all tiers - use largest
     return 2049, 8192, 9999
 
 
