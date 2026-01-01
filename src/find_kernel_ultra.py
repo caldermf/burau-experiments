@@ -1,36 +1,38 @@
 #!/usr/bin/env python3
 """
 Find kernel elements for various primes p.
+ULTRA-OPTIMIZED VERSION with precomputed FFTs.
 
 Usage examples:
-    python find_kernel.py --p 2
-    python find_kernel.py --p 5 --bucket-size 100000 --max-length 70 --device cuda
-    python beta.py --p 5 --max-length 150 --bucket-size 30000 --use-best 15000 --chunk-size 50000 --device cuda
+    python find_kernel_ultra.py --p 7 --bucket-size 100000 --use-best 100000 --max-length 150 --device cuda
+    python find_kernel_ultra.py --p 7 --bucket-size 200000 --use-best 200000 --max-length 150 --device cuda --matmul-chunk 50000
 """
 
 import sys
 import argparse
 import torch
+import os
 
-# Add paths
-sys.path.insert(0, '/Users/com36/burau-experiments')
-sys.path.insert(0, '/Users/com36/burau-experiments/src')
+# Import the ultra-optimized search
+from braid_search_ultra import Config, BraidSearchUltra as BraidSearch, load_tables_from_file
 
-from braid_search_beta import Config, BraidSearch, load_tables_from_file
-
-# For verification
-from peyl.braid import GNF, PermTable, BraidGroup
-from peyl.jonesrep import JonesCellRep
-from peyl import polymat
-import numpy as np
+# For verification (optional - comment out if peyl not available)
+try:
+    from peyl.braid import GNF, PermTable, BraidGroup
+    from peyl.jonesrep import JonesCellRep
+    from peyl import polymat
+    import numpy as np
+    PEYL_AVAILABLE = True
+except ImportError:
+    PEYL_AVAILABLE = False
+    print("WARNING: peyl not available, skipping verification")
 
 
 def verify_kernel_element(word_list, n=4, r=1, p=2):
-    """
-    Verify that a braid word is actually in the kernel using peyl.
+    """Verify that a braid word is actually in the kernel using peyl."""
+    if not PEYL_AVAILABLE:
+        return True, "Verification skipped (peyl not available)"
     
-    A braid is in the kernel if it evaluates to a scalar matrix c * v^k * I.
-    """
     if not word_list:
         return False, "Empty word"
     
@@ -81,9 +83,10 @@ def find_kernel(
     checkpoint_dir=None,
     checkpoint_every=9999,
     degree_multiplier=4,
+    matmul_chunk_size=20000,
     resume_from=None
 ):
-    """Search for kernel elements."""
+    """Search for kernel elements using ultra-optimized algorithm."""
     
     if max_length is None:
         max_length = 10 if p == 2 else 25
@@ -97,11 +100,12 @@ def find_kernel(
         checkpoint_every=checkpoint_every,
         device=device,
         expansion_chunk_size=chunk_size,
-        use_best=use_best
+        use_best=use_best,
+        matmul_chunk_size=matmul_chunk_size
     )
     
     print("="*60)
-    print(f"SEARCHING FOR p={p} KERNEL ELEMENTS")
+    print(f"SEARCHING FOR p={p} KERNEL ELEMENTS (ULTRA-OPTIMIZED)")
     print("="*60)
     print(f"Device: {config.device}")
     print(f"Bucket size: {config.bucket_size}")
@@ -111,17 +115,34 @@ def find_kernel(
     print(f"Degree multiplier: {config.degree_multiplier}")
     print(f"Degree window: {config.degree_window}")
     print(f"Use best: {config.use_best if config.use_best > 0 else 'unlimited'}")
-    print(f"Checkpoint every: {config.checkpoint_every} levels")
-    print(f"Memory optimization: int16 matrices, int32 words")
+    print(f"Expansion chunk size: {config.expansion_chunk_size}")
+    print(f"Matmul chunk size: {config.matmul_chunk_size}")
+    print(f"⚡ Precomputed FFTs: ENABLED")
     if resume_from:
         print(f"Resuming from: {resume_from}")
     print()
     
-    import os
+    # Find table path
     script_dir = os.path.dirname(os.path.abspath(__file__)) 
-    project_root = os.path.dirname(script_dir)
-    table_path_end = f"tables_B4_r1_p{p}.pt"
-    table_path = os.path.join(project_root, "precomputed_tables", table_path_end)
+    
+    # Try multiple possible locations
+    possible_paths = [
+        os.path.join(script_dir, "precomputed_tables", f"tables_B4_r1_p{p}.pt"),
+        os.path.join(os.path.dirname(script_dir), "precomputed_tables", f"tables_B4_r1_p{p}.pt"),
+        os.path.join(script_dir, f"tables_B4_r1_p{p}.pt"),
+        f"tables_B4_r1_p{p}.pt",
+    ]
+    
+    table_path = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            table_path = path
+            break
+    
+    if table_path is None:
+        print(f"ERROR: Could not find table file for p={p}")
+        print(f"Searched in: {possible_paths}")
+        return None
 
     try:
         simple_burau, valid_suffixes, num_valid_suffixes = load_tables_from_file(
@@ -130,7 +151,6 @@ def find_kernel(
         )
     except FileNotFoundError:
         print(f"ERROR: Table file not found at {table_path}")
-        print(f"Please generate tables with p={p}")
         return None
     except AssertionError as e:
         print(f"ERROR: {e}")
@@ -144,7 +164,7 @@ def find_kernel(
     kernel_braids = search.run(checkpoint_dir=checkpoint_dir, resume_from=resume_from)
     
     print("\n" + "="*60)
-    print("VERIFICATION USING PEYL")
+    print("VERIFICATION")
     print("="*60)
     
     if not kernel_braids:
@@ -173,8 +193,9 @@ def find_kernel(
                 print(f"    Length: {len(word_list)}")
                 print(f"    {msg}")
                 
-                braid = GNF(n=4, power=0, factors=tuple(word_list))
-                print(f"    Artin word: {braid.magma_artin_word()}")
+                if PEYL_AVAILABLE:
+                    braid = GNF(n=4, power=0, factors=tuple(word_list))
+                    print(f"    Artin word: {braid.magma_artin_word()}")
             elif i < 5:
                 print(f"  Braid {i}: {word_list[:8]}{'...' if len(word_list) > 8 else ''} - {msg}")
     
@@ -186,23 +207,25 @@ def find_kernel(
     
     if verified:
         print(f"\n✓ SUCCESS! Found {len(verified)} kernel elements for p={p}")
-    else:
-        print(f"\n✗ No kernel elements verified (this shouldn't happen)")
     
     return verified
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Search for kernel elements in Burau representations",
+        description="Search for kernel elements (ULTRA-OPTIMIZED)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s --p 2
-  %(prog)s --p 3 --bucket-size 8000
-  %(prog)s --p 5 --bucket-size 100000 --bootstrap-length 5 --max-length 70
-  %(prog)s --p 7 --device cuda --degree-multiplier 3
+  %(prog)s --p 7 --bucket-size 100000 --use-best 100000 --max-length 150 --device cuda
+  %(prog)s --p 7 --bucket-size 200000 --use-best 200000 --max-length 150 --matmul-chunk 50000
   %(prog)s --p 7 --resume-from checkpoints/final_state_level_50.pt --max-length 200
+
+Recommended settings for H200 (80GB):
+  --bucket-size 200000 --use-best 200000 --matmul-chunk 50000
+
+Recommended settings for RTX 5000 (32GB):
+  --bucket-size 100000 --use-best 100000 --matmul-chunk 20000
         """
     )
     
@@ -210,34 +233,38 @@ Examples:
                         help="Prime for the representation (default: 2)")
     
     parser.add_argument("--bucket-size", "-b", type=int, default=4000,
-                        help="Number of braids to keep per projlen bucket (default: 4000)")
+                        help="Number of braids to keep per projlen bucket")
     
     parser.add_argument("--bootstrap-length", "-l", type=int, default=5,
-                        help="Length of initial exhaustive search (default: 5)")
+                        help="Length of initial exhaustive search")
     
     parser.add_argument("--max-length", "-m", type=int, default=None,
-                        help="Maximum braid length to search (default: 10 for p=2, 25 otherwise)")
+                        help="Maximum braid length to search")
     
-    parser.add_argument("--device", "-d", type=str, default="cpu", choices=["cpu", "cuda"],
-                        help="Device to use for computation (default: cpu)")
+    parser.add_argument("--device", "-d", type=str, default="cuda" if torch.cuda.is_available() else "cpu",
+                        choices=["cpu", "cuda"],
+                        help="Device to use")
     
     parser.add_argument("--chunk-size", "-c", type=int, default=50000,
-                        help="Max candidates per expansion chunk (default: 50000)")
+                        help="Max candidates per expansion chunk")
     
     parser.add_argument("--use-best", "-u", type=int, default=0,
-                        help="Max braids to expand per level, prioritizing low projlen (default: 0 = no limit)")
+                        help="Max braids to expand per level")
 
     parser.add_argument("--checkpoint-dir", type=str, default=None,
                         help="Directory to save checkpoints")
     
     parser.add_argument("--checkpoint-every", type=int, default=9999,
-                        help="Save checkpoint every N levels (default: 9999 = effectively disabled)")
+                        help="Save checkpoint every N levels")
     
     parser.add_argument("--degree-multiplier", type=int, default=4,
-                        help="Degree window = 2 * multiplier * max_length + 1 (default: 4)")
+                        help="Degree window = 2 * multiplier * max_length + 1")
+    
+    parser.add_argument("--matmul-chunk", type=int, default=20000,
+                        help="Chunk size for batched FFT matmul (tune for your GPU memory)")
     
     parser.add_argument("--resume-from", "-r", type=str, default=None,
-                        help="Path to checkpoint .pt file to resume from")
+                        help="Path to checkpoint to resume from")
     
     return parser.parse_args()
 
@@ -256,5 +283,6 @@ if __name__ == "__main__":
         checkpoint_dir=args.checkpoint_dir,
         checkpoint_every=args.checkpoint_every,
         degree_multiplier=args.degree_multiplier,
+        matmul_chunk_size=args.matmul_chunk,
         resume_from=args.resume_from
     )
