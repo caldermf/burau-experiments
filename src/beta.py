@@ -1,507 +1,261 @@
+#!/usr/bin/env python3
 """
-GPU-accelerated reservoir sampling for braids with low projlen.
-OPTIMIZED: Tiled FFT Matrix Multiplication + Pre-computed Suffixes
+Find kernel elements for various primes p.
+
+Usage examples:
+    python find_kernel.py --p 2
+    python beta.py --p 5 --bucket-size 10000 --max-length 70 --device cuda --bucket-size 40000 --use-best 20000
+    python beta.py --p 7 --max-length 150 --bucket-size 50000 --use-best 20000 --chunk-size 40000 --device cuda
+    python beta.py --p 7 --max-length 150 --bucket-size 200000 --use-best 60000 --chunk-size 40000 --device cuda
 """
 
+import sys
+import argparse
 import torch
-import torch.nn.functional as F
-from dataclasses import dataclass
-from typing import Optional
-from pathlib import Path
-import os
-import time
-import gc
 
-script_dir = os.path.dirname(os.path.abspath(__file__)) 
-project_root = os.path.dirname(script_dir)
+# Add paths
+sys.path.insert(0, '/Users/com36/burau-experiments')
+sys.path.insert(0, '/Users/com36/burau-experiments/src')
 
+from braid_search_beta import Config, BraidSearch, load_tables_from_file
 
-# =============================================================================
-# CONFIGURATION
-# =============================================================================
-
-@dataclass
-class Config:
-    """Algorithm parameters."""
-    bucket_size: int = 50000
-    max_length: int = 50
-    bootstrap_length: int = 5
-    prime: int = 5
-    degree_multiplier: int = 4
-    checkpoint_every: int = 9999
-    device: str = "cuda"
-    expansion_chunk_size: int = 100000
-    use_best: int = 0
-    
-    @property
-    def degree_window(self) -> int:
-        return 2 * self.degree_multiplier * self.max_length + 1
-    
-    @property
-    def degree_offset(self) -> int:
-        return self.degree_multiplier * self.max_length
+# For verification
+from peyl.braid import GNF, PermTable, BraidGroup
+from peyl.jonesrep import JonesCellRep
+from peyl import polymat
+import numpy as np
 
 
-# =============================================================================
-# DTYPE CONFIGURATION
-# =============================================================================
-
-STORAGE_DTYPE_MATRIX = torch.int16   # Values 0-6
-STORAGE_DTYPE_WORD = torch.int32     # Indices 0-23
-STORAGE_DTYPE_LENGTH = torch.int32   # Lengths 0-600
-
-# Compute types
-COMPUTE_DTYPE_INT = torch.int32      # For intermediate accumulation
-
-# =============================================================================
-# OPTIMIZED FFT POLYNOMIAL OPERATIONS
-# =============================================================================
-
-def poly_matmul_fft_precomputed(
-    A: torch.Tensor, 
-    suffix_indices: torch.Tensor, 
-    suffix_fft_table: torch.Tensor, 
-    p: int, 
-    out_D: int,
-    sub_batch_size: int = 4096
-) -> torch.Tensor:
+def verify_kernel_element(word_list, n=4, r=1, p=2):
     """
-    Computes A @ Suffixes using Tiled FFT with pre-computed suffix FFTs.
+    Verify that a braid word is actually in the kernel using peyl.
     
-    Args:
-        A: Input batch of matrices (N, 3, 3, D_in)
-        suffix_indices: Indices into the suffix table for each A (N)
-        suffix_fft_table: Pre-computed FFTs of all valid suffixes (NumSuffixes, 3, 3, F)
-        p: Prime modulus
-        out_D: Desired output degree (usually 2*D_in - 1)
-        sub_batch_size: Tile size to prevent OOM
+    A braid is in the kernel if it evaluates to a scalar matrix c * v^k * I.
     """
-    N, _, _, D = A.shape
-    device = A.device
+    if not word_list:
+        return False, "Empty word"
     
-    # Pre-allocate output
-    C_final = torch.empty((N, 3, 3, out_D), dtype=torch.int32, device=device)
+    try:
+        braid = GNF(n=n, power=0, factors=tuple(word_list))
+    except AssertionError as e:
+        return False, f"Invalid normal form: {e}"
     
-    # FFT size must match the pre-computed table
-    fft_size = suffix_fft_table.shape[-1]
+    rep = JonesCellRep(n=n, r=r, p=p)
+    result = rep.polymat_evaluate_braid(braid)
+    if p > 0:
+        result = result % p
     
-    for start in range(0, N, sub_batch_size):
-        end = min(start + sub_batch_size, N)
-        
-        # 1. Prepare Inputs
-        a_chunk = A[start:end].float()
-        indices_chunk = suffix_indices[start:end]
-        
-        # 2. FFT of A (Calculated on the fly)
-        # Shape: (sub_batch, 3, 3, F)
-        a_fft = torch.fft.rfft(a_chunk, n=fft_size, dim=-1)
-        
-        # 3. Retrieve Pre-computed FFT of Suffixes
-        # Shape: (sub_batch, 3, 3, F)
-        b_fft = suffix_fft_table[indices_chunk]
-        
-        # 4. Matrix Multiplication in Frequency Domain
-        # Permute to (sub_batch, F, 3, 3) for efficient batch matmul
-        a_fft = a_fft.permute(0, 3, 1, 2)
-        b_fft = b_fft.permute(0, 3, 1, 2)
-        
-        c_fft = torch.matmul(a_fft, b_fft)
-        
-        # 5. Inverse FFT
-        c_fft = c_fft.permute(0, 2, 3, 1) # Back to (sub_batch, 3, 3, F)
-        c_chunk = torch.fft.irfft(c_fft, n=fft_size, dim=-1)
-        
-        # 6. Post-process
-        c_chunk = c_chunk[..., :out_D]
-        c_chunk = torch.round(c_chunk).to(torch.int32) % p
-        
-        C_final[start:end] = c_chunk
-        
-        # Cleanup to ensure memory is freed
-        del a_chunk, a_fft, b_fft, c_fft, c_chunk
-
-    return C_final
+    diag_poly = result[0, 0, :]
+    
+    for i in range(3):
+        for j in range(3):
+            if i == j:
+                if not np.array_equal(result[i, j, :], diag_poly):
+                    return False, f"Diagonal mismatch at [{i},{j}]"
+            else:
+                if np.any(result[i, j, :] != 0):
+                    return False, f"Off-diagonal nonzero at [{i},{j}]"
+    
+    nonzero_degs = np.where(diag_poly != 0)[0]
+    if len(nonzero_degs) == 0:
+        return True, "Kernel element! Evaluates to 0 (trivial)"
+    
+    if len(nonzero_degs) == 1:
+        deg = nonzero_degs[0]
+        coeff = diag_poly[deg]
+        scalar_str = f"{coeff}*v^{deg}" if coeff != 1 else f"v^{deg}"
+    else:
+        terms = [f"{diag_poly[d]}*v^{d}" for d in nonzero_degs]
+        scalar_str = " + ".join(terms)
+    
+    return True, f"Kernel element! Evaluates to ({scalar_str}) * I"
 
 
-def compute_projlen_batch(matrices: torch.Tensor) -> torch.Tensor:
-    """Compute projective length for a batch of matrices."""
-    N, _, _, D = matrices.shape
-    device = matrices.device
+def find_kernel(
+    p=2, 
+    bucket_size=4000, 
+    bootstrap_length=4, 
+    max_length=None, 
+    device="cpu", 
+    chunk_size=50000, 
+    use_best=0, 
+    checkpoint_dir=None,
+    checkpoint_every=9999,
+    degree_multiplier=4,
+    resume_from=None
+):
+    """Search for kernel elements."""
     
-    projlens = torch.zeros(N, dtype=torch.int32, device=device)
+    if max_length is None:
+        max_length = 10 if p == 2 else 25
     
-    sub_batch_size = 50000
-    for start in range(0, N, sub_batch_size):
-        end = min(start + sub_batch_size, N)
-        batch = matrices[start:end]
-        batch_N = end - start
-        
-        flat = batch.reshape(batch_N, -1)
-        has_nonzero = (flat != 0).any(dim=-1)
-        
-        by_degree = batch.reshape(batch_N, 9, D)
-        degree_has_nonzero = (by_degree != 0).any(dim=1)
-        
-        min_degrees = degree_has_nonzero.int().argmax(dim=-1)
-        max_degrees = D - 1 - degree_has_nonzero.flip(dims=[-1]).int().argmax(dim=-1)
-        
-        batch_projlen = max_degrees - min_degrees + 1
-        batch_projlen = torch.where(has_nonzero, batch_projlen, torch.zeros_like(batch_projlen))
-        
-        projlens[start:end] = batch_projlen
-    
-    return projlens
-
-
-# =============================================================================
-# VECTORIZED SUFFIX EXPANSION
-# =============================================================================
-
-def build_expansion_indices_vectorized(
-    last_simples: torch.Tensor,
-    num_valid_suffixes: torch.Tensor,
-    valid_suffixes: torch.Tensor
-) -> tuple[torch.Tensor, torch.Tensor]:
-    """Build (braid_index, suffix_index) pairs."""
-    device = last_simples.device
-    N = len(last_simples)
-    last_simples = last_simples.long()
-    
-    suffix_counts = num_valid_suffixes[last_simples]
-    total_expansions = suffix_counts.sum().item()
-    
-    if total_expansions == 0:
-        return (
-            torch.empty(0, dtype=torch.long, device=device),
-            torch.empty(0, dtype=torch.long, device=device)
-        )
-    
-    braid_indices = torch.repeat_interleave(
-        torch.arange(N, device=device),
-        suffix_counts
+    config = Config(
+        bucket_size=bucket_size,
+        max_length=max_length,
+        bootstrap_length=bootstrap_length,
+        prime=p,
+        degree_multiplier=degree_multiplier,
+        checkpoint_every=checkpoint_every,
+        device=device,
+        expansion_chunk_size=chunk_size,
+        use_best=use_best
     )
     
-    cumsum = torch.cumsum(suffix_counts, dim=0)
-    starts = cumsum - suffix_counts
+    print("="*60)
+    print(f"SEARCHING FOR p={p} KERNEL ELEMENTS")
+    print("="*60)
+    print(f"Device: {config.device}")
+    print(f"Bucket size: {config.bucket_size}")
+    print(f"Max length: {config.max_length}")
+    print(f"Bootstrap length: {config.bootstrap_length}")
+    print(f"Prime: {config.prime}")
+    print(f"Degree multiplier: {config.degree_multiplier}")
+    print(f"Degree window: {config.degree_window}")
+    print(f"Use best: {config.use_best if config.use_best > 0 else 'unlimited'}")
+    print(f"Checkpoint every: {config.checkpoint_every} levels")
+    print(f"Memory optimization: int16 matrices, int32 words")
+    if resume_from:
+        print(f"Resuming from: {resume_from}")
+    print()
     
-    global_positions = torch.arange(total_expansions, device=device)
-    local_suffix_indices = global_positions - starts[braid_indices]
-    
-    last_simples_expanded = last_simples[braid_indices]
-    suffix_indices = valid_suffixes[last_simples_expanded, local_suffix_indices].long()
-    
-    return braid_indices, suffix_indices
+    import os
+    script_dir = os.path.dirname(os.path.abspath(__file__)) 
+    project_root = os.path.dirname(script_dir)
+    table_path_end = f"tables_B4_r1_p{p}.pt"
+    table_path = os.path.join(project_root, "precomputed_tables", table_path_end)
 
-
-# =============================================================================
-# GPU RESERVOIR SAMPLING
-# =============================================================================
-
-class GPUBuckets:
-    def __init__(self, bucket_size: int, device: torch.device):
-        self.bucket_size = bucket_size
-        self.device = device
-        self.data: dict[int, tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]] = {}
+    try:
+        simple_burau, valid_suffixes, num_valid_suffixes = load_tables_from_file(
+            config, 
+            table_path=table_path
+        )
+    except FileNotFoundError:
+        print(f"ERROR: Table file not found at {table_path}")
+        print(f"Please generate tables with p={p}")
+        return None
+    except AssertionError as e:
+        print(f"ERROR: {e}")
+        return None
     
-    def add_chunk(self, matrices, words, lengths, projlens, is_bootstrap):
-        if len(matrices) == 0: return
+    center = config.degree_window // 2
+    assert simple_burau[0, 0, 0, center] == 1, "Identity matrix check failed"
+    print("✓ Identity matrix verified\n")
+    
+    search = BraidSearch(simple_burau, valid_suffixes, num_valid_suffixes, config)
+    kernel_braids = search.run(checkpoint_dir=checkpoint_dir, resume_from=resume_from)
+    
+    print("\n" + "="*60)
+    print("VERIFICATION USING PEYL")
+    print("="*60)
+    
+    if not kernel_braids:
+        print("No projlen=1 braids found.")
+        return None
+    
+    verified = []
+    
+    for batch_idx, batch in enumerate(kernel_braids):
+        print(f"\nBatch {batch_idx}: {len(batch)} candidates")
         
-        matrices = matrices.to(STORAGE_DTYPE_MATRIX)
-        words = words.to(STORAGE_DTYPE_WORD)
-        lengths = lengths.to(STORAGE_DTYPE_LENGTH)
-        
-        priorities = torch.rand(len(matrices), device=self.device)
-        unique_pls = torch.unique(projlens)
-        
-        for pl in unique_pls.tolist():
-            mask = (projlens == pl)
-            new_data = (matrices[mask], words[mask], lengths[mask], priorities[mask])
+        for i, word_tensor in enumerate(batch):
+            word_list = [w.item() for w in word_tensor]
+            while word_list and word_list[-1] == 0:
+                word_list.pop()
             
-            if pl not in self.data:
-                if is_bootstrap or len(new_data[0]) <= self.bucket_size:
-                    self.data[pl] = new_data
-                else:
-                    _, idx = torch.topk(new_data[3], self.bucket_size, largest=False)
-                    self.data[pl] = tuple(x[idx] for x in new_data)
-            else:
-                old_data = self.data[pl]
-                merged = tuple(torch.cat([o, n], dim=0) for o, n in zip(old_data, new_data))
+            if not word_list:
+                continue
+            
+            is_kernel, msg = verify_kernel_element(word_list, p=p)
+            
+            if is_kernel:
+                verified.append(word_list)
+                print(f"\n  🎉 KERNEL ELEMENT #{len(verified)} 🎉")
+                print(f"    Factors: {word_list}")
+                print(f"    Length: {len(word_list)}")
+                print(f"    {msg}")
                 
-                if is_bootstrap or len(merged[0]) <= self.bucket_size:
-                    self.data[pl] = merged
-                else:
-                    _, idx = torch.topk(merged[3], self.bucket_size, largest=False)
-                    self.data[pl] = tuple(x[idx] for x in merged)
-
-    def get_buckets(self):
-        return {pl: (m, w, l) for pl, (m, w, l, _) in self.data.items()}
-
-
-# =============================================================================
-# MAIN ALGORITHM
-# =============================================================================
-
-class BraidSearch:
-    def __init__(
-        self,
-        simple_burau: torch.Tensor,
-        valid_suffixes: torch.Tensor,
-        num_valid_suffixes: torch.Tensor,
-        config: Config
-    ):
-        self.config = config
-        self.device = torch.device(config.device)
-        
-        self.simple_burau = simple_burau.to(STORAGE_DTYPE_MATRIX).to(self.device)
-        self.valid_suffixes = valid_suffixes.to(self.device)
-        self.num_valid_suffixes = num_valid_suffixes.to(self.device)
-        
-        self.D = simple_burau.shape[-1]
-        self.buckets = {}
-        self.kernel_braids = []
-        self.stats = {"candidates_per_level": [], "buckets_per_level": [], "time_per_level": [], "time_matmul": [], "time_sampling": []}
-        self.start_level = 1
-        
-        # --- PRE-COMPUTE SUFFIX FFTS ---
-        self._precompute_suffix_fft()
-        
-    def _precompute_suffix_fft(self):
-        """Pre-compute FFTs for all simple generators to speed up matmul."""
-        print("Pre-computing suffix FFTs table...")
-        
-        # 1. Determine sizes
-        out_D = 2 * self.D - 1
-        fft_size = 1 << (out_D).bit_length()
-        self.fft_size = fft_size
-        self.out_D = out_D
-        
-        # 2. Convert simple_burau to float and compute FFT
-        # Shape: (NumGenerators, 3, 3, F)
-        # Note: We compute ALL generators in the table, so we can index directly
-        self.suffix_fft_table = torch.fft.rfft(
-            self.simple_burau.float(), 
-            n=fft_size, 
-            dim=-1
-        )
-        print(f"  FFT Size: {fft_size}")
-        print(f"  Table Memory: {self.suffix_fft_table.numel() * 8 / 1e6:.1f} MB")
-
-    def initialize(self):
-        identity_matrix = torch.zeros(1, 3, 3, self.D, dtype=STORAGE_DTYPE_MATRIX, device=self.device)
-        center = self.D // 2
-        for i in range(3): identity_matrix[0, i, i, center] = 1
-        
-        self.buckets[1] = (
-            identity_matrix,
-            torch.zeros(1, self.config.max_length, dtype=STORAGE_DTYPE_WORD, device=self.device),
-            torch.zeros(1, dtype=STORAGE_DTYPE_LENGTH, device=self.device)
-        )
-        print(f"Initialized with identity braid")
-
-    def load_checkpoint(self, checkpoint_path):
-        print(f"Loading checkpoint from {checkpoint_path}...")
-        checkpoint = torch.load(checkpoint_path, map_location='cpu')
-        self.start_level = checkpoint['level'] + 1
-        
-        # Restore buckets (omitted logic for resizing for brevity, assumed matching config)
-        self.buckets = {}
-        for pl, (mat, words, lengths) in checkpoint['buckets'].items():
-             self.buckets[int(pl)] = (
-                 mat.to(STORAGE_DTYPE_MATRIX).to(self.device),
-                 words.to(STORAGE_DTYPE_WORD).to(self.device),
-                 lengths.to(STORAGE_DTYPE_LENGTH).to(self.device)
-             )
-        
-        if 'kernel_braids' in checkpoint:
-            self.kernel_braids = [w.to(self.device) for w in checkpoint['kernel_braids']]
-            
-        print(f"  Resuming from level {self.start_level}")
-        return self.start_level
-
-    def save_checkpoint(self, level, path):
-        print(f"  Saving checkpoint to {path}...")
-        checkpoint = {
-            "level": level,
-            "config": self.config.__dict__,
-            "stats": self.stats,
-            "kernel_braids": [w.cpu() for w in self.kernel_braids],
-            "buckets": {pl: (m.cpu(), w.cpu(), l.cpu()) for pl, (m, w, l) in self.buckets.items()}
-        }
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
-        torch.save(checkpoint, path)
-
-    def gather_level_braids(self, use_best=0):
-        if not self.buckets: raise RuntimeError("No braids!")
-        sorted_projlens = sorted(self.buckets.keys())
-        
-        all_mat, all_words, all_len = [], [], []
-        total = 0
-        
-        for pl in sorted_projlens:
-            mat, words, lengths = self.buckets[pl]
-            count = len(mat)
-            
-            if use_best > 0:
-                rem = use_best - total
-                if rem <= 0: break
-                if count > rem:
-                    idx = torch.randperm(count, device=self.device)[:rem]
-                    mat, words, lengths = mat[idx], words[idx], lengths[idx]
-                    count = rem
-            
-            all_mat.append(mat)
-            all_words.append(words)
-            all_len.append(lengths)
-            total += count
-            
-        matrices = torch.cat(all_mat, dim=0).to(COMPUTE_DTYPE_INT)
-        words = torch.cat(all_words, dim=0)
-        lengths = torch.cat(all_len, dim=0)
-        
-        batch_idx = torch.arange(len(lengths), device=self.device)
-        last_pos = torch.clamp(lengths - 1, min=0).long()
-        last_simples = words[batch_idx, last_pos].long()
-        last_simples = torch.where(lengths > 0, last_simples, torch.zeros_like(last_simples))
-        
-        return matrices, words, lengths, last_simples
-
-    def expand_and_multiply_chunk(self, matrices, words, lengths, braid_indices, suffix_indices):
-        """Modified to use pre-computed FFTs."""
-        parent_matrices = matrices[braid_indices]
-        parent_words = words[braid_indices]
-        parent_lengths = lengths[braid_indices]
-        
-        # Use Optimized FFT Mul with pre-computed suffixes
-        # Note: We pass the INDICES of the suffixes, not the matrices
-        new_matrices = poly_matmul_fft_precomputed(
-            parent_matrices,
-            suffix_indices,
-            self.suffix_fft_table,
-            self.config.prime,
-            self.out_D,
-            sub_batch_size=4096 # Adjust this based on GPU VRAM
-        )
-        
-        new_words = parent_words.clone()
-        batch_idx = torch.arange(len(new_matrices), device=self.device)
-        new_words[batch_idx, parent_lengths.long()] = suffix_indices.to(STORAGE_DTYPE_WORD)
-        new_lengths = parent_lengths + 1
-        
-        return new_matrices, new_words, new_lengths
-
-    def recenter_matrices(self, matrices):
-        current_D = matrices.shape[-1]
-        target_D = self.D
-        
-        if current_D <= target_D:
-            pad = target_D - current_D
-            return F.pad(matrices, (pad//2, pad - pad//2), value=0)
-        
-        trim = current_D - target_D
-        return matrices[..., trim//2 : current_D - (trim - trim//2)]
-
-    def process_level(self, level):
-        start_time = time.time()
-        is_bootstrap = (level <= self.config.bootstrap_length)
-        print(f"\n{'='*60}\nLevel {level} - {'BOOTSTRAP' if is_bootstrap else 'SAMPLING'}\n{'='*60}")
-        
-        matrices, words, lengths, last_simples = self.gather_level_braids(0 if is_bootstrap else self.config.use_best)
-        print(f"  Starting braids: {len(matrices)}")
-        
-        braid_indices, suffix_indices = build_expansion_indices_vectorized(
-            last_simples, self.num_valid_suffixes, self.valid_suffixes
-        )
-        num_candidates = len(braid_indices)
-        print(f"  Candidates: {num_candidates}")
-        
-        if num_candidates == 0: return False
-        
-        chunk_size = self.config.expansion_chunk_size
-        gpu_buckets = GPUBuckets(self.config.bucket_size, self.device)
-        
-        t_matmul, t_sample = 0.0, 0.0
-        
-        for i in range(0, num_candidates, chunk_size):
-            gc.collect(); torch.cuda.empty_cache()
-            
-            end = min(i + chunk_size, num_candidates)
-            b_idx = braid_indices[i:end]
-            s_idx = suffix_indices[i:end]
-            
-            t0 = time.time()
-            chunk_mat, chunk_words, chunk_lens = self.expand_and_multiply_chunk(
-                matrices, words, lengths, b_idx, s_idx
-            )
-            chunk_mat = self.recenter_matrices(chunk_mat)
-            t_matmul += time.time() - t0
-            
-            chunk_pl = compute_projlen_batch(chunk_mat)
-            
-            if (chunk_pl == 1).any():
-                hits = chunk_words[chunk_pl == 1]
-                print(f"  🎉 FOUND {len(hits)} KERNEL ELEMENTS! 🎉")
-                self.kernel_braids.extend([h.cpu() for h in hits])
-            
-            t0 = time.time()
-            gpu_buckets.add_chunk(chunk_mat, chunk_words, chunk_lens, chunk_pl, is_bootstrap)
-            t_sample += time.time() - t0
-            
-            del chunk_mat, chunk_words, chunk_lens, chunk_pl
-            
-        self.buckets = gpu_buckets.get_buckets()
-        print(f"  Kept: {sum(len(m) for m,_,_ in self.buckets.values())}")
-        print(f"  Timing: Matmul={t_matmul:.2f}s, Sample={t_sample:.2f}s, Total={time.time()-start_time:.2f}s")
-        return True
-
-    def run(self, checkpoint_dir=None, resume_from=None):
-        if resume_from: self.load_checkpoint(resume_from)
-        else: self.initialize()
-        
-        for level in range(self.start_level, self.config.max_length + 1):
-            if not self.process_level(level): break
-            if checkpoint_dir and level % self.config.checkpoint_every == 0:
-                self.save_checkpoint(level, f"{checkpoint_dir}/checkpoint_level_{level}.pt")
-                
-        return self.kernel_braids
-
-# =============================================================================
-# LOADING & ENTRY
-# =============================================================================
-
-def load_tables_from_file(config, table_path):
-    tables = torch.load(table_path, weights_only=True)
+                braid = GNF(n=4, power=0, factors=tuple(word_list))
+                print(f"    Artin word: {braid.magma_artin_word()}")
+            elif i < 5:
+                print(f"  Braid {i}: {word_list[:8]}{'...' if len(word_list) > 8 else ''} - {msg}")
     
-    # Load and resize simple_burau to match window
-    loaded_burau = tables['simple_burau']
-    D = config.degree_window
-    center_new = D // 2
-    center_old = tables['center']
+    print(f"\n{'='*60}")
+    print(f"SUMMARY")
+    print("="*60)
+    print(f"Total candidates with projlen=1: {sum(len(b) for b in kernel_braids)}")
+    print(f"Verified kernel elements: {len(verified)}")
     
-    simple_burau = torch.zeros(24, 3, 3, D, dtype=STORAGE_DTYPE_MATRIX)
+    if verified:
+        print(f"\n✓ SUCCESS! Found {len(verified)} kernel elements for p={p}")
+    else:
+        print(f"\n✗ No kernel elements verified (this shouldn't happen)")
     
-    for s in range(24):
-        mat = loaded_burau[s]
-        nz = torch.where(mat.abs().sum((0,1)) > 0)[0]
-        if len(nz) == 0: continue
-        
-        start, end = nz[0].item(), nz[-1].item() + 1
-        min_deg, max_deg = start - center_old, end - 1 - center_old
-        dst_start, dst_end = center_new + min_deg, center_new + max_deg + 1
-        
-        simple_burau[s, :, :, dst_start:dst_end] = mat[:, :, start:end].to(STORAGE_DTYPE_MATRIX)
-        
-    valid_suffixes = tables['valid_suffixes'].clone()
-    num_valid = tables['num_valid_suffixes'].clone()
+    return verified
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Search for kernel elements in Burau representations",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s --p 2
+  %(prog)s --p 3 --bucket-size 8000
+  %(prog)s --p 5 --bucket-size 100000 --bootstrap-length 5 --max-length 70
+  %(prog)s --p 7 --device cuda --degree-multiplier 3
+  %(prog)s --p 7 --resume-from checkpoints/final_state_level_50.pt --max-length 200
+        """
+    )
     
-    # Fix identity
-    id_idx = tables['id_index']
-    delta_idx = tables['delta_index']
-    valid_suffixes[id_idx] = valid_suffixes[delta_idx]
-    num_valid[id_idx] = num_valid[delta_idx]
+    parser.add_argument("--p", "-p", type=int, default=2,
+                        help="Prime for the representation (default: 2)")
     
-    return simple_burau, valid_suffixes, num_valid
+    parser.add_argument("--bucket-size", "-b", type=int, default=4000,
+                        help="Number of braids to keep per projlen bucket (default: 4000)")
+    
+    parser.add_argument("--bootstrap-length", "-l", type=int, default=5,
+                        help="Length of initial exhaustive search (default: 5)")
+    
+    parser.add_argument("--max-length", "-m", type=int, default=None,
+                        help="Maximum braid length to search (default: 10 for p=2, 25 otherwise)")
+    
+    parser.add_argument("--device", "-d", type=str, default="cpu", choices=["cpu", "cuda"],
+                        help="Device to use for computation (default: cpu)")
+    
+    parser.add_argument("--chunk-size", "-c", type=int, default=50000,
+                        help="Max candidates per expansion chunk (default: 50000)")
+    
+    parser.add_argument("--use-best", "-u", type=int, default=0,
+                        help="Max braids to expand per level, prioritizing low projlen (default: 0 = no limit)")
+
+    parser.add_argument("--checkpoint-dir", type=str, default=None,
+                        help="Directory to save checkpoints")
+    
+    parser.add_argument("--checkpoint-every", type=int, default=9999,
+                        help="Save checkpoint every N levels (default: 9999 = effectively disabled)")
+    
+    parser.add_argument("--degree-multiplier", type=int, default=4,
+                        help="Degree window = 2 * multiplier * max_length + 1 (default: 4)")
+    
+    parser.add_argument("--resume-from", "-r", type=str, default=None,
+                        help="Path to checkpoint .pt file to resume from")
+    
+    return parser.parse_args()
+
 
 if __name__ == "__main__":
-    # Example usage
-    cfg = Config(bucket_size=50000, max_length=50, bootstrap_length=5, prime=5, device="cuda")
-    # Add table loading and search.run() call here as in original...
+    args = parse_args()
+    
+    find_kernel(
+        p=args.p,
+        bucket_size=args.bucket_size,
+        bootstrap_length=args.bootstrap_length,
+        max_length=args.max_length,
+        device=args.device,
+        chunk_size=args.chunk_size,
+        use_best=args.use_best,
+        checkpoint_dir=args.checkpoint_dir,
+        checkpoint_every=args.checkpoint_every,
+        degree_multiplier=args.degree_multiplier,
+        resume_from=args.resume_from
+    )
