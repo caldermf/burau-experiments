@@ -130,16 +130,16 @@ class AdaptiveFFTManager:
         print(f"  Max D: {max_D}")
         print(f"  Device: {device}")
     
-    def ensure_tier(self, level: int) -> tuple[int, int]:
+    def ensure_tier(self, level: int) -> tuple[int, int, int]:
         """
         Ensure we have precomputed FFTs for the appropriate tier.
-        Returns (D, fft_size) for this tier.
+        Returns (D, fft_size, tier_max_level) for this tier.
         """
-        D, fft_size, _ = get_fft_tier(level)
+        D, fft_size, tier_max = get_fft_tier(level)
         
         if fft_size in self.tier_cache:
             self.current_D, self.current_fft_size = D, fft_size
-            return D, fft_size
+            return D, fft_size, tier_max
         
         print(f"  Precomputing FFTs for tier: D={D}, fft_size={fft_size}")
         
@@ -161,7 +161,7 @@ class AdaptiveFFTManager:
         mem_mb = simple_fft.numel() * 8 / 1e6
         print(f"  Tier cache: {mem_mb:.1f} MB")
         
-        return D, fft_size
+        return D, fft_size, tier_max
     
     def get_suffix_fft(self, suffix_indices: torch.Tensor) -> torch.Tensor:
         """Get precomputed FFTs for the given suffix indices."""
