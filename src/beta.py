@@ -4,9 +4,8 @@ Find kernel elements for various primes p.
 
 Usage examples:
     python find_kernel.py --p 2
-    python beta.py --p 5 --bucket-size 10000 --max-length 70 --device cuda --bucket-size 40000 --use-best 20000
-    python beta.py --p 7 --max-length 150 --bucket-size 50000 --use-best 20000 --chunk-size 40000 --device cuda
-    python beta.py --p 7 --max-length 150 --bucket-size 200000 --use-best 60000 --chunk-size 40000 --device cuda
+    python find_kernel.py --p 5 --bucket-size 100000 --max-length 70 --device cuda
+    python find_kernel.py --p 7 --max-length 150 --bucket-size 100000 --use-best 100000 --chunk-size 50000 --device cuda
 """
 
 import sys
