@@ -20,7 +20,7 @@ import torch
 import os
 
 # Import the ultra-optimized search
-from braid_search_ultra import Config, BraidSearchUltra as BraidSearch, load_tables_from_file
+from braid_search_beta import Config, BraidSearchUltra as BraidSearch, load_tables_from_file
 
 # For verification (optional - comment out if peyl not available)
 try:
