@@ -2,7 +2,7 @@
 # =============================================================================
 # KERNEL ELEMENT SEARCH - H200
 # =============================================================================
-#SBATCH --job-name=p7_h200
+#SBATCH --job-name=v2test
 #SBATCH --partition=scavenge_gpu
 #SBATCH --gpus=h200:1
 #SBATCH --nodes=1
@@ -32,7 +32,7 @@ $PYTHON_PATH find_kernel_ultra_v2.py \
     --device cuda \
     --use-best 500000 \
     --max-length 60 \
-    --matmul-chunk 10000
+    --matmul-chunk 8000
 
 
 echo "JOB COMPLETED!"
