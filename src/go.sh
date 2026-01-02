@@ -9,7 +9,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=64G                 # CRITICAL: Need lots of CPU RAM for checkpointing
-#SBATCH --time=00:06:00            # Scavenge allows longer times
+#SBATCH --time=00:03:00            # Scavenge allows longer times
 #SBATCH --requeue                  # Automatically requeue if preempted
 #SBATCH --signal=B:USR1@120        # Send signal 120s before timeout
 #SBATCH --output=slurm_logs/p7_h200_%j.out
@@ -28,11 +28,11 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 $PYTHON_PATH find_kernel_ultra.py \
     --p 5 \
-    --bucket-size 1000000 \
+    --bucket-size 1500000 \
     --device cuda \
-    --use-best 500000 \
+    --use-best 750000 \
     --max-length 60 \
-    --matmul-chunk 8000
+    --matmul-chunk 12000
 
 
 echo "JOB COMPLETED!"
