@@ -33,7 +33,7 @@ $PYTHON_PATH find_kernel_ultra_v2.py \
     --use-best 500000 \
     --max-length 60 \
     --matmul-chunk 11000 \
-    --gc-every 8
+    --gc-every 4
 
 
 echo "JOB COMPLETED!"
