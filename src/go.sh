@@ -12,7 +12,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=64G                 # CRITICAL: Need lots of CPU RAM for checkpointing
-#SBATCH --time=00:05:00            # Scavenge allows longer times
+#SBATCH --time=00:01:00            # Scavenge allows longer times
 #SBATCH --requeue                  # Automatically requeue if preempted
 #SBATCH --signal=B:USR1@120        # Send signal 120s before timeout
 #SBATCH --output=slurm_logs/p7_h200_%j.out
