@@ -28,10 +28,10 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 $PYTHON_PATH find_kernel_ultra.py \
     --p 5 \
-    --bucket-size 2000000 \
+    --bucket-size 1800000 \
     --device cuda \
-    --use-best 1000000 \
-    --max-length 60 \
+    --use-best 900000 \
+    --max-length 56 \
     --matmul-chunk 10000
 
 
