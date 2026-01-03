@@ -12,7 +12,7 @@
 #SBATCH --time=01:30:00            # Scavenge allows longer times
 #SBATCH --requeue                  # Automatically requeue if preempted
 #SBATCH --signal=B:USR1@60        # Send signal 120s before timeout
-#SBATCH --array=1-10                 # Defines the range of tasks
+#SBATCH --array=1                 # Defines the range of tasks
 #SBATCH --output=slurm_logs/jan3_%A_%a.out
 #SBATCH --error=slurm_logs/jan3_%A_%a.err
 
