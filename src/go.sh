@@ -12,8 +12,8 @@
 #SBATCH --time=00:40:00            # Scavenge allows longer times
 #SBATCH --requeue                  # Automatically requeue if preempted
 #SBATCH --signal=B:USR1@60        # Send signal 120s before timeout
-#SBATCH --output=slurm_logs/hard_%j.out
-#SBATCH --error=slurm_logs/hard_%j.err
+#SBATCH --output=slurm_logs/first_seven_trial_%j.out
+#SBATCH --error=slurm_logs/first_seven_trial_%j.err
 
 set -e
 mkdir -p slurm_logs checkpoints
@@ -27,11 +27,11 @@ export PYTHONUNBUFFERED=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 $PYTHON_PATH find_kernel_ultra.py \
-    --p 5 \
-    --bucket-size 1800000 \
+    --p 7 \
+    --bucket-size 900000 \
     --device cuda \
-    --use-best 900000 \
-    --max-length 56 \
+    --use-best 450000 \
+    --max-length 127 \
     --matmul-chunk 10000
 
 
