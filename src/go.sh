@@ -27,7 +27,7 @@ PYTHON_PATH="/home/com36/.conda/envs/burau_gpu/bin/python"
 export PYTHONUNBUFFERED=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
-$PYTHON_PATH find_kernel_ultra.py \
+$PYTHON_PATH find_kernel.py \
     --p 7 \
     --bucket-size 2000000 \
     --device cuda \
