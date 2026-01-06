@@ -12,7 +12,7 @@ import argparse
 import torch
 import os
 
-from braid_search_j6 import Config, BraidSearchUltra as BraidSearch, load_tables_from_file
+from braid_search import Config, BraidSearchUltra as BraidSearch, load_tables_from_file
 
 # For verification (optional)
 try:
