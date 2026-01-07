@@ -2,13 +2,13 @@
 SEARCHING FOR p=7 KERNEL ELEMENTS (ULTRA-OPTIMIZED)
 ============================================================
 Device: cuda
-Bucket size: 3000000
+Bucket size: 2400000
 Max length: 127
 Bootstrap length: 5
 Prime: 7
 Degree multiplier: 4
 Degree window: [0, 508] (509 coeffs) - NON-NEGATIVE ONLY
-Use best: 1500000
+Use best: 1200000
 Expansion chunk size: 50000
 Matmul chunk size: 8000
 ⚡ Precomputed FFTs: ENABLED
@@ -25,7 +25,7 @@ Initialized with identity braid
 Degree window: [0, 508] (509 coefficients) - NON-NEGATIVE ONLY
 FFT size: 1024
 Storage types: matrix=torch.int16, word=torch.int32
-Config: bucket_size=3000000, bootstrap=5, max_length=127, chunk_size=50000, matmul_chunk=8000, use_best=1500000
+Config: bucket_size=2400000, bootstrap=5, max_length=127, chunk_size=50000, matmul_chunk=8000, use_best=1200000
 ⚡ Ultra-optimized: precomputed Burau FFTs + non-negative degrees only
 
 ============================================================
@@ -37,7 +37,7 @@ Level 1 - BOOTSTRAP
     projlen=3: 10 braids
     projlen=4: 12 braids
   Braids kept: 22 (in 2 buckets, 0.00 GB)
-  ⚡ Timing: matmul=0.05s, sampling=0.00s, total=0.24s
+  ⚡ Timing: matmul=0.05s, sampling=0.00s, total=0.26s
 
 ============================================================
 Level 2 - BOOTSTRAP
@@ -49,7 +49,7 @@ Level 2 - BOOTSTRAP
     projlen=6: 76 braids
     projlen=7: 32 braids
   Braids kept: 164 (in 3 buckets, 0.00 GB)
-  ⚡ Timing: matmul=0.01s, sampling=0.00s, total=0.10s
+  ⚡ Timing: matmul=0.01s, sampling=0.00s, total=0.11s
 
 ============================================================
 Level 3 - BOOTSTRAP
@@ -62,7 +62,7 @@ Level 3 - BOOTSTRAP
     projlen=9: 288 braids
     projlen=10: 60 braids
   Braids kept: 982 (in 4 buckets, 0.01 GB)
-  ⚡ Timing: matmul=0.01s, sampling=0.00s, total=0.10s
+  ⚡ Timing: matmul=0.01s, sampling=0.00s, total=0.11s
 
 ============================================================
 Level 4 - BOOTSTRAP
@@ -92,7 +92,7 @@ Level 5 - BOOTSTRAP
     projlen=15: 1716 braids
     projlen=16: 188 braids
   Braids kept: 30478 (in 7 buckets, 0.29 GB)
-  ⚡ Timing: matmul=0.08s, sampling=0.00s, total=0.20s
+  ⚡ Timing: matmul=0.08s, sampling=0.00s, total=0.19s
 
 ============================================================
 Level 6 - SAMPLING
@@ -130,7 +130,7 @@ Level 7 - SAMPLING
     projlen=21: 7076 braids
     projlen=22: 508 braids
   Braids kept: 910366 (in 10 buckets, 8.81 GB)
-  ⚡ Timing: matmul=0.30s, sampling=0.30s, total=3.91s
+  ⚡ Timing: matmul=0.31s, sampling=0.29s, total=3.96s
 
 ============================================================
 Level 8 - SAMPLING
@@ -150,19 +150,19 @@ Level 8 - SAMPLING
     projlen=22: 300440 braids
     projlen=23: 88088 braids
   Braids kept: 4963856 (in 12 buckets, 48.02 GB)
-  ⚡ Timing: matmul=1.67s, sampling=5.44s, total=28.25s
+  ⚡ Timing: matmul=1.69s, sampling=5.74s, total=30.16s
 
 ============================================================
 Level 9 - SAMPLING
 ============================================================
-  Starting braids: 1500000
-  Candidates to generate: 8361012
-  Processing in 168 chunks...
+  Starting braids: 1200000
+  Candidates to generate: 6714276
+  Processing in 135 chunks...
 
 ============================================================
 SEARCH STOPPED
 ============================================================
 Final level: 8
-Total time: 62.27s
-Avg time per level: 7.78s
+Total time: 66.76s
+Avg time per level: 8.34s
 Total kernel elements: 0
