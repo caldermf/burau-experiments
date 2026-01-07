@@ -9,7 +9,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=64G                 # CRITICAL: Need lots of CPU RAM for checkpointing
-#SBATCH --time=00:60:00            # Scavenge allows longer times
+#SBATCH --time=02:30:00            # Scavenge allows longer times
 #SBATCH --requeue                  # Automatically requeue if preempted
 #SBATCH --signal=B:USR1@60        # Send signal 120s before timeout
 #SBATCH --array=1                 # Defines the range of tasks
