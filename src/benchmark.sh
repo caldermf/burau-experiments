@@ -32,7 +32,8 @@ $PYTHON_PATH find_kernel.py \
     --device cuda \
     --use-best 15000 \
     --max-length 63 \
-    --matmul-chunk 8000
+    --matmul-chunk 8000 \
+    --degree-multiplier 2
 
 
 echo "JOB COMPLETED!"
