@@ -2,7 +2,7 @@
 # =============================================================================
 # KERNEL ELEMENT SEARCH - H200
 # =============================================================================
-#SBATCH --job-name=jan3test
+#SBATCH --job-name=GO5
 #SBATCH --partition=scavenge_gpu
 #SBATCH --gpus=h200:1
 #SBATCH --nodes=1
@@ -13,8 +13,8 @@
 #SBATCH --requeue                  # Automatically requeue if preempted
 #SBATCH --signal=B:USR1@60        # Send signal 120s before timeout
 #SBATCH --array=1                 # Defines the range of tasks
-#SBATCH --output=slurm_logs/jan6_%A_%a.out
-#SBATCH --error=slurm_logs/jan6_%A_%a.err
+#SBATCH --output=slurm_logs/jan6p5_%A_%a.out
+#SBATCH --error=slurm_logs/jan6p5_%A_%a.err
 
 set -e
 mkdir -p slurm_logs checkpoints
@@ -29,11 +29,11 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 $PYTHON_PATH find_kernel.py \
     --p 7 \
-    --bucket-size 1600000 \
+    --bucket-size 3200000 \
     --device cuda \
-    --use-best 800000 \
-    --max-length 127 \
-    --matmul-chunk 9000
+    --use-best 1600000 \
+    --max-length 60 \
+    --matmul-chunk 8000
 
 
 echo "JOB COMPLETED!"
