@@ -7,7 +7,7 @@
 #SBATCH --gpus=h200:1
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=4
 #SBATCH --mem=64G                 # CRITICAL: Need lots of CPU RAM for checkpointing
 #SBATCH --time=00:60:00            # Scavenge allows longer times
 #SBATCH --requeue                  # Automatically requeue if preempted
