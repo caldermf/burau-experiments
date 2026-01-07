@@ -77,7 +77,7 @@ def find_kernel(
     device="cpu", 
     chunk_size=50000, 
     use_best=0, 
-    degree_multiplier=4,
+    degree_multiplier=2,
     matmul_chunk_size=20000
 ):
     """Search for kernel elements using ultra-optimized algorithm."""
