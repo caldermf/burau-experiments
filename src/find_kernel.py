@@ -243,7 +243,7 @@ Recommended settings for RTX 5000 (32GB):
     parser.add_argument("--use-best", "-u", type=int, default=0,
                         help="Max braids to expand per level")
     
-    parser.add_argument("--degree-multiplier", type=int, default=4,
+    parser.add_argument("--degree-multiplier", type=int, default=2,
                         help="Degree window = multiplier * max_length + 1")
     
     parser.add_argument("--matmul-chunk", type=int, default=20000,

@@ -32,7 +32,8 @@ $PYTHON_PATH find_kernel.py \
     --bucket-size 2_000_000 \
     --use-best 1_000_000 \
     --max-length 127 \
-    --matmul-chunk 8000
+    --matmul-chunk 8000 \
+    --degree-multiplier 2
 
 
 echo "JOB COMPLETED!"
