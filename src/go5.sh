@@ -33,6 +33,7 @@ $PYTHON_PATH find_kernel.py \
     --use-best 3_200_000 \
     --max-length 56 \
     --matmul-chunk 8000 \
+    --chunk-size 100_000 \
     --degree-multiplier 2
 
 
