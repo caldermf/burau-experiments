@@ -29,9 +29,9 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 $PYTHON_PATH find_kernel.py \
     --p 7 \
-    --bucket-size 3000000 \
+    --bucket-size 2800000 \
     --device cuda \
-    --use-best 1500000 \
+    --use-best 1400000 \
     --max-length 127 \
     --matmul-chunk 8000
 
