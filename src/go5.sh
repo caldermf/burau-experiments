@@ -28,11 +28,11 @@ export PYTHONUNBUFFERED=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 $PYTHON_PATH find_kernel.py \
-    --p 7 \
-    --bucket-size 3200000 \
+    --p 5 \
+    --bucket-size 3600000 \
     --device cuda \
-    --use-best 1600000 \
-    --max-length 60 \
+    --use-best 1800000 \
+    --max-length 56 \
     --matmul-chunk 8000
 
 
