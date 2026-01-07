@@ -13,8 +13,8 @@
 #SBATCH --requeue                  # Automatically requeue if preempted
 #SBATCH --signal=B:USR1@60        # Send signal 120s before timeout
 #SBATCH --array=1                 # Defines the range of tasks
-#SBATCH --output=slurm_logs/jan6p7_%A_%a.out
-#SBATCH --error=slurm_logs/jan6p7_%A_%a.err
+#SBATCH --output=slurm_logs/jan7p7_%A_%a.out
+#SBATCH --error=slurm_logs/jan7p7_%A_%a.err
 
 set -e
 mkdir -p slurm_logs checkpoints
