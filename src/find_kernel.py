@@ -70,15 +70,15 @@ def verify_kernel_element(word_list, n=4, r=1, p=2):
 
 
 def find_kernel(
-    p=2, 
+    p=5, 
     bucket_size=4000, 
     bootstrap_length=4, 
-    max_length=None, 
-    device="cpu", 
+    max_length=127, 
+    device="cuda", 
     chunk_size=50000, 
     use_best=0, 
     degree_multiplier=2,
-    matmul_chunk_size=20000
+    matmul_chunk_size=8000
 ):
     """Search for kernel elements using ultra-optimized algorithm."""
     
