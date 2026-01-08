@@ -44,7 +44,11 @@ class MCTSNode:
     projlen: int  # Current projlen of this braid
     
     # MCTS statistics
-    score: float = float('inf')  # Best projlen seen from this node (lower = better)
+    # Score = projlen / length ratio (lower = better)
+    # This captures "how good is projlen relative to braid length"
+    score: float = float('inf')  # Best ratio seen from this node (lower = better)
+    best_projlen: int = 1000  # Best absolute projlen seen from descendants
+    best_length: int = 0  # Length at which best_projlen was achieved
     visits: int = 0
     
     def __lt__(self, other):
@@ -53,6 +57,13 @@ class MCTSNode:
     
     def key(self) -> tuple:
         return self.word
+    
+    @staticmethod
+    def compute_score(projlen: int, length: int) -> float:
+        """Compute score as projlen/length ratio. Lower is better."""
+        if length == 0:
+            return float('inf')
+        return projlen / length
 
 
 # =============================================================================
@@ -79,8 +90,8 @@ class MCTSConfig:
     playout_bootstrap: int = 3
     
     # What to add back to database from playouts
-    add_from_playout: int = 50  # Add top N braids from each playout
-    add_projlen_threshold: int = 100  # Only add if projlen below this
+    add_from_playout: int = 50  # Add top N braids from each playout bucket
+    add_ratio_threshold: float = 1.5  # Only add if projlen/length ratio below this
     
     # Memory management
     degree_multiplier: int = 2
@@ -134,14 +145,17 @@ class PlayoutEngine:
         bucket_size: int,
         use_best: int,
         bootstrap: int = 3
-    ) -> tuple[dict, int, list]:
+    ) -> tuple[dict, float, int, int, list, dict]:
         """
         Run reservoir sampling playout from given starting braids.
         
         Returns:
-            final_buckets: {projlen: (matrices, words, lengths)}
-            best_projlen: Minimum projlen seen during entire playout
+            final_buckets: {projlen: (matrices, words, lengths)} - braids at end of playout
+            best_ratio: Best projlen/length ratio seen during playout (lower = better)
+            best_projlen: The projlen that achieved best_ratio
+            best_length: The length at which best_ratio was achieved  
             kernel_braids: List of any projlen=1 braids found
+            best_braids: {projlen: (matrices, words, lengths)} - best braids seen at ANY point
         """
         N = len(start_matrices)
         
@@ -168,17 +182,26 @@ class PlayoutEngine:
             is_bootstrap=True
         )
         
-        # Don't count starting braids in best_projlen - only children matter!
-        # (Otherwise identity's projlen=1 pollutes everything)
-        # We'll update best_projlen as we generate children
-        best_projlen = float('inf')
+        # Track best braids seen at ANY point during playout
+        best_braids_tracker = GPUBuckets(bucket_size, self.device)
+        
+        # Track best RATIO (projlen/length), not just best projlen
+        best_ratio = float('inf')
+        best_projlen_at_ratio = 0
+        best_length_at_ratio = 0
         kernel_braids = []
         
         # Check if starting braids (excluding identity) are already kernel elements
         nontrivial_mask = (start_projlens == 1) & (lengths > 0)
         if nontrivial_mask.any():
             kernel_braids.append(words[nontrivial_mask].cpu())
-            best_projlen = 1
+            # projlen=1 at any length is excellent
+            for i in torch.where(nontrivial_mask)[0]:
+                ratio = 1.0 / lengths[i].item()
+                if ratio < best_ratio:
+                    best_ratio = ratio
+                    best_projlen_at_ratio = 1
+                    best_length_at_ratio = lengths[i].item()
         
         # Run playout for `depth` levels
         for level in range(depth):
@@ -291,11 +314,24 @@ class PlayoutEngine:
                 if one_mask.any():
                     kernel_braids.append(new_words[one_mask].cpu())
                 
-                # Track best
-                level_best = new_projlens.min().item()
-                best_projlen = min(best_projlen, level_best)
+                # Track best RATIO (projlen/length)
+                # Compute ratios for all braids in chunk
+                ratios = new_projlens.float() / new_lengths.float()
+                min_ratio_idx = ratios.argmin()
+                min_ratio = ratios[min_ratio_idx].item()
                 
-                # Add to buckets
+                if min_ratio < best_ratio:
+                    best_ratio = min_ratio
+                    best_projlen_at_ratio = new_projlens[min_ratio_idx].item()
+                    best_length_at_ratio = new_lengths[min_ratio_idx].item()
+                
+                # Add promising braids to best_braids_tracker
+                best_braids_tracker.add_chunk(
+                    new_matrices, new_words, new_lengths, new_projlens,
+                    is_bootstrap=False
+                )
+                
+                # Add to buckets for next level
                 new_buckets.add_chunk(
                     new_matrices, new_words, new_lengths, new_projlens,
                     is_bootstrap=is_bootstrap
@@ -310,14 +346,11 @@ class PlayoutEngine:
             gc.collect()
             torch.cuda.empty_cache()
         
-        # Return final buckets
+        # Return final buckets AND best braids seen during playout
         final_buckets = buckets.get_buckets()
+        best_braids = best_braids_tracker.get_buckets()
         
-        # If best_projlen is still inf, get it from final buckets
-        if best_projlen == float('inf') and final_buckets:
-            best_projlen = min(final_buckets.keys())
-        
-        return final_buckets, best_projlen, kernel_braids
+        return final_buckets, best_ratio, best_projlen_at_ratio, best_length_at_ratio, kernel_braids, best_braids
 
 
 # =============================================================================
@@ -382,6 +415,8 @@ class MCTSBraidSearch:
             matrix=identity_matrix,
             projlen=1,
             score=1000.0,  # High score so it gets replaced by real candidates
+            best_projlen=1,
+            best_length=0,
             visits=0
         )
         
@@ -417,23 +452,29 @@ class MCTSBraidSearch:
             return
         
         key = word
+        score = MCTSNode.compute_score(projlen, length)
         
         if key in self.database:
-            # Update existing node if this is better
+            # Update existing node if this achieves better ratio
             existing = self.database[key]
-            if projlen < existing.score:
-                existing.score = projlen
+            if score < existing.score:
+                existing.score = score
+                existing.best_projlen = projlen
+                existing.best_length = length
             return
         
-        if projlen > self.config.add_projlen_threshold:
-            return  # Not promising enough
+        # Filter by ratio - only add promising braids
+        if score > self.config.add_ratio_threshold:
+            return
         
         node = MCTSNode(
             word=word,
             length=length,
             matrix=matrix.cpu() if matrix.is_cuda else matrix,
             projlen=projlen,
-            score=projlen,  # Initial score is current projlen
+            score=score,  # Initial score is current ratio
+            best_projlen=projlen,
+            best_length=length,
             visits=0
         )
         
@@ -446,9 +487,9 @@ class MCTSBraidSearch:
         
         print(f"  Pruning database: {len(self.database)} -> {self.config.db_keep_size}")
         
-        # Keep the best nodes by score
-        nodes = list(self.database.values())
-        nodes.sort(key=lambda n: (n.score, n.length))  # Best score, then shortest
+        # Keep the best nodes by score (ratio), excluding identity
+        nodes = [n for n in self.database.values() if n.length > 0]
+        nodes.sort(key=lambda n: (n.score, n.length))  # Best ratio, then shortest
         
         keep_nodes = nodes[:self.config.db_keep_size]
         self.database = {n.key(): n for n in keep_nodes}
@@ -472,8 +513,8 @@ class MCTSBraidSearch:
         
         print(f"  Selected {len(selected)} nodes for expansion")
         for i, node in enumerate(selected[:3]):
-            print(f"    Node {i}: length={node.length}, projlen={node.projlen}, "
-                  f"score={node.score:.1f}, visits={node.visits}")
+            print(f"    Node {i}: len={node.length}, projlen={node.projlen}, "
+                  f"score={node.score:.3f} (best: pj={node.best_projlen}@len={node.best_length}), visits={node.visits}")
         
         # Run playout for each selected node
         for node in selected:
@@ -491,7 +532,7 @@ class MCTSBraidSearch:
             
             # Run playout
             t0 = time.time()
-            final_buckets, best_projlen, kernel_found = self.engine.run_playout(
+            final_buckets, best_ratio, best_pj, best_len, kernel_found, best_braids = self.engine.run_playout(
                 start_matrix, word_tensor, start_length,
                 depth=self.config.playout_depth,
                 bucket_size=self.config.playout_bucket_size,
@@ -522,37 +563,44 @@ class MCTSBraidSearch:
                     print(f"\n  🎉 KERNEL ELEMENT FOUND! 🎉")
                     return True
             
-            # Backpropagate: update node's score (only if we found something meaningful)
+            # Backpropagate: update node's score based on best RATIO found
             old_score = node.score
-            if best_projlen < float('inf'):
-                node.score = min(node.score, best_projlen)
+            if best_ratio < node.score:
+                node.score = best_ratio
+                node.best_projlen = best_pj
+                node.best_length = best_len
             node.visits += 1
             
             # If this was identity (length=0), remove it from database after expansion
-            # since we now have real candidates to work with
             if node.length == 0 and node.key() in self.database:
                 del self.database[node.key()]
-                print(f"    Playout from identity: seeded database with children, "
-                      f"best_projlen={best_projlen}, time={playout_time:.1f}s (identity removed)")
+                print(f"    Playout from identity: best_ratio={best_ratio:.3f} (pj={best_pj}@len={best_len}), "
+                      f"time={playout_time:.1f}s (identity removed)")
             else:
-                print(f"    Playout from length={node.length}: "
-                      f"best_projlen={best_projlen}, "
-                      f"score: {old_score:.1f} -> {node.score:.1f}, "
+                print(f"    Playout from len={node.length}: "
+                      f"best_ratio={best_ratio:.3f} (pj={best_pj}@len={best_len}), "
+                      f"score: {old_score:.3f} -> {node.score:.3f}, "
                       f"time={playout_time:.1f}s")
             
-            # Add promising endpoints to database
+            # Add promising braids from BEST_BRAIDS (not final_buckets!)
+            # This captures good braids found at ANY point during playout
             added_count = 0
-            for projlen in sorted(final_buckets.keys()):
-                if projlen > self.config.add_projlen_threshold:
-                    continue
-                
-                matrices, words, lengths = final_buckets[projlen]
+            added_ratios = []
+            for projlen in sorted(best_braids.keys()):
+                matrices, words, lengths = best_braids[projlen]
                 
                 # Add top N from this projlen bucket
                 n_to_add = min(self.config.add_from_playout, len(matrices))
                 
                 for i in range(n_to_add):
                     length_i = lengths[i].item()
+                    if length_i == 0:
+                        continue
+                    
+                    ratio = projlen / length_i
+                    if ratio > 1.5:  # Skip bad ratios
+                        continue
+                        
                     word_list = words[i, :length_i].cpu().tolist()
                     word_tuple = tuple(word_list)
                     
@@ -564,13 +612,15 @@ class MCTSBraidSearch:
                             projlen=projlen
                         )
                         added_count += 1
+                        if len(added_ratios) < 5:
+                            added_ratios.append(f"{projlen}/{length_i}={ratio:.2f}")
             
             if added_count > 0:
-                print(f"    Added {added_count} new nodes to database")
+                print(f"    Added {added_count} nodes (sample ratios: {', '.join(added_ratios)})")
             
             # Clean up
             del start_matrix, word_tensor, start_length
-            del final_buckets
+            del final_buckets, best_braids
             gc.collect()
             torch.cuda.empty_cache()
         
@@ -593,13 +643,14 @@ class MCTSBraidSearch:
                 print(f"\n--- Iteration {iteration + 1}/{self.config.max_iterations} ---")
                 print(f"  Database size: {len(self.database)}")
                 
-                # Get best score in database
+                # Get best score (ratio) in database
                 if self.database:
-                    best_score = min(n.score for n in self.database.values())
-                    best_length = min((n.length for n in self.database.values() 
-                                      if n.score == best_score), default=0)
-                    self.stats['best_score_history'].append(best_score)
-                    print(f"  Best score in DB: {best_score} (at length {best_length})")
+                    nodes_with_scores = [(n.score, n.best_projlen, n.best_length, n.length) 
+                                        for n in self.database.values() if n.length > 0]
+                    if nodes_with_scores:
+                        best_score, best_pj, best_len, node_len = min(nodes_with_scores)
+                        self.stats['best_score_history'].append(best_score)
+                        print(f"  Best ratio in DB: {best_score:.3f} (projlen={best_pj} @ length={best_len}, node_len={node_len})")
                 
                 # Run iteration
                 found = self.run_iteration()
@@ -625,8 +676,11 @@ class MCTSBraidSearch:
             print(f"Final database size: {len(self.database)}")
             
             if self.database:
-                best_score = min(n.score for n in self.database.values())
-                print(f"Best score achieved: {best_score}")
+                nodes_with_scores = [(n.score, n.best_projlen, n.best_length) 
+                                    for n in self.database.values() if n.length > 0]
+                if nodes_with_scores:
+                    best_score, best_pj, best_len = min(nodes_with_scores)
+                    print(f"Best ratio achieved: {best_score:.3f} (projlen={best_pj} @ length={best_len})")
             
             print(f"Kernel elements found: {sum(len(k) for k in self.kernel_braids)}")
         
@@ -736,9 +790,9 @@ Examples:
     
     # What to keep from playouts
     parser.add_argument("--add-from-playout", type=int, default=50,
-                        help="Braids to add from each playout (default: 50)")
-    parser.add_argument("--add-threshold", type=int, default=100,
-                        help="Max projlen to add to database (default: 100)")
+                        help="Braids to add from each playout bucket (default: 50)")
+    parser.add_argument("--add-ratio-threshold", type=float, default=1.5,
+                        help="Max projlen/length ratio to add to database (default: 1.5)")
     
     # Memory parameters
     parser.add_argument("--degree-mult", type=int, default=2,
@@ -760,7 +814,7 @@ Examples:
         playout_bucket_size=args.playout_bucket,
         playout_use_best=args.playout_use_best,
         add_from_playout=args.add_from_playout,
-        add_projlen_threshold=args.add_threshold,
+        add_ratio_threshold=args.add_ratio_threshold,
         degree_multiplier=args.degree_mult,
         matmul_chunk_size=args.matmul_chunk,
     )
