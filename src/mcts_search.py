@@ -168,14 +168,17 @@ class PlayoutEngine:
             is_bootstrap=True
         )
         
-        best_projlen = start_projlens.min().item()
+        # Don't count starting braids in best_projlen - only children matter!
+        # (Otherwise identity's projlen=1 pollutes everything)
+        # We'll update best_projlen as we generate children
+        best_projlen = float('inf')
         kernel_braids = []
         
-        # Check if we already have kernel elements (but not the trivial identity!)
-        if best_projlen == 1:
-            one_mask = (start_projlens == 1) & (lengths > 0)
-            if one_mask.any():
-                kernel_braids.append(words[one_mask].cpu())
+        # Check if starting braids (excluding identity) are already kernel elements
+        nontrivial_mask = (start_projlens == 1) & (lengths > 0)
+        if nontrivial_mask.any():
+            kernel_braids.append(words[nontrivial_mask].cpu())
+            best_projlen = 1
         
         # Run playout for `depth` levels
         for level in range(depth):
@@ -187,6 +190,7 @@ class PlayoutEngine:
                 break
             
             sorted_projlens = sorted(bucket_dict.keys())
+            min_projlen_in_buckets = sorted_projlens[0] if sorted_projlens else float('inf')
             
             all_matrices = []
             all_words = []
@@ -308,6 +312,11 @@ class PlayoutEngine:
         
         # Return final buckets
         final_buckets = buckets.get_buckets()
+        
+        # If best_projlen is still inf, get it from final buckets
+        if best_projlen == float('inf') and final_buckets:
+            best_projlen = min(final_buckets.keys())
+        
         return final_buckets, best_projlen, kernel_braids
 
 
@@ -372,13 +381,13 @@ class MCTSBraidSearch:
             length=0,
             matrix=identity_matrix,
             projlen=1,
-            score=float('inf'),
+            score=1000.0,  # High score so it gets replaced by real candidates
             visits=0
         )
         
         self.database[identity_node.key()] = identity_node
         
-        print(f"MCTS initialized with identity braid")
+        print(f"MCTS initialized with identity braid (will be replaced after first expansion)")
         print(f"Database max size: {self.config.db_max_size}")
         print(f"Playout depth: {self.config.playout_depth}")
         print(f"Playout bucket_size: {self.config.playout_bucket_size}")
@@ -386,16 +395,27 @@ class MCTSBraidSearch:
     
     def select_nodes(self, k: int) -> list[MCTSNode]:
         """Select top-k nodes by score for expansion."""
-        # Simple strategy: pick the k nodes with best (lowest) scores
-        # Could add UCB1-style exploration bonus here
+        # Filter out identity (length=0) - it's just a starting point
+        nodes = [n for n in self.database.values() if n.length > 0]
         
-        nodes = list(self.database.values())
-        nodes.sort(key=lambda n: (n.score, -n.visits))  # Best score, then most visited
+        # If no non-trivial nodes yet, return identity to bootstrap
+        if not nodes:
+            identity_key = ()
+            if identity_key in self.database:
+                return [self.database[identity_key]]
+            return []
+        
+        # Sort by score (lower is better), then by visits (prefer less visited for exploration)
+        nodes.sort(key=lambda n: (n.score, n.visits))
         
         return nodes[:k]
     
     def add_node(self, word: tuple, length: int, matrix: torch.Tensor, projlen: int):
         """Add a node to the database if it's promising."""
+        # Don't add trivial braids
+        if length == 0:
+            return
+        
         key = word
         
         if key in self.database:
@@ -502,15 +522,23 @@ class MCTSBraidSearch:
                     print(f"\n  🎉 KERNEL ELEMENT FOUND! 🎉")
                     return True
             
-            # Backpropagate: update node's score
+            # Backpropagate: update node's score (only if we found something meaningful)
             old_score = node.score
-            node.score = min(node.score, best_projlen)
+            if best_projlen < float('inf'):
+                node.score = min(node.score, best_projlen)
             node.visits += 1
             
-            print(f"    Playout from length={node.length}: "
-                  f"best_projlen={best_projlen}, "
-                  f"score: {old_score:.1f} -> {node.score:.1f}, "
-                  f"time={playout_time:.1f}s")
+            # If this was identity (length=0), remove it from database after expansion
+            # since we now have real candidates to work with
+            if node.length == 0 and node.key() in self.database:
+                del self.database[node.key()]
+                print(f"    Playout from identity: seeded database with children, "
+                      f"best_projlen={best_projlen}, time={playout_time:.1f}s (identity removed)")
+            else:
+                print(f"    Playout from length={node.length}: "
+                      f"best_projlen={best_projlen}, "
+                      f"score: {old_score:.1f} -> {node.score:.1f}, "
+                      f"time={playout_time:.1f}s")
             
             # Add promising endpoints to database
             added_count = 0
