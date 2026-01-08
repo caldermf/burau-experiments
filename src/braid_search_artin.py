@@ -173,19 +173,29 @@ def compute_deviation_batch(matrices: torch.Tensor, artin_lengths: torch.Tensor)
     """
     Compute deviation from target power for a batch of matrices.
     
-    The target power is (2/3) * artin_length for each braid.
-    To keep things in integers, we compute deviation_times_3:
-        target_times_3 = 2 * artin_length
-        deviation_times_3 = max(3*max_deg, target_times_3) - min(3*min_deg, target_times_3)
+    The deviation is projlen (max_deg - min_deg + 1) plus a penalty if the target
+    degree (2/3 * artin_length) is outside the [min_deg, max_deg] range.
     
-    A deviation_times_3 of 0 means the braid is a scalar v^target * I (kernel element!).
+    Specifically (using *3 for integer arithmetic):
+        projlen_times_3 = 3 * (max_deg - min_deg + 1)
+        
+        If target in [min_deg, max_deg]: penalty = 0
+        If target < min_deg: penalty_times_3 = 3 * (min_deg - target) 
+        If target > max_deg: penalty_times_3 = 3 * (target - max_deg)
+        
+        deviation_times_3 = projlen_times_3 + penalty_times_3
+    
+    Equivalently:
+        deviation_times_3 = 3*(max(max_deg, target) - min(min_deg, target) + 1)
+    
+    A deviation_times_3 of 3 means projlen=1 and target is within range (kernel element!).
     """
     N, _, _, D = matrices.shape
     device = matrices.device
     
     deviations = torch.zeros(N, dtype=torch.int32, device=device)
     
-    # Compute target_times_3 for each braid
+    # Compute target_times_3 for each braid: target = (2/3) * artin, so target*3 = 2*artin
     target_times_3 = 2 * artin_lengths  # Shape: (N,)
     
     sub_batch_size = 50000
@@ -209,13 +219,17 @@ def compute_deviation_batch(matrices: torch.Tensor, artin_lengths: torch.Tensor)
         min_deg_times_3 = 3 * min_degrees
         max_deg_times_3 = 3 * max_degrees
         
-        # deviation_times_3 = max(max_deg*3, target*3) - min(min_deg*3, target*3)
+        # Compute expanded range that includes target
         upper = torch.maximum(max_deg_times_3, batch_target)
         lower = torch.minimum(min_deg_times_3, batch_target)
-        batch_deviation = upper - lower
         
-        # Zero matrix should have deviation = 0 (it's technically in the kernel)
-        batch_deviation = torch.where(has_nonzero, batch_deviation, torch.zeros_like(batch_deviation))
+        # deviation_times_3 = (upper - lower) + 3 = expanded_projlen_times_3
+        # This is projlen + penalty, where penalty accounts for target being outside [min, max]
+        batch_deviation = upper - lower + 3  # +3 because projlen = (max - min + 1)
+        
+        # Zero matrix: set deviation to just 3 (projlen=1, no penalty since target=0 is at degree 0)
+        batch_deviation = torch.where(has_nonzero, batch_deviation, 
+                                      torch.full_like(batch_deviation, 3))
         
         deviations[start:end] = batch_deviation
     
@@ -616,15 +630,15 @@ class BraidSearchUltra:
             # Compute deviation instead of projlen
             chunk_deviations = compute_deviation_batch(chunk_matrices, chunk_artin)
             
-            # Kernel elements have deviation_times_3 == 0
-            zero_mask = (chunk_deviations == 0)
-            num_zeros = zero_mask.sum().item()
-            if num_zeros > 0:
+            # Kernel elements have deviation_times_3 == 3 (projlen=1 with target in range)
+            kernel_mask = (chunk_deviations == 3)
+            num_kernel = kernel_mask.sum().item()
+            if num_kernel > 0:
                 # Filter out identity (length 0)
-                nonidentity_mask = zero_mask & (chunk_lengths > 0)
-                num_kernel = nonidentity_mask.sum().item()
-                if num_kernel > 0:
-                    print(f"\n  🎉 FOUND {num_kernel} KERNEL ELEMENTS (deviation=0)! 🎉")
+                nonidentity_mask = kernel_mask & (chunk_lengths > 0)
+                num_kernel_nonid = nonidentity_mask.sum().item()
+                if num_kernel_nonid > 0:
+                    print(f"\n  🎉 FOUND {num_kernel_nonid} KERNEL ELEMENTS (deviation=1, projlen=1 with target in range)! 🎉")
                     self.kernel_braids.append(chunk_words[nonidentity_mask].cpu())
             
             unique_devs, counts = torch.unique(chunk_deviations, return_counts=True)
@@ -647,9 +661,9 @@ class BraidSearchUltra:
         if self.device.type == 'cuda':
             torch.cuda.empty_cache()
         
-        print(f"  Deviation distribution (dev*3):")
+        print(f"  Deviation distribution (dev = projlen + penalty, shown as dev*3):")
         for dev in sorted(deviation_counts.keys())[:15]:
-            # Convert deviation_times_3 to actual deviation
+            # deviation_times_3 = 3*projlen + 3*penalty, so actual deviation = dev/3
             actual_dev = dev / 3.0
             print(f"    deviation={actual_dev:.2f} (x3={dev}): {deviation_counts[dev]} braids")
         
