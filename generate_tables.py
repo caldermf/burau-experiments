@@ -253,7 +253,7 @@ def verify_multiplication(tables: dict, n: int, r: int, p: int):
 # =========================================================================
 if __name__ == "__main__":
     # Generate tables for B_4 with representation mod p = prime
-    prime = 6
+    prime = 3
     tables = generate_tables(
         n=4,
         r=1,
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     print(f"""
 To use these tables in your GPU code:
 
-    tables = torch.load('precomputed_tables/tables_B4_r1_p3.pt')
+    tables = torch.load('precomputed_tables/tables_B4_r1_p6.pt')
     
     simple_burau = tables['simple_burau']        # Shape: (24, 3, 3, 64)
     valid_suffixes = tables['valid_suffixes']    # Shape: (24, {tables['valid_suffixes'].shape[1]})
