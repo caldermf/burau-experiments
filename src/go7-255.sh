@@ -13,8 +13,8 @@
 #SBATCH --requeue                  # Automatically requeue if preempted
 #SBATCH --signal=B:USR1@60        # Send signal 120s before timeout
 #SBATCH --array=1                 # Defines the range of tasks
-#SBATCH --output=slurm_logs/jan7p7_%A_%a.out
-#SBATCH --error=slurm_logs/jan7p7_%A_%a.err
+#SBATCH --output=slurm_logs/p7_255_%A_%a.out
+#SBATCH --error=slurm_logs/p7_255_%A_%a.err
 
 set -e
 mkdir -p slurm_logs checkpoints
@@ -29,11 +29,11 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 $PYTHON_PATH find_kernel.py \
     --p 7 \
-    --bucket-size 2_000_000 \
+    --bucket-size 1_500_000 \
     --use-best 750_000 \
     --max-length 255 \
     --matmul-chunk 8000 \
-    --chunk-size 100_000 \
+    --chunk-size 90_000 \
     --degree-multiplier 2
 
 
