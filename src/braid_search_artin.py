@@ -11,6 +11,9 @@ deviation from the target power: target = (2/3) * artin_length.
 
 For B_4, the Garside element Δ has Artin length 6 and evaluates to v^4 * (scalar),
 so the ratio is 4/6 = 2/3.
+
+CRITICAL: Artin length is the NUMBER OF ARTIN GENERATORS, not the max degree!
+For simple elements in B_n, Artin length = number of inversions in the permutation.
 """
 
 import torch
@@ -18,6 +21,7 @@ import torch.nn.functional as F
 from dataclasses import dataclass
 import time
 import gc
+from itertools import permutations
 
 # =============================================================================
 # CONFIGURATION
@@ -51,6 +55,58 @@ STORAGE_DTYPE_WORD = torch.int32
 STORAGE_DTYPE_LENGTH = torch.int32
 STORAGE_DTYPE_ARTIN = torch.int32  # For Artin lengths
 COMPUTE_DTYPE_INT = torch.int32
+
+
+# =============================================================================
+# ARTIN LENGTH COMPUTATION
+# =============================================================================
+
+def count_inversions(perm: tuple) -> int:
+    """Count inversions in a permutation. This equals the Artin length."""
+    n = len(perm)
+    count = 0
+    for i in range(n):
+        for j in range(i + 1, n):
+            if perm[i] > perm[j]:
+                count += 1
+    return count
+
+
+def compute_B4_simple_artin_lengths() -> torch.Tensor:
+    """
+    Compute TRUE Artin lengths for all 24 simple elements in B_4.
+    
+    Simple elements in B_n correspond to permutations in S_n.
+    The Artin length of a simple is the number of inversions in its permutation.
+    
+    For B_4: 24 simples (= 4! permutations), with Artin lengths 0 to 6.
+    - Identity (1234): 0 inversions
+    - Δ (4321): 6 inversions
+    
+    Returns tensor of shape (24,) with Artin lengths indexed by simple number.
+    """
+    # Generate all permutations of (0,1,2,3) in lexicographic order
+    # This matches how Garside normal form indexes simple elements
+    perms = list(permutations(range(4)))
+    
+    artin_lengths = torch.zeros(24, dtype=STORAGE_DTYPE_ARTIN)
+    
+    for idx, perm in enumerate(perms):
+        artin_lengths[idx] = count_inversions(perm)
+    
+    return artin_lengths
+
+
+def get_simple_artin_lengths(n: int = 4) -> torch.Tensor:
+    """
+    Get TRUE Artin lengths for simple elements in B_n.
+    
+    Currently only B_4 is supported.
+    """
+    if n != 4:
+        raise ValueError(f"Only B_4 is currently supported, got n={n}")
+    
+    return compute_B4_simple_artin_lengths()
 
 
 # =============================================================================
@@ -354,42 +410,23 @@ class BraidSearchUltra:
         
         self.D = simple_burau.shape[-1]
         
-        # Compute or use provided Artin lengths for simple elements
+        # Use provided Artin lengths or compute TRUE Artin lengths from permutations
         if simple_artin_lengths is not None:
             self.simple_artin_lengths = simple_artin_lengths.to(STORAGE_DTYPE_ARTIN).to(self.device)
+            print(f"Using provided Artin lengths")
         else:
-            self.simple_artin_lengths = self._compute_simple_artin_lengths()
+            self.simple_artin_lengths = get_simple_artin_lengths(n=4).to(self.device)
+            print(f"Computed TRUE Artin lengths from permutation inversions")
+        
+        print(f"Simple Artin lengths: {self.simple_artin_lengths.tolist()}")
+        print(f"  Range: [{self.simple_artin_lengths.min().item()}, {self.simple_artin_lengths.max().item()}]")
+        print(f"  Distribution: {torch.bincount(self.simple_artin_lengths.int()).tolist()}")
         
         self.fast_matmul = FastPolyMatmul(simple_burau, self.D, self.device)
         
         # Buckets now keyed by deviation_times_3
         self.buckets: dict[int, tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]] = {}
         self.kernel_braids: list[torch.Tensor] = []
-    
-    def _compute_simple_artin_lengths(self) -> torch.Tensor:
-        """
-        Compute Artin length of each simple from its Burau matrix.
-        
-        For the standard Burau representation, the Artin length of a simple s
-        equals the maximum degree of v appearing in its matrix.
-        """
-        num_simples = self.simple_burau.shape[0]
-        artin_lengths = torch.zeros(num_simples, dtype=STORAGE_DTYPE_ARTIN, device=self.device)
-        
-        for s in range(num_simples):
-            mat = self.simple_burau[s]  # Shape: (3, 3, D)
-            # Find max degree with nonzero entry
-            nonzero_mask = (mat != 0).any(dim=(0, 1))  # Shape: (D,)
-            if nonzero_mask.any():
-                max_deg = nonzero_mask.nonzero()[-1].item()
-                artin_lengths[s] = max_deg
-            # else: artin_lengths[s] = 0 (identity)
-        
-        print(f"Computed Artin lengths for {num_simples} simples:")
-        print(f"  Range: [{artin_lengths.min().item()}, {artin_lengths.max().item()}]")
-        print(f"  Distribution: {torch.bincount(artin_lengths.int()).tolist()}")
-        
-        return artin_lengths
     
     def initialize(self):
         """Start with the identity braid."""
@@ -502,7 +539,7 @@ class BraidSearchUltra:
         new_words[batch_idx, parent_lengths.long()] = suffix_indices.to(STORAGE_DTYPE_WORD)
         new_lengths = parent_lengths + 1
         
-        # Update Artin lengths: add the Artin length of the appended simple
+        # Update Artin lengths: add the TRUE Artin length of the appended simple
         suffix_artin = self.simple_artin_lengths[suffix_indices]
         new_artin = parent_artin + suffix_artin
         
@@ -721,16 +758,12 @@ def load_tables_from_file(config: Config, table_path: str):
     valid_suffixes[id_idx] = valid_suffixes[delta_idx]
     num_valid_suffixes[id_idx] = num_valid_suffixes[delta_idx]
     
-    # Load or compute Artin lengths
-    if 'simple_artin_lengths' in tables:
-        simple_artin_lengths = tables['simple_artin_lengths']
-        print(f"Loaded Artin lengths from table file")
-    else:
-        simple_artin_lengths = None
-        print(f"Artin lengths not in table file, will compute from matrices")
+    # Compute TRUE Artin lengths from permutation inversions (not from matrices!)
+    simple_artin_lengths = get_simple_artin_lengths(n=4)
     
     print(f"Loaded tables from {table_path}")
     print(f"  Degree window: [0, {D-1}] ({D} coefficients) - NON-NEGATIVE ONLY")
+    print(f"  TRUE Artin lengths computed from permutation inversions")
     
     return simple_burau, valid_suffixes, num_valid_suffixes, simple_artin_lengths
 

@@ -161,10 +161,13 @@ def find_kernel(
         return None
 
     try:
-        simple_burau, valid_suffixes, num_valid_suffixes, simple_artin_lengths = load_tables_from_file(
-            config, 
-            table_path=table_path
-        )
+        result = load_tables_from_file(config, table_path=table_path)
+        # Handle both old (3-tuple) and new (4-tuple) return formats
+        if len(result) == 4:
+            simple_burau, valid_suffixes, num_valid_suffixes, simple_artin_lengths = result
+        else:
+            simple_burau, valid_suffixes, num_valid_suffixes = result
+            simple_artin_lengths = None
     except FileNotFoundError:
         print(f"ERROR: Table file not found at {table_path}")
         return None
@@ -178,6 +181,8 @@ def find_kernel(
     assert simple_burau[0, 2, 2, 0] == 1, "Identity matrix check failed"
     print("✓ Identity matrix verified (at degree 0)\n")
     
+    # Note: simple_artin_lengths will be computed from permutation inversions
+    # inside BraidSearch if not provided (which is the correct behavior)
     search = BraidSearch(simple_burau, valid_suffixes, num_valid_suffixes, config, simple_artin_lengths)
     kernel_braids = search.run()
     
