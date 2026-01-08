@@ -2478,3 +2478,70 @@ Level 125 - SAMPLING
   Starting braids: 1600000
   Candidates to generate: 8937858
   Processing in 90 chunks...
+  Projlen distribution:
+    projlen=66: 4 braids
+    projlen=67: 17 braids
+    projlen=68: 104 braids
+    projlen=69: 205 braids
+    projlen=70: 1608 braids
+    projlen=71: 2846 braids
+    projlen=72: 16125 braids
+    projlen=73: 33733 braids
+    projlen=74: 176172 braids
+    projlen=75: 227416 braids
+  Braids kept: 2230814 (in 19 buckets, 11.38 GB)
+  ⚡ Timing: matmul=1.31s, sampling=2.04s, total=17.18s
+
+============================================================
+Level 126 - SAMPLING
+============================================================
+  Starting braids: 1600000
+  Candidates to generate: 8898154
+  Processing in 89 chunks...
+  Projlen distribution:
+    projlen=66: 3 braids
+    projlen=67: 9 braids
+    projlen=68: 43 braids
+    projlen=69: 137 braids
+    projlen=70: 769 braids
+    projlen=71: 1595 braids
+    projlen=72: 10139 braids
+    projlen=73: 17389 braids
+    projlen=74: 92939 braids
+    projlen=75: 171893 braids
+  Braids kept: 2094916 (in 19 buckets, 10.69 GB)
+  ⚡ Timing: matmul=1.28s, sampling=1.92s, total=16.89s
+
+============================================================
+Level 127 - SAMPLING
+============================================================
+  Starting braids: 1600000
+  Candidates to generate: 8893736
+  Processing in 89 chunks...
+  Projlen distribution:
+    projlen=67: 3 braids
+    projlen=68: 32 braids
+    projlen=69: 71 braids
+    projlen=70: 404 braids
+    projlen=71: 974 braids
+    projlen=72: 5194 braids
+    projlen=73: 10305 braids
+    projlen=74: 59252 braids
+    projlen=75: 94338 braids
+    projlen=76: 459767 braids
+  Braids kept: 2165358 (in 19 buckets, 11.05 GB)
+  ⚡ Timing: matmul=1.28s, sampling=1.91s, total=16.81s
+
+============================================================
+SEARCH COMPLETE
+============================================================
+Final level: 127
+Total time: 2275.10s
+Avg time per level: 17.91s
+Total kernel elements: 0
+
+============================================================
+VERIFICATION
+============================================================
+No projlen=1 braids found.
+JOB COMPLETED!
