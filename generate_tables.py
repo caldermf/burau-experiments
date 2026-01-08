@@ -253,7 +253,7 @@ def verify_multiplication(tables: dict, n: int, r: int, p: int):
 # =========================================================================
 if __name__ == "__main__":
     # Generate tables for B_4 with representation mod p = prime
-    prime = 0
+    prime = 6
     tables = generate_tables(
         n=4,
         r=1,
