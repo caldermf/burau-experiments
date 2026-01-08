@@ -185,12 +185,12 @@ def find_kernel(
                 print(f"    Factors: {word_list}")
                 print(f"    Length: {len(word_list)}")
                 print(f"    {msg}")
-                
-                if PEYL_AVAILABLE:
-                    braid = GNF(n=4, power=0, factors=tuple(word_list))
-                    print(f"    Artin word: {braid.magma_artin_word()}")
-            elif i < 5:
+            elif i < 20:
                 print(f"  Braid {i}: {word_list[:8]}{'...' if len(word_list) > 8 else ''} - {msg}")
+                
+            if PEYL_AVAILABLE:
+                braid = GNF(n=4, power=0, factors=tuple(word_list))
+                print(f"    Artin word: {braid.magma_artin_word()}")
     
     print(f"\n{'='*60}")
     print(f"SUMMARY")
