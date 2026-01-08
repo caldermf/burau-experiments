@@ -91,7 +91,7 @@ class MCTSConfig:
     
     # What to add back to database from playouts
     add_from_playout: int = 50  # Add top N braids from each playout bucket
-    add_ratio_threshold: float = 1.5  # Only add if projlen/length ratio below this
+    add_ratio_threshold: float = 3.0  # Only add if projlen/length ratio below this (p=7 can have high ratios!)
     
     # Memory management
     degree_multiplier: int = 2
@@ -463,9 +463,8 @@ class MCTSBraidSearch:
                 existing.best_length = length
             return
         
-        # Filter by ratio - only add promising braids
-        if score > self.config.add_ratio_threshold:
-            return
+        # Don't filter here - let the caller decide what to add
+        # The caller already filtered by ratio threshold
         
         node = MCTSNode(
             word=word,
@@ -586,37 +585,48 @@ class MCTSBraidSearch:
             # This captures good braids found at ANY point during playout
             added_count = 0
             added_ratios = []
+            
+            # Collect all candidates with their ratios
+            all_candidates = []
             for projlen in sorted(best_braids.keys()):
                 matrices, words, lengths = best_braids[projlen]
                 
-                # Add top N from this projlen bucket
-                n_to_add = min(self.config.add_from_playout, len(matrices))
-                
-                for i in range(n_to_add):
+                for i in range(min(self.config.add_from_playout, len(matrices))):
                     length_i = lengths[i].item()
                     if length_i == 0:
                         continue
                     
                     ratio = projlen / length_i
-                    if ratio > 1.5:  # Skip bad ratios
-                        continue
-                        
                     word_list = words[i, :length_i].cpu().tolist()
                     word_tuple = tuple(word_list)
                     
                     if word_tuple not in self.database:
-                        self.add_node(
-                            word=word_tuple,
-                            length=length_i,
-                            matrix=matrices[i].cpu(),
-                            projlen=projlen
-                        )
-                        added_count += 1
-                        if len(added_ratios) < 5:
-                            added_ratios.append(f"{projlen}/{length_i}={ratio:.2f}")
+                        all_candidates.append((ratio, word_tuple, length_i, matrices[i].cpu(), projlen))
+            
+            # Sort by ratio (best first) and add
+            all_candidates.sort(key=lambda x: x[0])
+            
+            for ratio, word_tuple, length_i, matrix, projlen in all_candidates:
+                # Always add at least some nodes, but prefer good ratios
+                if added_count >= self.config.add_from_playout * len(best_braids):
+                    break
+                if ratio > self.config.add_ratio_threshold and added_count >= 100:
+                    break  # Stop adding bad-ratio nodes after we have some good ones
+                
+                self.add_node(
+                    word=word_tuple,
+                    length=length_i,
+                    matrix=matrix,
+                    projlen=projlen
+                )
+                added_count += 1
+                if len(added_ratios) < 5:
+                    added_ratios.append(f"{projlen}/{length_i}={ratio:.2f}")
             
             if added_count > 0:
                 print(f"    Added {added_count} nodes (sample ratios: {', '.join(added_ratios)})")
+            else:
+                print(f"    WARNING: No nodes added! Best braids had projlens: {sorted(best_braids.keys())[:5]}")
             
             # Clean up
             del start_matrix, word_tensor, start_length
