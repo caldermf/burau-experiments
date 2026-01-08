@@ -171,10 +171,11 @@ class PlayoutEngine:
         best_projlen = start_projlens.min().item()
         kernel_braids = []
         
-        # Check if we already have kernel elements
+        # Check if we already have kernel elements (but not the trivial identity!)
         if best_projlen == 1:
-            one_mask = (start_projlens == 1)
-            kernel_braids.append(words[one_mask].cpu())
+            one_mask = (start_projlens == 1) & (lengths > 0)
+            if one_mask.any():
+                kernel_braids.append(words[one_mask].cpu())
         
         # Run playout for `depth` levels
         for level in range(depth):
@@ -281,8 +282,8 @@ class PlayoutEngine:
                 # Compute projlens
                 new_projlens = compute_projlen_batch(new_matrices)
                 
-                # Check for kernel elements
-                one_mask = (new_projlens == 1)
+                # Check for kernel elements (must have length > 0 to be non-trivial)
+                one_mask = (new_projlens == 1) & (new_lengths > 0)
                 if one_mask.any():
                     kernel_braids.append(new_words[one_mask].cpu())
                 
@@ -481,11 +482,25 @@ class MCTSBraidSearch:
             
             self.stats['total_playouts'] += 1
             
-            # Check for kernel elements
+            # Check for kernel elements (but not the trivial identity - require length > 0)
             if kernel_found:
-                self.kernel_braids.extend(kernel_found)
-                print(f"\n  🎉 KERNEL ELEMENT FOUND! 🎉")
-                return True
+                # Verify at least one has length > 0
+                has_nontrivial = False
+                for batch in kernel_found:
+                    for wt in batch:
+                        word_list = [w.item() for w in wt]
+                        while word_list and word_list[-1] == 0:
+                            word_list.pop()
+                        if word_list:  # Non-empty word
+                            has_nontrivial = True
+                            break
+                    if has_nontrivial:
+                        break
+                
+                if has_nontrivial:
+                    self.kernel_braids.extend(kernel_found)
+                    print(f"\n  🎉 KERNEL ELEMENT FOUND! 🎉")
+                    return True
             
             # Backpropagate: update node's score
             old_score = node.score
