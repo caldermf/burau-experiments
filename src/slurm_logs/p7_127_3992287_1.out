@@ -1,0 +1,19 @@
+============================================================
+SEARCHING FOR p=6 KERNEL ELEMENTS (ULTRA-OPTIMIZED)
+============================================================
+Device: cuda
+Bucket size: 4000000
+Max length: 127
+Bootstrap length: 5
+Prime: 6
+Degree multiplier: 2
+Degree window: [0, 254] (255 coeffs) - NON-NEGATIVE ONLY
+Use best: 1400000
+Expansion chunk size: 200000
+Matmul chunk size: 8000
+⚡ Precomputed FFTs: ENABLED
+⚡ Non-negative degrees only: ENABLED (2x memory savings!)
+
+ERROR: Could not find table file for p=6
+Searched in: ['/nfs/roberts/project/pi_com36/com36/burau-experiments/src/precomputed_tables/tables_B4_r1_p6.pt', '/nfs/roberts/project/pi_com36/com36/burau-experiments/precomputed_tables/tables_B4_r1_p6.pt', '/nfs/roberts/project/pi_com36/com36/burau-experiments/src/tables_B4_r1_p6.pt', 'tables_B4_r1_p6.pt']
+JOB COMPLETED!

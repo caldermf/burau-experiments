@@ -1,0 +1,5094 @@
+============================================================
+SEARCHING FOR p=6 KERNEL ELEMENTS (ULTRA-OPTIMIZED)
+============================================================
+Device: cuda
+Bucket size: 1400000
+Max length: 255
+Bootstrap length: 5
+Prime: 6
+Degree multiplier: 2
+Degree window: [0, 510] (511 coeffs) - NON-NEGATIVE ONLY
+Use best: 700000
+Expansion chunk size: 130000
+Matmul chunk size: 8000
+⚡ Precomputed FFTs: ENABLED
+⚡ Non-negative degrees only: ENABLED (2x memory savings!)
+
+Loaded tables from /nfs/roberts/project/pi_com36/com36/burau-experiments/precomputed_tables/tables_B4_r1_p6.pt
+  Degree window: [0, 510] (511 coefficients) - NON-NEGATIVE ONLY
+✓ Identity matrix verified (at degree 0)
+
+Precomputing FFTs of simple Burau matrices...
+  D=511, out_D=1021, fft_size=1024
+  FFT cache: 0.9 MB
+Initialized with identity braid
+Degree window: [0, 510] (511 coefficients) - NON-NEGATIVE ONLY
+FFT size: 1024
+Storage types: matrix=torch.int16, word=torch.int32
+Config: bucket_size=1400000, bootstrap=5, max_length=255, chunk_size=130000, matmul_chunk=8000, use_best=700000
+⚡ Ultra-optimized: precomputed Burau FFTs + non-negative degrees only
+
+============================================================
+Level 1 - BOOTSTRAP
+============================================================
+  Starting braids: 1
+  Candidates to generate: 22
+  Projlen distribution:
+    projlen=3: 10 braids
+    projlen=4: 12 braids
+  Braids kept: 22 (in 2 buckets, 0.00 GB)
+  ⚡ Timing: matmul=0.10s, sampling=0.01s, total=0.44s
+
+============================================================
+Level 2 - BOOTSTRAP
+============================================================
+  Starting braids: 22
+  Candidates to generate: 164
+  Projlen distribution:
+    projlen=5: 56 braids
+    projlen=6: 76 braids
+    projlen=7: 32 braids
+  Braids kept: 164 (in 3 buckets, 0.00 GB)
+  ⚡ Timing: matmul=0.01s, sampling=0.00s, total=0.11s
+
+============================================================
+Level 3 - BOOTSTRAP
+============================================================
+  Starting braids: 164
+  Candidates to generate: 982
+  Projlen distribution:
+    projlen=7: 270 braids
+    projlen=8: 364 braids
+    projlen=9: 288 braids
+    projlen=10: 60 braids
+  Braids kept: 982 (in 4 buckets, 0.01 GB)
+  ⚡ Timing: matmul=0.01s, sampling=0.00s, total=0.11s
+
+============================================================
+Level 4 - BOOTSTRAP
+============================================================
+  Starting braids: 982
+  Candidates to generate: 5528
+  Projlen distribution:
+    projlen=9: 1256 braids
+    projlen=10: 1672 braids
+    projlen=11: 1784 braids
+    projlen=12: 700 braids
+    projlen=13: 116 braids
+  Braids kept: 5528 (in 5 buckets, 0.06 GB)
+  ⚡ Timing: matmul=0.02s, sampling=0.00s, total=0.12s
+
+============================================================
+Level 5 - BOOTSTRAP
+============================================================
+  Starting braids: 5528
+  Candidates to generate: 30478
+  Projlen distribution:
+    projlen=10: 4 braids
+    projlen=11: 5798 braids
+    projlen=12: 7672 braids
+    projlen=13: 9864 braids
+    projlen=14: 5236 braids
+    projlen=15: 1716 braids
+    projlen=16: 188 braids
+  Braids kept: 30478 (in 7 buckets, 0.31 GB)
+  ⚡ Timing: matmul=0.08s, sampling=0.00s, total=0.18s
+
+============================================================
+Level 6 - SAMPLING
+============================================================
+  Starting braids: 30478
+  Candidates to generate: 166796
+  Processing in 2 chunks...
+  Projlen distribution:
+    projlen=12: 72 braids
+    projlen=13: 26764 braids
+    projlen=14: 35288 braids
+    projlen=15: 52292 braids
+    projlen=16: 33012 braids
+    projlen=17: 15680 braids
+    projlen=18: 3356 braids
+    projlen=19: 332 braids
+  Braids kept: 166796 (in 8 buckets, 1.70 GB)
+  ⚡ Timing: matmul=0.40s, sampling=0.01s, total=0.61s
+
+============================================================
+Level 7 - SAMPLING
+============================================================
+  Starting braids: 166796
+  Candidates to generate: 910366
+  Processing in 8 chunks...
+  Projlen distribution:
+    projlen=13: 52 braids
+    projlen=14: 812 braids
+    projlen=15: 123702 braids
+    projlen=16: 162584 braids
+    projlen=17: 271412 braids
+    projlen=18: 191940 braids
+    projlen=19: 116516 braids
+    projlen=20: 35764 braids
+    projlen=21: 7076 braids
+    projlen=22: 508 braids
+  Braids kept: 910366 (in 10 buckets, 9.31 GB)
+  ⚡ Timing: matmul=0.59s, sampling=0.13s, total=3.04s
+
+============================================================
+Level 8 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 3861338
+  Processing in 30 chunks...
+  Projlen distribution:
+    projlen=14: 96 braids
+    projlen=15: 964 braids
+    projlen=16: 7608 braids
+    projlen=17: 571587 braids
+    projlen=18: 745349 braids
+    projlen=19: 1353687 braids
+    projlen=20: 892594 braids
+    projlen=21: 289453 braids
+  Braids kept: 3861338 (in 8 buckets, 39.47 GB)
+  ⚡ Timing: matmul=2.67s, sampling=1.34s, total=14.16s
+
+============================================================
+Level 9 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4073986
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=15: 144 braids
+    projlen=16: 1351 braids
+    projlen=17: 13084 braids
+    projlen=18: 50417 braids
+    projlen=19: 2298928 braids
+    projlen=20: 1448240 braids
+    projlen=21: 261822 braids
+  Braids kept: 3126818 (in 7 buckets, 31.96 GB)
+  ⚡ Timing: matmul=2.73s, sampling=2.44s, total=16.77s
+
+============================================================
+Level 10 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4234876
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=16: 64 braids
+    projlen=17: 2893 braids
+    projlen=18: 12017 braids
+    projlen=19: 100029 braids
+    projlen=20: 230718 braids
+    projlen=21: 2602309 braids
+    projlen=22: 1286846 braids
+  Braids kept: 3032567 (in 7 buckets, 31.00 GB)
+  ⚡ Timing: matmul=2.91s, sampling=2.42s, total=17.15s
+
+============================================================
+Level 11 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4325750
+  Processing in 34 chunks...
+  Projlen distribution:
+    projlen=17: 88 braids
+    projlen=18: 1693 braids
+    projlen=19: 27536 braids
+    projlen=20: 78938 braids
+    projlen=21: 593050 braids
+    projlen=22: 981749 braids
+    projlen=23: 1913486 braids
+    projlen=24: 729210 braids
+  Braids kept: 3812264 (in 8 buckets, 38.97 GB)
+  ⚡ Timing: matmul=2.91s, sampling=2.12s, total=16.94s
+
+============================================================
+Level 12 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4403602
+  Processing in 34 chunks...
+  Projlen distribution:
+    projlen=17: 80 braids
+    projlen=18: 377 braids
+    projlen=19: 2767 braids
+    projlen=20: 18708 braids
+    projlen=21: 192716 braids
+    projlen=22: 431317 braids
+    projlen=23: 2473941 braids
+    projlen=24: 1283696 braids
+  Braids kept: 3329661 (in 8 buckets, 34.04 GB)
+  ⚡ Timing: matmul=3.09s, sampling=2.71s, total=18.07s
+
+============================================================
+Level 13 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4320952
+  Processing in 34 chunks...
+  Projlen distribution:
+    projlen=17: 40 braids
+    projlen=18: 228 braids
+    projlen=19: 1416 braids
+    projlen=20: 7027 braids
+    projlen=21: 36346 braids
+    projlen=22: 145787 braids
+    projlen=23: 1056237 braids
+    projlen=24: 1754642 braids
+    projlen=25: 1205857 braids
+    projlen=26: 113372 braids
+  Braids kept: 3966310 (in 10 buckets, 40.54 GB)
+  ⚡ Timing: matmul=2.87s, sampling=2.20s, total=17.02s
+
+============================================================
+Level 14 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4427918
+  Processing in 35 chunks...
+  Projlen distribution:
+    projlen=18: 105 braids
+    projlen=19: 935 braids
+    projlen=20: 4162 braids
+    projlen=21: 18786 braids
+    projlen=22: 69057 braids
+    projlen=23: 284292 braids
+    projlen=24: 689115 braids
+    projlen=25: 2261562 braids
+    projlen=26: 1099904 braids
+  Braids kept: 3566356 (in 9 buckets, 36.46 GB)
+  ⚡ Timing: matmul=2.91s, sampling=3.32s, total=19.04s
+
+============================================================
+Level 15 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4373578
+  Processing in 34 chunks...
+  Projlen distribution:
+    projlen=18: 5 braids
+    projlen=19: 263 braids
+    projlen=20: 1737 braids
+    projlen=21: 12434 braids
+    projlen=22: 42708 braids
+    projlen=23: 163429 braids
+    projlen=24: 414071 braids
+    projlen=25: 1356168 braids
+    projlen=26: 1658820 braids
+    projlen=27: 723943 braids
+  Braids kept: 4114758 (in 10 buckets, 42.06 GB)
+  ⚡ Timing: matmul=3.01s, sampling=2.27s, total=17.15s
+
+============================================================
+Level 16 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4276892
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 1 braids
+    projlen=19: 52 braids
+    projlen=20: 466 braids
+    projlen=21: 4935 braids
+    projlen=22: 21954 braids
+    projlen=23: 113278 braids
+    projlen=24: 293018 braids
+    projlen=25: 901432 braids
+    projlen=26: 1682323 braids
+    projlen=27: 1119307 braids
+  Braids kept: 3994569 (in 11 buckets, 40.83 GB)
+  ⚡ Timing: matmul=3.01s, sampling=2.19s, total=16.74s
+
+============================================================
+Level 17 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4254118
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 20 braids
+    projlen=20: 206 braids
+    projlen=21: 1925 braids
+    projlen=22: 10207 braids
+    projlen=23: 55530 braids
+    projlen=24: 175231 braids
+    projlen=25: 658882 braids
+    projlen=26: 1245235 braids
+    projlen=27: 1539679 braids
+    projlen=28: 567203 braids
+  Braids kept: 4114439 (in 10 buckets, 42.06 GB)
+  ⚡ Timing: matmul=2.96s, sampling=1.86s, total=16.17s
+
+============================================================
+Level 18 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4288984
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 19 braids
+    projlen=20: 145 braids
+    projlen=21: 1116 braids
+    projlen=22: 6524 braids
+    projlen=23: 28621 braids
+    projlen=24: 102315 braids
+    projlen=25: 374709 braids
+    projlen=26: 831389 braids
+    projlen=27: 1976921 braids
+    projlen=28: 967225 braids
+  Braids kept: 3712063 (in 10 buckets, 37.94 GB)
+  ⚡ Timing: matmul=3.03s, sampling=2.37s, total=17.19s
+
+============================================================
+Level 19 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4267308
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 36 braids
+    projlen=20: 167 braids
+    projlen=21: 1065 braids
+    projlen=22: 4782 braids
+    projlen=23: 19489 braids
+    projlen=24: 73879 braids
+    projlen=25: 236072 braids
+    projlen=26: 577068 braids
+    projlen=27: 1573811 braids
+    projlen=28: 1377453 braids
+  Braids kept: 4093497 (in 11 buckets, 41.84 GB)
+  ⚡ Timing: matmul=2.98s, sampling=2.51s, total=17.15s
+
+============================================================
+Level 20 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4271706
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 52 braids
+    projlen=20: 165 braids
+    projlen=21: 1218 braids
+    projlen=22: 3837 braids
+    projlen=23: 16092 braids
+    projlen=24: 57031 braids
+    projlen=25: 178905 braids
+    projlen=26: 458760 braids
+    projlen=27: 1122106 braids
+    projlen=28: 1648528 braids
+  Braids kept: 4023178 (in 11 buckets, 41.12 GB)
+  ⚡ Timing: matmul=2.97s, sampling=2.05s, total=16.41s
+
+============================================================
+Level 21 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4240850
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 4 braids
+    projlen=20: 141 braids
+    projlen=21: 1221 braids
+    projlen=22: 3666 braids
+    projlen=23: 14959 braids
+    projlen=24: 44864 braids
+    projlen=25: 148997 braids
+    projlen=26: 389954 braids
+    projlen=27: 942241 braids
+    projlen=28: 1769285 braids
+  Braids kept: 3871565 (in 11 buckets, 39.58 GB)
+  ⚡ Timing: matmul=2.93s, sampling=2.31s, total=16.92s
+
+============================================================
+Level 22 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4204794
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 4 braids
+    projlen=20: 82 braids
+    projlen=21: 738 braids
+    projlen=22: 3038 braids
+    projlen=23: 13767 braids
+    projlen=24: 39846 braids
+    projlen=25: 129246 braids
+    projlen=26: 320722 braids
+    projlen=27: 817482 braids
+    projlen=28: 1558491 braids
+  Braids kept: 4046303 (in 12 buckets, 41.36 GB)
+  ⚡ Timing: matmul=2.83s, sampling=2.34s, total=16.83s
+
+============================================================
+Level 23 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4184498
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 12 braids
+    projlen=20: 92 braids
+    projlen=21: 512 braids
+    projlen=22: 2079 braids
+    projlen=23: 11055 braids
+    projlen=24: 34390 braids
+    projlen=25: 115400 braids
+    projlen=26: 284313 braids
+    projlen=27: 713183 braids
+    projlen=28: 1322635 braids
+  Braids kept: 4184498 (in 12 buckets, 42.77 GB)
+  ⚡ Timing: matmul=2.79s, sampling=1.77s, total=15.70s
+
+============================================================
+Level 24 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4161236
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 2 braids
+    projlen=19: 19 braids
+    projlen=20: 152 braids
+    projlen=21: 503 braids
+    projlen=22: 2185 braids
+    projlen=23: 8462 braids
+    projlen=24: 26906 braids
+    projlen=25: 101880 braids
+    projlen=26: 250469 braids
+    projlen=27: 642291 braids
+  Braids kept: 4154859 (in 13 buckets, 42.47 GB)
+  ⚡ Timing: matmul=2.75s, sampling=1.88s, total=15.95s
+
+============================================================
+Level 25 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4183110
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 13 braids
+    projlen=20: 168 braids
+    projlen=21: 688 braids
+    projlen=22: 2365 braids
+    projlen=23: 8821 braids
+    projlen=24: 26187 braids
+    projlen=25: 83810 braids
+    projlen=26: 213682 braids
+    projlen=27: 591903 braids
+    projlen=28: 1093226 braids
+  Braids kept: 4056024 (in 12 buckets, 41.46 GB)
+  ⚡ Timing: matmul=2.84s, sampling=2.08s, total=16.48s
+
+============================================================
+Level 26 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4221214
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 38 braids
+    projlen=20: 164 braids
+    projlen=21: 662 braids
+    projlen=22: 2224 braids
+    projlen=23: 8815 braids
+    projlen=24: 26922 braids
+    projlen=25: 82203 braids
+    projlen=26: 207706 braids
+    projlen=27: 521506 braids
+    projlen=28: 983066 braids
+  Braids kept: 3981269 (in 12 buckets, 40.70 GB)
+  ⚡ Timing: matmul=2.87s, sampling=2.08s, total=16.42s
+
+============================================================
+Level 27 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4210120
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 54 braids
+    projlen=20: 202 braids
+    projlen=21: 734 braids
+    projlen=22: 2407 braids
+    projlen=23: 7593 braids
+    projlen=24: 23785 braids
+    projlen=25: 81093 braids
+    projlen=26: 205781 braids
+    projlen=27: 519131 braids
+    projlen=28: 980263 braids
+  Braids kept: 3979999 (in 12 buckets, 40.68 GB)
+  ⚡ Timing: matmul=2.89s, sampling=2.13s, total=16.61s
+
+============================================================
+Level 28 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4180204
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 52 braids
+    projlen=20: 223 braids
+    projlen=21: 696 braids
+    projlen=22: 2441 braids
+    projlen=23: 7519 braids
+    projlen=24: 22590 braids
+    projlen=25: 71351 braids
+    projlen=26: 185833 braids
+    projlen=27: 512824 braids
+    projlen=28: 972590 braids
+  Braids kept: 3940358 (in 12 buckets, 40.28 GB)
+  ⚡ Timing: matmul=2.77s, sampling=2.12s, total=16.37s
+
+============================================================
+Level 29 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4179494
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 19 braids
+    projlen=20: 137 braids
+    projlen=21: 753 braids
+    projlen=22: 2208 braids
+    projlen=23: 7392 braids
+    projlen=24: 21752 braids
+    projlen=25: 66111 braids
+    projlen=26: 173338 braids
+    projlen=27: 465674 braids
+    projlen=28: 903682 braids
+  Braids kept: 3865478 (in 12 buckets, 39.51 GB)
+  ⚡ Timing: matmul=2.76s, sampling=2.24s, total=16.64s
+
+============================================================
+Level 30 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4177730
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 26 braids
+    projlen=20: 115 braids
+    projlen=21: 522 braids
+    projlen=22: 1768 braids
+    projlen=23: 7221 braids
+    projlen=24: 20277 braids
+    projlen=25: 62757 braids
+    projlen=26: 166141 braids
+    projlen=27: 437628 braids
+    projlen=28: 873560 braids
+  Braids kept: 3834450 (in 12 buckets, 39.20 GB)
+  ⚡ Timing: matmul=2.77s, sampling=2.31s, total=16.56s
+
+============================================================
+Level 31 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4170896
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 30 braids
+    projlen=20: 95 braids
+    projlen=21: 387 braids
+    projlen=22: 1543 braids
+    projlen=23: 5466 braids
+    projlen=24: 17512 braids
+    projlen=25: 59389 braids
+    projlen=26: 157079 braids
+    projlen=27: 424463 braids
+    projlen=28: 865902 braids
+  Braids kept: 3827211 (in 13 buckets, 39.12 GB)
+  ⚡ Timing: matmul=2.76s, sampling=2.35s, total=16.71s
+
+============================================================
+Level 32 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4196830
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 34 braids
+    projlen=20: 103 braids
+    projlen=21: 427 braids
+    projlen=22: 1268 braids
+    projlen=23: 4620 braids
+    projlen=24: 15198 braids
+    projlen=25: 47806 braids
+    projlen=26: 140847 braids
+    projlen=27: 401326 braids
+    projlen=28: 840604 braids
+  Braids kept: 3892881 (in 13 buckets, 39.79 GB)
+  ⚡ Timing: matmul=2.89s, sampling=2.96s, total=17.59s
+
+============================================================
+Level 33 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4196226
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 40 braids
+    projlen=20: 96 braids
+    projlen=21: 522 braids
+    projlen=22: 1582 braids
+    projlen=23: 4421 braids
+    projlen=24: 13609 braids
+    projlen=25: 41841 braids
+    projlen=26: 124529 braids
+    projlen=27: 331809 braids
+    projlen=28: 765117 braids
+  Braids kept: 3972044 (in 13 buckets, 40.60 GB)
+  ⚡ Timing: matmul=2.80s, sampling=2.38s, total=16.86s
+
+============================================================
+Level 34 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4190796
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 26 braids
+    projlen=20: 226 braids
+    projlen=21: 586 braids
+    projlen=22: 1840 braids
+    projlen=23: 5003 braids
+    projlen=24: 14835 braids
+    projlen=25: 39255 braids
+    projlen=26: 111998 braids
+    projlen=27: 293923 braids
+    projlen=28: 685863 braids
+  Braids kept: 4190796 (in 13 buckets, 42.84 GB)
+  ⚡ Timing: matmul=2.79s, sampling=1.96s, total=16.05s
+
+============================================================
+Level 35 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4174322
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 9 braids
+    projlen=19: 57 braids
+    projlen=20: 323 braids
+    projlen=21: 702 braids
+    projlen=22: 2553 braids
+    projlen=23: 5924 braids
+    projlen=24: 15583 braids
+    projlen=25: 39906 braids
+    projlen=26: 113312 braids
+    projlen=27: 271639 braids
+  Braids kept: 4174322 (in 14 buckets, 42.67 GB)
+  ⚡ Timing: matmul=2.76s, sampling=1.81s, total=15.85s
+
+============================================================
+Level 36 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4144502
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=16: 4 braids
+    projlen=17: 4 braids
+    projlen=18: 33 braids
+    projlen=19: 91 braids
+    projlen=20: 263 braids
+    projlen=21: 846 braids
+    projlen=22: 3090 braids
+    projlen=23: 6741 braids
+    projlen=24: 19061 braids
+    projlen=25: 44591 braids
+  Braids kept: 4144502 (in 16 buckets, 42.37 GB)
+  ⚡ Timing: matmul=2.92s, sampling=1.75s, total=15.58s
+
+============================================================
+Level 37 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4120540
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=15: 8 braids
+    projlen=16: 24 braids
+    projlen=17: 47 braids
+    projlen=18: 74 braids
+    projlen=19: 199 braids
+    projlen=20: 324 braids
+    projlen=21: 1062 braids
+    projlen=22: 2872 braids
+    projlen=23: 7206 braids
+    projlen=24: 21211 braids
+  Braids kept: 4120540 (in 17 buckets, 42.12 GB)
+  ⚡ Timing: matmul=2.85s, sampling=1.68s, total=15.42s
+
+============================================================
+Level 38 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4091262
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=15: 8 braids
+    projlen=16: 53 braids
+    projlen=17: 178 braids
+    projlen=18: 293 braids
+    projlen=19: 450 braids
+    projlen=20: 687 braids
+    projlen=21: 1437 braids
+    projlen=22: 3224 braids
+    projlen=23: 8244 braids
+    projlen=24: 20943 braids
+  Braids kept: 4091262 (in 17 buckets, 41.82 GB)
+  ⚡ Timing: matmul=2.80s, sampling=1.66s, total=15.32s
+
+============================================================
+Level 39 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4080602
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=15: 16 braids
+    projlen=16: 37 braids
+    projlen=17: 232 braids
+    projlen=18: 424 braids
+    projlen=19: 1257 braids
+    projlen=20: 1763 braids
+    projlen=21: 2943 braids
+    projlen=22: 4935 braids
+    projlen=23: 10774 braids
+    projlen=24: 22862 braids
+  Braids kept: 4080602 (in 17 buckets, 41.71 GB)
+  ⚡ Timing: matmul=2.76s, sampling=1.71s, total=15.39s
+
+============================================================
+Level 40 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4077110
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=15: 8 braids
+    projlen=16: 32 braids
+    projlen=17: 256 braids
+    projlen=18: 430 braids
+    projlen=19: 1362 braids
+    projlen=20: 2491 braids
+    projlen=21: 6855 braids
+    projlen=22: 10218 braids
+    projlen=23: 19163 braids
+    projlen=24: 33182 braids
+  Braids kept: 4077110 (in 17 buckets, 41.68 GB)
+  ⚡ Timing: matmul=2.66s, sampling=1.89s, total=15.79s
+
+============================================================
+Level 41 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4056448
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=15: 4 braids
+    projlen=16: 32 braids
+    projlen=17: 164 braids
+    projlen=18: 403 braids
+    projlen=19: 1580 braids
+    projlen=20: 2800 braids
+    projlen=21: 7808 braids
+    projlen=22: 14365 braids
+    projlen=23: 37265 braids
+    projlen=24: 60105 braids
+  Braids kept: 3973738 (in 17 buckets, 40.62 GB)
+  ⚡ Timing: matmul=2.70s, sampling=2.05s, total=15.87s
+
+============================================================
+Level 42 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 3997688
+  Processing in 31 chunks...
+  Projlen distribution:
+    projlen=15: 4 braids
+    projlen=16: 8 braids
+    projlen=17: 109 braids
+    projlen=18: 310 braids
+    projlen=19: 1062 braids
+    projlen=20: 2994 braids
+    projlen=21: 9189 braids
+    projlen=22: 17642 braids
+    projlen=23: 45601 braids
+    projlen=24: 83431 braids
+  Braids kept: 3997688 (in 16 buckets, 40.86 GB)
+  ⚡ Timing: matmul=2.92s, sampling=1.56s, total=14.95s
+
+============================================================
+Level 43 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 3938598
+  Processing in 31 chunks...
+  Projlen distribution:
+    projlen=17: 22 braids
+    projlen=18: 138 braids
+    projlen=19: 901 braids
+    projlen=20: 2416 braids
+    projlen=21: 7672 braids
+    projlen=22: 20005 braids
+    projlen=23: 55631 braids
+    projlen=24: 105424 braids
+    projlen=25: 258661 braids
+    projlen=26: 460762 braids
+  Braids kept: 3938598 (in 13 buckets, 40.26 GB)
+  ⚡ Timing: matmul=2.63s, sampling=1.63s, total=14.72s
+
+============================================================
+Level 44 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 3974308
+  Processing in 31 chunks...
+  Projlen distribution:
+    projlen=17: 4 braids
+    projlen=18: 36 braids
+    projlen=19: 395 braids
+    projlen=20: 1591 braids
+    projlen=21: 7080 braids
+    projlen=22: 18647 braids
+    projlen=23: 52296 braids
+    projlen=24: 125267 braids
+    projlen=25: 314684 braids
+    projlen=26: 565793 braids
+  Braids kept: 3974308 (in 13 buckets, 40.63 GB)
+  ⚡ Timing: matmul=2.73s, sampling=1.55s, total=14.76s
+
+============================================================
+Level 45 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4024244
+  Processing in 31 chunks...
+  Projlen distribution:
+    projlen=18: 16 braids
+    projlen=19: 286 braids
+    projlen=20: 1174 braids
+    projlen=21: 4808 braids
+    projlen=22: 14833 braids
+    projlen=23: 51339 braids
+    projlen=24: 126956 braids
+    projlen=25: 321623 braids
+    projlen=26: 656416 braids
+    projlen=27: 1332274 braids
+  Braids kept: 4024244 (in 12 buckets, 41.14 GB)
+  ⚡ Timing: matmul=2.84s, sampling=1.59s, total=14.95s
+
+============================================================
+Level 46 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4107828
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 4 braids
+    projlen=18: 12 braids
+    projlen=19: 132 braids
+    projlen=20: 495 braids
+    projlen=21: 4351 braids
+    projlen=22: 12606 braids
+    projlen=23: 43020 braids
+    projlen=24: 111852 braids
+    projlen=25: 323061 braids
+    projlen=26: 679152 braids
+  Braids kept: 4107828 (in 13 buckets, 41.99 GB)
+  ⚡ Timing: matmul=2.83s, sampling=1.74s, total=15.55s
+
+============================================================
+Level 47 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4157758
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=16: 4 braids
+    projlen=17: 28 braids
+    projlen=18: 32 braids
+    projlen=19: 236 braids
+    projlen=20: 493 braids
+    projlen=21: 2956 braids
+    projlen=22: 8087 braids
+    projlen=23: 37424 braids
+    projlen=24: 97482 braids
+    projlen=25: 288827 braids
+  Braids kept: 4157758 (in 14 buckets, 42.50 GB)
+  ⚡ Timing: matmul=2.95s, sampling=1.73s, total=15.63s
+
+============================================================
+Level 48 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4184220
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=15: 12 braids
+    projlen=16: 12 braids
+    projlen=17: 52 braids
+    projlen=18: 102 braids
+    projlen=19: 449 braids
+    projlen=20: 854 braids
+    projlen=21: 2858 braids
+    projlen=22: 7153 braids
+    projlen=23: 27906 braids
+    projlen=24: 66288 braids
+  Braids kept: 4147917 (in 15 buckets, 42.40 GB)
+  ⚡ Timing: matmul=2.80s, sampling=1.91s, total=16.10s
+
+============================================================
+Level 49 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4180686
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=16: 4 braids
+    projlen=17: 60 braids
+    projlen=18: 148 braids
+    projlen=19: 456 braids
+    projlen=20: 1266 braids
+    projlen=21: 3916 braids
+    projlen=22: 7968 braids
+    projlen=23: 24294 braids
+    projlen=24: 57587 braids
+    projlen=25: 190355 braids
+  Braids kept: 3975067 (in 14 buckets, 40.63 GB)
+  ⚡ Timing: matmul=2.78s, sampling=2.19s, total=16.46s
+
+============================================================
+Level 50 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4160238
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=16: 8 braids
+    projlen=17: 16 braids
+    projlen=18: 39 braids
+    projlen=19: 526 braids
+    projlen=20: 1150 braids
+    projlen=21: 3541 braids
+    projlen=22: 9827 braids
+    projlen=23: 27837 braids
+    projlen=24: 58218 braids
+    projlen=25: 167340 braids
+  Braids kept: 3937432 (in 15 buckets, 40.25 GB)
+  ⚡ Timing: matmul=2.72s, sampling=2.12s, total=16.30s
+
+============================================================
+Level 51 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4126692
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 31 braids
+    projlen=18: 78 braids
+    projlen=19: 277 braids
+    projlen=20: 612 braids
+    projlen=21: 3700 braids
+    projlen=22: 8140 braids
+    projlen=23: 24124 braids
+    projlen=24: 68206 braids
+    projlen=25: 182716 braids
+    projlen=26: 360773 braids
+  Braids kept: 4067134 (in 14 buckets, 41.57 GB)
+  ⚡ Timing: matmul=2.87s, sampling=2.71s, total=16.83s
+
+============================================================
+Level 52 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4091630
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 12 braids
+    projlen=18: 39 braids
+    projlen=19: 284 braids
+    projlen=20: 691 braids
+    projlen=21: 2045 braids
+    projlen=22: 4942 braids
+    projlen=23: 25025 braids
+    projlen=24: 56830 braids
+    projlen=25: 160877 braids
+    projlen=26: 413475 braids
+  Braids kept: 4024006 (in 14 buckets, 41.13 GB)
+  ⚡ Timing: matmul=2.78s, sampling=2.05s, total=15.94s
+
+============================================================
+Level 53 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4125902
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 6 braids
+    projlen=18: 31 braids
+    projlen=19: 124 braids
+    projlen=20: 400 braids
+    projlen=21: 1837 braids
+    projlen=22: 4423 braids
+    projlen=23: 14619 braids
+    projlen=24: 36037 braids
+    projlen=25: 165633 braids
+    projlen=26: 352465 braids
+  Braids kept: 3865373 (in 14 buckets, 39.51 GB)
+  ⚡ Timing: matmul=2.86s, sampling=2.24s, total=16.36s
+
+============================================================
+Level 54 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4133806
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 6 braids
+    projlen=18: 13 braids
+    projlen=19: 59 braids
+    projlen=20: 397 braids
+    projlen=21: 1049 braids
+    projlen=22: 3200 braids
+    projlen=23: 12136 braids
+    projlen=24: 30643 braids
+    projlen=25: 100666 braids
+    projlen=26: 235151 braids
+  Braids kept: 4064195 (in 14 buckets, 41.54 GB)
+  ⚡ Timing: matmul=2.87s, sampling=2.15s, total=16.24s
+
+============================================================
+Level 55 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4172034
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 26 braids
+    projlen=19: 81 braids
+    projlen=20: 281 braids
+    projlen=21: 784 braids
+    projlen=22: 3078 braids
+    projlen=23: 8707 braids
+    projlen=24: 24385 braids
+    projlen=25: 83038 braids
+    projlen=26: 198387 braids
+    projlen=27: 550776 braids
+  Braids kept: 3973749 (in 13 buckets, 40.62 GB)
+  ⚡ Timing: matmul=2.78s, sampling=2.11s, total=16.42s
+
+============================================================
+Level 56 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4170836
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 20 braids
+    projlen=19: 97 braids
+    projlen=20: 389 braids
+    projlen=21: 913 braids
+    projlen=22: 2811 braids
+    projlen=23: 6491 braids
+    projlen=24: 24092 braids
+    projlen=25: 64817 braids
+    projlen=26: 171162 braids
+    projlen=27: 472127 braids
+  Braids kept: 3877704 (in 13 buckets, 39.64 GB)
+  ⚡ Timing: matmul=2.74s, sampling=2.14s, total=16.34s
+
+============================================================
+Level 57 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4170750
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=17: 4 braids
+    projlen=18: 4 braids
+    projlen=19: 99 braids
+    projlen=20: 443 braids
+    projlen=21: 1041 braids
+    projlen=22: 3518 braids
+    projlen=23: 6963 braids
+    projlen=24: 22557 braids
+    projlen=25: 53103 braids
+    projlen=26: 168949 braids
+  Braids kept: 3813900 (in 14 buckets, 38.99 GB)
+  ⚡ Timing: matmul=2.74s, sampling=2.37s, total=16.75s
+
+============================================================
+Level 58 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4157780
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 4 braids
+    projlen=18: 22 braids
+    projlen=19: 104 braids
+    projlen=20: 369 braids
+    projlen=21: 929 braids
+    projlen=22: 3892 braids
+    projlen=23: 7833 braids
+    projlen=24: 26656 braids
+    projlen=25: 53618 braids
+    projlen=26: 163402 braids
+  Braids kept: 3927210 (in 15 buckets, 40.14 GB)
+  ⚡ Timing: matmul=2.95s, sampling=2.00s, total=16.01s
+
+============================================================
+Level 59 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4145570
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 19 braids
+    projlen=19: 126 braids
+    projlen=20: 429 braids
+    projlen=21: 973 braids
+    projlen=22: 3326 braids
+    projlen=23: 7595 braids
+    projlen=24: 28444 braids
+    projlen=25: 58199 braids
+    projlen=26: 185082 braids
+    projlen=27: 355829 braids
+  Braids kept: 4108590 (in 14 buckets, 42.00 GB)
+  ⚡ Timing: matmul=2.91s, sampling=2.03s, total=16.08s
+
+============================================================
+Level 60 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4118134
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 20 braids
+    projlen=19: 115 braids
+    projlen=20: 435 braids
+    projlen=21: 1099 braids
+    projlen=22: 3484 braids
+    projlen=23: 7977 braids
+    projlen=24: 25321 braids
+    projlen=25: 55672 braids
+    projlen=26: 189868 braids
+    projlen=27: 371996 braids
+  Braids kept: 4080258 (in 14 buckets, 41.71 GB)
+  ⚡ Timing: matmul=3.18s, sampling=2.06s, total=16.28s
+
+============================================================
+Level 61 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4100752
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 9 braids
+    projlen=18: 37 braids
+    projlen=19: 117 braids
+    projlen=20: 447 braids
+    projlen=21: 1087 braids
+    projlen=22: 3910 braids
+    projlen=23: 8739 braids
+    projlen=24: 25832 braids
+    projlen=25: 58197 braids
+    projlen=26: 173348 braids
+  Braids kept: 4012006 (in 15 buckets, 41.01 GB)
+  ⚡ Timing: matmul=2.81s, sampling=1.98s, total=15.87s
+
+============================================================
+Level 62 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4107346
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 13 braids
+    projlen=18: 46 braids
+    projlen=19: 121 braids
+    projlen=20: 468 braids
+    projlen=21: 1153 braids
+    projlen=22: 3832 braids
+    projlen=23: 9047 braids
+    projlen=24: 29187 braids
+    projlen=25: 62441 braids
+    projlen=26: 175111 braids
+  Braids kept: 4075124 (in 15 buckets, 41.66 GB)
+  ⚡ Timing: matmul=2.87s, sampling=2.07s, total=16.02s
+
+============================================================
+Level 63 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4104302
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 1 braids
+    projlen=18: 8 braids
+    projlen=19: 118 braids
+    projlen=20: 342 braids
+    projlen=21: 1272 braids
+    projlen=22: 3928 braids
+    projlen=23: 9192 braids
+    projlen=24: 27847 braids
+    projlen=25: 65138 braids
+    projlen=26: 196816 braids
+  Braids kept: 4043761 (in 15 buckets, 41.34 GB)
+  ⚡ Timing: matmul=2.81s, sampling=1.97s, total=15.82s
+
+============================================================
+Level 64 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4092560
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 5 braids
+    projlen=19: 21 braids
+    projlen=20: 138 braids
+    projlen=21: 953 braids
+    projlen=22: 3006 braids
+    projlen=23: 10082 braids
+    projlen=24: 28860 braids
+    projlen=25: 66844 braids
+    projlen=26: 189564 braids
+    projlen=27: 401471 braids
+  Braids kept: 3964604 (in 14 buckets, 40.53 GB)
+  ⚡ Timing: matmul=2.80s, sampling=1.97s, total=15.79s
+
+============================================================
+Level 65 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4096612
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 4 braids
+    projlen=18: 4 braids
+    projlen=19: 38 braids
+    projlen=20: 91 braids
+    projlen=21: 437 braids
+    projlen=22: 1991 braids
+    projlen=23: 8104 braids
+    projlen=24: 24036 braids
+    projlen=25: 71417 braids
+    projlen=26: 194219 braids
+  Braids kept: 3908818 (in 14 buckets, 39.96 GB)
+  ⚡ Timing: matmul=2.79s, sampling=2.06s, total=15.96s
+
+============================================================
+Level 66 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4108268
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 12 braids
+    projlen=19: 90 braids
+    projlen=20: 170 braids
+    projlen=21: 499 braids
+    projlen=22: 1706 braids
+    projlen=23: 5143 braids
+    projlen=24: 19446 braids
+    projlen=25: 60384 braids
+    projlen=26: 171482 braids
+    projlen=27: 433388 braids
+  Braids kept: 3893523 (in 13 buckets, 39.80 GB)
+  ⚡ Timing: matmul=2.82s, sampling=1.90s, total=15.83s
+
+============================================================
+Level 67 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4135828
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 6 braids
+    projlen=19: 91 braids
+    projlen=20: 291 braids
+    projlen=21: 696 braids
+    projlen=22: 2434 braids
+    projlen=23: 5347 braids
+    projlen=24: 17697 braids
+    projlen=25: 45477 braids
+    projlen=26: 146410 braids
+    projlen=27: 379990 braids
+  Braids kept: 3812640 (in 14 buckets, 38.97 GB)
+  ⚡ Timing: matmul=2.89s, sampling=2.12s, total=16.18s
+
+============================================================
+Level 68 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4165160
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 6 braids
+    projlen=19: 39 braids
+    projlen=20: 208 braids
+    projlen=21: 866 braids
+    projlen=22: 2937 braids
+    projlen=23: 6677 braids
+    projlen=24: 20199 braids
+    projlen=25: 46490 braids
+    projlen=26: 136082 braids
+    projlen=27: 311140 braids
+  Braids kept: 4032341 (in 14 buckets, 41.22 GB)
+  ⚡ Timing: matmul=2.73s, sampling=2.30s, total=16.71s
+
+============================================================
+Level 69 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4164916
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=17: 2 braids
+    projlen=18: 22 braids
+    projlen=19: 85 braids
+    projlen=20: 196 braids
+    projlen=21: 855 braids
+    projlen=22: 2437 braids
+    projlen=23: 7791 braids
+    projlen=24: 21905 braids
+    projlen=25: 52859 braids
+    projlen=26: 146477 braids
+  Braids kept: 4164916 (in 15 buckets, 42.57 GB)
+  ⚡ Timing: matmul=2.75s, sampling=2.25s, total=16.26s
+
+============================================================
+Level 70 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4138340
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 8 braids
+    projlen=18: 62 braids
+    projlen=19: 146 braids
+    projlen=20: 307 braids
+    projlen=21: 1169 braids
+    projlen=22: 2495 braids
+    projlen=23: 8037 braids
+    projlen=24: 19949 braids
+    projlen=25: 57190 braids
+    projlen=26: 151394 braids
+  Braids kept: 4138340 (in 15 buckets, 42.30 GB)
+  ⚡ Timing: matmul=2.91s, sampling=1.64s, total=15.36s
+
+============================================================
+Level 71 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4115436
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 10 braids
+    projlen=18: 56 braids
+    projlen=19: 202 braids
+    projlen=20: 497 braids
+    projlen=21: 1587 braids
+    projlen=22: 3007 braids
+    projlen=23: 9380 braids
+    projlen=24: 20282 braids
+    projlen=25: 60136 braids
+    projlen=26: 143453 braids
+  Braids kept: 4115436 (in 15 buckets, 42.07 GB)
+  ⚡ Timing: matmul=2.84s, sampling=1.78s, total=15.60s
+
+============================================================
+Level 72 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4118290
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 6 braids
+    projlen=18: 50 braids
+    projlen=19: 194 braids
+    projlen=20: 448 braids
+    projlen=21: 1761 braids
+    projlen=22: 3621 braids
+    projlen=23: 12417 braids
+    projlen=24: 22193 braids
+    projlen=25: 68428 braids
+    projlen=26: 143422 braids
+  Braids kept: 4054776 (in 15 buckets, 41.45 GB)
+  ⚡ Timing: matmul=2.85s, sampling=2.13s, total=16.17s
+
+============================================================
+Level 73 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4107576
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 10 braids
+    projlen=18: 30 braids
+    projlen=19: 170 braids
+    projlen=20: 325 braids
+    projlen=21: 1745 braids
+    projlen=22: 3423 braids
+    projlen=23: 12939 braids
+    projlen=24: 25815 braids
+    projlen=25: 83835 braids
+    projlen=26: 152226 braids
+  Braids kept: 3973043 (in 15 buckets, 40.61 GB)
+  ⚡ Timing: matmul=2.84s, sampling=2.11s, total=16.11s
+
+============================================================
+Level 74 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4100260
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 28 braids
+    projlen=18: 37 braids
+    projlen=19: 126 braids
+    projlen=20: 237 braids
+    projlen=21: 1280 braids
+    projlen=22: 2714 braids
+    projlen=23: 12082 braids
+    projlen=24: 25206 braids
+    projlen=25: 87553 braids
+    projlen=26: 170939 braids
+  Braids kept: 3814087 (in 14 buckets, 38.99 GB)
+  ⚡ Timing: matmul=2.80s, sampling=2.01s, total=15.91s
+
+============================================================
+Level 75 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4095612
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 23 braids
+    projlen=18: 24 braids
+    projlen=19: 149 braids
+    projlen=20: 354 braids
+    projlen=21: 830 braids
+    projlen=22: 1875 braids
+    projlen=23: 8973 braids
+    projlen=24: 20216 braids
+    projlen=25: 82960 braids
+    projlen=26: 165874 braids
+  Braids kept: 3819582 (in 14 buckets, 39.04 GB)
+  ⚡ Timing: matmul=2.80s, sampling=2.23s, total=16.25s
+
+============================================================
+Level 76 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4126918
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 28 braids
+    projlen=18: 44 braids
+    projlen=19: 83 braids
+    projlen=20: 182 braids
+    projlen=21: 852 braids
+    projlen=22: 2295 braids
+    projlen=23: 6265 braids
+    projlen=24: 15488 braids
+    projlen=25: 63391 braids
+    projlen=26: 139292 braids
+  Braids kept: 3774416 (in 14 buckets, 38.58 GB)
+  ⚡ Timing: matmul=2.87s, sampling=2.02s, total=15.98s
+
+============================================================
+Level 77 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4172972
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=17: 27 braids
+    projlen=18: 34 braids
+    projlen=19: 145 braids
+    projlen=20: 270 braids
+    projlen=21: 586 braids
+    projlen=22: 1243 braids
+    projlen=23: 6014 braids
+    projlen=24: 15570 braids
+    projlen=25: 48379 braids
+    projlen=26: 112124 braids
+  Braids kept: 3665266 (in 14 buckets, 37.47 GB)
+  ⚡ Timing: matmul=2.78s, sampling=2.30s, total=16.86s
+
+============================================================
+Level 78 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4162598
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=17: 7 braids
+    projlen=18: 51 braids
+    projlen=19: 138 braids
+    projlen=20: 293 braids
+    projlen=21: 900 braids
+    projlen=22: 2035 braids
+    projlen=23: 4297 braids
+    projlen=24: 10570 braids
+    projlen=25: 41715 braids
+    projlen=26: 106617 braids
+  Braids kept: 3928580 (in 15 buckets, 40.16 GB)
+  ⚡ Timing: matmul=2.74s, sampling=2.48s, total=16.92s
+
+============================================================
+Level 79 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4139752
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 1 braids
+    projlen=18: 13 braids
+    projlen=19: 97 braids
+    projlen=20: 394 braids
+    projlen=21: 1052 braids
+    projlen=22: 2086 braids
+    projlen=23: 6136 braids
+    projlen=24: 14611 braids
+    projlen=25: 33331 braids
+    projlen=26: 79791 braids
+  Braids kept: 4139752 (in 15 buckets, 42.32 GB)
+  ⚡ Timing: matmul=2.90s, sampling=1.74s, total=15.51s
+
+============================================================
+Level 80 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4131958
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 13 braids
+    projlen=19: 81 braids
+    projlen=20: 148 braids
+    projlen=21: 1069 braids
+    projlen=22: 3047 braids
+    projlen=23: 7327 braids
+    projlen=24: 15469 braids
+    projlen=25: 43268 braids
+    projlen=26: 98415 braids
+    projlen=27: 226774 braids
+  Braids kept: 4067277 (in 14 buckets, 41.58 GB)
+  ⚡ Timing: matmul=2.88s, sampling=1.84s, total=15.64s
+
+============================================================
+Level 81 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4126140
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 8 braids
+    projlen=19: 93 braids
+    projlen=20: 246 braids
+    projlen=21: 748 braids
+    projlen=22: 1731 braids
+    projlen=23: 8469 braids
+    projlen=24: 21325 braids
+    projlen=25: 51258 braids
+    projlen=26: 107172 braids
+    projlen=27: 277813 braids
+  Braids kept: 4124476 (in 14 buckets, 42.16 GB)
+  ⚡ Timing: matmul=2.98s, sampling=1.79s, total=15.72s
+
+============================================================
+Level 82 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4104112
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 6 braids
+    projlen=19: 65 braids
+    projlen=20: 148 braids
+    projlen=21: 841 braids
+    projlen=22: 2378 braids
+    projlen=23: 7008 braids
+    projlen=24: 15347 braids
+    projlen=25: 61000 braids
+    projlen=26: 141365 braids
+    projlen=27: 319414 braids
+  Braids kept: 4104112 (in 14 buckets, 41.95 GB)
+  ⚡ Timing: matmul=2.82s, sampling=1.63s, total=15.25s
+
+============================================================
+Level 83 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4105250
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 51 braids
+    projlen=20: 219 braids
+    projlen=21: 642 braids
+    projlen=22: 1618 braids
+    projlen=23: 7576 braids
+    projlen=24: 19734 braids
+    projlen=25: 53756 braids
+    projlen=26: 117816 braids
+    projlen=27: 376523 braids
+    projlen=28: 750181 braids
+  Braids kept: 4105250 (in 13 buckets, 41.96 GB)
+  ⚡ Timing: matmul=2.83s, sampling=1.66s, total=15.36s
+
+============================================================
+Level 84 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4155976
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 44 braids
+    projlen=20: 136 braids
+    projlen=21: 788 braids
+    projlen=22: 2174 braids
+    projlen=23: 5918 braids
+    projlen=24: 14838 braids
+    projlen=25: 55528 braids
+    projlen=26: 139253 braids
+    projlen=27: 337751 braids
+    projlen=28: 654551 braids
+  Braids kept: 4017672 (in 13 buckets, 41.07 GB)
+  ⚡ Timing: matmul=2.95s, sampling=2.19s, total=16.37s
+
+============================================================
+Level 85 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4140084
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 6 braids
+    projlen=18: 24 braids
+    projlen=19: 89 braids
+    projlen=20: 111 braids
+    projlen=21: 879 braids
+    projlen=22: 1979 braids
+    projlen=23: 6297 braids
+    projlen=24: 17704 braids
+    projlen=25: 44109 braids
+    projlen=26: 110604 braids
+  Braids kept: 4111063 (in 15 buckets, 42.02 GB)
+  ⚡ Timing: matmul=2.91s, sampling=1.93s, total=15.85s
+
+============================================================
+Level 86 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4128976
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 6 braids
+    projlen=19: 119 braids
+    projlen=20: 387 braids
+    projlen=21: 878 braids
+    projlen=22: 1583 braids
+    projlen=23: 7190 braids
+    projlen=24: 16293 braids
+    projlen=25: 45242 braids
+    projlen=26: 122090 braids
+    projlen=27: 280224 braids
+  Braids kept: 4110335 (in 14 buckets, 42.02 GB)
+  ⚡ Timing: matmul=2.87s, sampling=1.76s, total=15.55s
+
+============================================================
+Level 87 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4123706
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 48 braids
+    projlen=20: 149 braids
+    projlen=21: 1034 braids
+    projlen=22: 2977 braids
+    projlen=23: 6928 braids
+    projlen=24: 14340 braids
+    projlen=25: 50233 braids
+    projlen=26: 112377 braids
+    projlen=27: 287885 braids
+    projlen=28: 656589 braids
+  Braids kept: 4123706 (in 13 buckets, 42.15 GB)
+  ⚡ Timing: matmul=2.85s, sampling=1.74s, total=15.44s
+
+============================================================
+Level 88 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4117118
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 86 braids
+    projlen=21: 559 braids
+    projlen=22: 1349 braids
+    projlen=23: 7952 braids
+    projlen=24: 20666 braids
+    projlen=25: 48637 braids
+    projlen=26: 103566 braids
+    projlen=27: 313789 braids
+    projlen=28: 613677 braids
+    projlen=29: 1244765 braids
+  Braids kept: 4117118 (in 12 buckets, 42.09 GB)
+  ⚡ Timing: matmul=3.15s, sampling=1.80s, total=15.91s
+
+============================================================
+Level 89 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4121120
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 9 braids
+    projlen=21: 119 braids
+    projlen=22: 911 braids
+    projlen=23: 4303 braids
+    projlen=24: 11391 braids
+    projlen=25: 55293 braids
+    projlen=26: 134441 braids
+    projlen=27: 306975 braids
+    projlen=28: 582925 braids
+    projlen=29: 1336078 braids
+  Braids kept: 4121120 (in 12 buckets, 42.13 GB)
+  ⚡ Timing: matmul=2.85s, sampling=1.85s, total=15.63s
+
+============================================================
+Level 90 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4109588
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=21: 73 braids
+    projlen=22: 288 braids
+    projlen=23: 1761 braids
+    projlen=24: 8530 braids
+    projlen=25: 33351 braids
+    projlen=26: 86516 braids
+    projlen=27: 342193 braids
+    projlen=28: 715467 braids
+    projlen=29: 1329227 braids
+    projlen=30: 1206271 braids
+  Braids kept: 4109588 (in 11 buckets, 42.01 GB)
+  ⚡ Timing: matmul=2.83s, sampling=1.76s, total=15.61s
+
+============================================================
+Level 91 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4142182
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 8 braids
+    projlen=21: 51 braids
+    projlen=22: 247 braids
+    projlen=23: 1219 braids
+    projlen=24: 4272 braids
+    projlen=25: 18108 braids
+    projlen=26: 68455 braids
+    projlen=27: 222542 braids
+    projlen=28: 486273 braids
+    projlen=29: 1447514 braids
+  Braids kept: 4079419 (in 12 buckets, 41.70 GB)
+  ⚡ Timing: matmul=2.92s, sampling=2.17s, total=16.23s
+
+============================================================
+Level 92 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4162582
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 16 braids
+    projlen=20: 24 braids
+    projlen=21: 42 braids
+    projlen=22: 224 braids
+    projlen=23: 982 braids
+    projlen=24: 3422 braids
+    projlen=25: 13372 braids
+    projlen=26: 41426 braids
+    projlen=27: 139862 braids
+    projlen=28: 410988 braids
+  Braids kept: 3887057 (in 13 buckets, 39.73 GB)
+  ⚡ Timing: matmul=2.76s, sampling=2.28s, total=16.61s
+
+============================================================
+Level 93 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4179456
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 44 braids
+    projlen=20: 90 braids
+    projlen=21: 75 braids
+    projlen=22: 301 braids
+    projlen=23: 906 braids
+    projlen=24: 2914 braids
+    projlen=25: 11085 braids
+    projlen=26: 33407 braids
+    projlen=27: 109557 braids
+    projlen=28: 284190 braids
+  Braids kept: 3925355 (in 14 buckets, 40.12 GB)
+  ⚡ Timing: matmul=2.77s, sampling=2.33s, total=16.71s
+
+============================================================
+Level 94 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4211746
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 16 braids
+    projlen=20: 196 braids
+    projlen=21: 172 braids
+    projlen=22: 638 braids
+    projlen=23: 1038 braids
+    projlen=24: 3217 braids
+    projlen=25: 10004 braids
+    projlen=26: 27956 braids
+    projlen=27: 93627 braids
+    projlen=28: 237065 braids
+  Braids kept: 4163078 (in 14 buckets, 42.55 GB)
+  ⚡ Timing: matmul=2.85s, sampling=1.96s, total=16.16s
+
+============================================================
+Level 95 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4195660
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 4 braids
+    projlen=20: 69 braids
+    projlen=21: 172 braids
+    projlen=22: 1176 braids
+    projlen=23: 1649 braids
+    projlen=24: 4813 braids
+    projlen=25: 10111 braids
+    projlen=26: 28682 braids
+    projlen=27: 84537 braids
+    projlen=28: 207364 braids
+  Braids kept: 4035678 (in 14 buckets, 41.25 GB)
+  ⚡ Timing: matmul=2.81s, sampling=2.11s, total=16.45s
+
+============================================================
+Level 96 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4192698
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=20: 20 braids
+    projlen=21: 122 braids
+    projlen=22: 792 braids
+    projlen=23: 1678 braids
+    projlen=24: 7743 braids
+    projlen=25: 13034 braids
+    projlen=26: 35892 braids
+    projlen=27: 82786 braids
+    projlen=28: 208017 braids
+    projlen=29: 505417 braids
+  Braids kept: 3992172 (in 13 buckets, 40.81 GB)
+  ⚡ Timing: matmul=2.80s, sampling=2.16s, total=16.45s
+
+============================================================
+Level 97 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4165762
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 2 braids
+    projlen=20: 20 braids
+    projlen=21: 118 braids
+    projlen=22: 381 braids
+    projlen=23: 1348 braids
+    projlen=24: 6877 braids
+    projlen=25: 13480 braids
+    projlen=26: 53396 braids
+    projlen=27: 95957 braids
+    projlen=28: 244189 braids
+  Braids kept: 4028003 (in 14 buckets, 41.17 GB)
+  ⚡ Timing: matmul=2.74s, sampling=2.03s, total=16.16s
+
+============================================================
+Level 98 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4124522
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 4 braids
+    projlen=19: 10 braids
+    projlen=20: 10 braids
+    projlen=21: 97 braids
+    projlen=22: 425 braids
+    projlen=23: 1396 braids
+    projlen=24: 4452 braids
+    projlen=25: 12850 braids
+    projlen=26: 53962 braids
+    projlen=27: 100561 braids
+  Braids kept: 4124522 (in 15 buckets, 42.16 GB)
+  ⚡ Timing: matmul=2.90s, sampling=1.64s, total=15.36s
+
+============================================================
+Level 99 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4121840
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 4 braids
+    projlen=19: 22 braids
+    projlen=20: 48 braids
+    projlen=21: 127 braids
+    projlen=22: 378 braids
+    projlen=23: 1320 braids
+    projlen=24: 4712 braids
+    projlen=25: 13993 braids
+    projlen=26: 42432 braids
+    projlen=27: 98678 braids
+  Braids kept: 4045177 (in 15 buckets, 41.35 GB)
+  ⚡ Timing: matmul=2.85s, sampling=2.21s, total=16.24s
+
+============================================================
+Level 100 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4145306
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 50 braids
+    projlen=20: 82 braids
+    projlen=21: 317 braids
+    projlen=22: 484 braids
+    projlen=23: 1787 braids
+    projlen=24: 4435 braids
+    projlen=25: 12860 braids
+    projlen=26: 43270 braids
+    projlen=27: 104676 braids
+    projlen=28: 297920 braids
+  Braids kept: 4017145 (in 14 buckets, 41.06 GB)
+  ⚡ Timing: matmul=3.01s, sampling=2.32s, total=16.66s
+
+============================================================
+Level 101 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4141402
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 24 braids
+    projlen=20: 147 braids
+    projlen=21: 619 braids
+    projlen=22: 997 braids
+    projlen=23: 2731 braids
+    projlen=24: 5041 braids
+    projlen=25: 15252 braids
+    projlen=26: 39421 braids
+    projlen=27: 98595 braids
+    projlen=28: 293007 braids
+  Braids kept: 4141402 (in 14 buckets, 42.33 GB)
+  ⚡ Timing: matmul=2.91s, sampling=1.68s, total=15.45s
+
+============================================================
+Level 102 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4120234
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 40 braids
+    projlen=20: 85 braids
+    projlen=21: 320 braids
+    projlen=22: 1804 braids
+    projlen=23: 4725 braids
+    projlen=24: 8276 braids
+    projlen=25: 20739 braids
+    projlen=26: 41411 braids
+    projlen=27: 111834 braids
+    projlen=28: 266100 braids
+  Braids kept: 4120234 (in 14 buckets, 42.12 GB)
+  ⚡ Timing: matmul=2.88s, sampling=1.85s, total=15.78s
+
+============================================================
+Level 103 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4111288
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 61 braids
+    projlen=20: 159 braids
+    projlen=21: 407 braids
+    projlen=22: 1267 braids
+    projlen=23: 3025 braids
+    projlen=24: 13901 braids
+    projlen=25: 31742 braids
+    projlen=26: 61374 braids
+    projlen=27: 141992 braids
+    projlen=28: 276492 braids
+  Braids kept: 4111288 (in 14 buckets, 42.03 GB)
+  ⚡ Timing: matmul=2.85s, sampling=1.65s, total=15.36s
+
+============================================================
+Level 104 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4082806
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 16 braids
+    projlen=20: 53 braids
+    projlen=21: 712 braids
+    projlen=22: 1783 braids
+    projlen=23: 3552 braids
+    projlen=24: 10299 braids
+    projlen=25: 24641 braids
+    projlen=26: 96707 braids
+    projlen=27: 201759 braids
+    projlen=28: 386329 braids
+  Braids kept: 4082806 (in 14 buckets, 41.73 GB)
+  ⚡ Timing: matmul=2.76s, sampling=1.75s, total=15.43s
+
+============================================================
+Level 105 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4058826
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 26 braids
+    projlen=21: 226 braids
+    projlen=22: 662 braids
+    projlen=23: 5884 braids
+    projlen=24: 14023 braids
+    projlen=25: 29687 braids
+    projlen=26: 76405 braids
+    projlen=27: 170229 braids
+    projlen=28: 579829 braids
+    projlen=29: 986066 braids
+  Braids kept: 3960337 (in 12 buckets, 40.48 GB)
+  ⚡ Timing: matmul=2.72s, sampling=1.92s, total=15.72s
+
+============================================================
+Level 106 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4146070
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 18 braids
+    projlen=20: 39 braids
+    projlen=21: 185 braids
+    projlen=22: 543 braids
+    projlen=23: 2542 braids
+    projlen=24: 6159 braids
+    projlen=25: 43366 braids
+    projlen=26: 100102 braids
+    projlen=27: 203675 braids
+    projlen=28: 461960 braids
+  Braids kept: 3840732 (in 13 buckets, 39.26 GB)
+  ⚡ Timing: matmul=2.92s, sampling=2.21s, total=16.49s
+
+============================================================
+Level 107 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4121292
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 18 braids
+    projlen=20: 81 braids
+    projlen=21: 146 braids
+    projlen=22: 566 braids
+    projlen=23: 2173 braids
+    projlen=24: 5462 braids
+    projlen=25: 22644 braids
+    projlen=26: 51440 braids
+    projlen=27: 280558 braids
+    projlen=28: 578605 braids
+  Braids kept: 4006736 (in 13 buckets, 40.96 GB)
+  ⚡ Timing: matmul=2.87s, sampling=2.61s, total=16.78s
+
+============================================================
+Level 108 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4128976
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 10 braids
+    projlen=20: 56 braids
+    projlen=21: 189 braids
+    projlen=22: 717 braids
+    projlen=23: 1791 braids
+    projlen=24: 5046 braids
+    projlen=25: 19131 braids
+    projlen=26: 44962 braids
+    projlen=27: 164162 braids
+    projlen=28: 323089 braids
+  Braids kept: 3926747 (in 13 buckets, 40.14 GB)
+  ⚡ Timing: matmul=2.66s, sampling=2.23s, total=16.12s
+
+============================================================
+Level 109 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4187012
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 3 braids
+    projlen=20: 21 braids
+    projlen=21: 163 braids
+    projlen=22: 596 braids
+    projlen=23: 1810 braids
+    projlen=24: 6025 braids
+    projlen=25: 15689 braids
+    projlen=26: 40811 braids
+    projlen=27: 138117 braids
+    projlen=28: 291770 braids
+  Braids kept: 4187012 (in 14 buckets, 42.80 GB)
+  ⚡ Timing: matmul=2.78s, sampling=1.80s, total=15.85s
+
+============================================================
+Level 110 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4156744
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 13 braids
+    projlen=21: 68 braids
+    projlen=22: 447 braids
+    projlen=23: 1690 braids
+    projlen=24: 5244 braids
+    projlen=25: 16010 braids
+    projlen=26: 43965 braids
+    projlen=27: 118016 braids
+    projlen=28: 265714 braids
+    projlen=29: 738811 braids
+  Braids kept: 4156744 (in 13 buckets, 42.49 GB)
+  ⚡ Timing: matmul=2.94s, sampling=1.53s, total=15.19s
+
+============================================================
+Level 111 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4151606
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 14 braids
+    projlen=21: 71 braids
+    projlen=22: 316 braids
+    projlen=23: 1248 braids
+    projlen=24: 4774 braids
+    projlen=25: 15085 braids
+    projlen=26: 40885 braids
+    projlen=27: 117469 braids
+    projlen=28: 277666 braids
+    projlen=29: 654768 braids
+  Braids kept: 4151606 (in 13 buckets, 42.44 GB)
+  ⚡ Timing: matmul=2.94s, sampling=1.68s, total=15.56s
+
+============================================================
+Level 112 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4133806
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 14 braids
+    projlen=21: 70 braids
+    projlen=22: 248 braids
+    projlen=23: 1245 braids
+    projlen=24: 4129 braids
+    projlen=25: 12956 braids
+    projlen=26: 39466 braids
+    projlen=27: 110774 braids
+    projlen=28: 268083 braids
+    projlen=29: 647056 braids
+  Braids kept: 4133806 (in 13 buckets, 42.26 GB)
+  ⚡ Timing: matmul=2.66s, sampling=1.68s, total=15.48s
+
+============================================================
+Level 113 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4144616
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 3 braids
+    projlen=21: 41 braids
+    projlen=22: 278 braids
+    projlen=23: 970 braids
+    projlen=24: 3525 braids
+    projlen=25: 12137 braids
+    projlen=26: 35159 braids
+    projlen=27: 102386 braids
+    projlen=28: 264043 braids
+    projlen=29: 613335 braids
+  Braids kept: 4144616 (in 13 buckets, 42.37 GB)
+  ⚡ Timing: matmul=2.93s, sampling=1.79s, total=15.77s
+
+============================================================
+Level 114 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4151392
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 2 braids
+    projlen=20: 2 braids
+    projlen=21: 37 braids
+    projlen=22: 187 braids
+    projlen=23: 878 braids
+    projlen=24: 3168 braids
+    projlen=25: 10184 braids
+    projlen=26: 30255 braids
+    projlen=27: 96067 braids
+    projlen=28: 241211 braids
+  Braids kept: 4112235 (in 14 buckets, 42.04 GB)
+  ⚡ Timing: matmul=2.93s, sampling=1.79s, total=15.72s
+
+============================================================
+Level 115 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4145898
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 10 braids
+    projlen=21: 63 braids
+    projlen=22: 255 braids
+    projlen=23: 824 braids
+    projlen=24: 2431 braids
+    projlen=25: 9531 braids
+    projlen=26: 27862 braids
+    projlen=27: 83104 braids
+    projlen=28: 213479 braids
+    projlen=29: 546017 braids
+  Braids kept: 4027882 (in 13 buckets, 41.17 GB)
+  ⚡ Timing: matmul=2.93s, sampling=1.97s, total=16.06s
+
+============================================================
+Level 116 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4142636
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 8 braids
+    projlen=21: 53 braids
+    projlen=22: 220 braids
+    projlen=23: 1018 braids
+    projlen=24: 2791 braids
+    projlen=25: 9047 braids
+    projlen=26: 24496 braids
+    projlen=27: 78987 braids
+    projlen=28: 200353 braids
+    projlen=29: 487002 braids
+  Braids kept: 3933260 (in 13 buckets, 40.21 GB)
+  ⚡ Timing: matmul=2.91s, sampling=2.03s, total=16.07s
+
+============================================================
+Level 117 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4140696
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 9 braids
+    projlen=21: 29 braids
+    projlen=22: 186 braids
+    projlen=23: 908 braids
+    projlen=24: 2694 braids
+    projlen=25: 10010 braids
+    projlen=26: 25218 braids
+    projlen=27: 75155 braids
+    projlen=28: 184069 braids
+    projlen=29: 479879 braids
+  Braids kept: 3918835 (in 13 buckets, 40.06 GB)
+  ⚡ Timing: matmul=2.91s, sampling=1.96s, total=16.05s
+
+============================================================
+Level 118 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4150698
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 1 braids
+    projlen=20: 9 braids
+    projlen=21: 59 braids
+    projlen=22: 146 braids
+    projlen=23: 770 braids
+    projlen=24: 2399 braids
+    projlen=25: 9730 braids
+    projlen=26: 24450 braids
+    projlen=27: 80237 braids
+    projlen=28: 183734 braids
+  Braids kept: 3889922 (in 14 buckets, 39.76 GB)
+  ⚡ Timing: matmul=2.70s, sampling=2.04s, total=16.05s
+
+============================================================
+Level 119 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4140054
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 8 braids
+    projlen=21: 73 braids
+    projlen=22: 126 braids
+    projlen=23: 853 braids
+    projlen=24: 2214 braids
+    projlen=25: 8612 braids
+    projlen=26: 23493 braids
+    projlen=27: 77228 braids
+    projlen=28: 179912 braids
+    projlen=29: 489782 braids
+  Braids kept: 3892062 (in 13 buckets, 39.78 GB)
+  ⚡ Timing: matmul=2.90s, sampling=2.01s, total=16.06s
+
+============================================================
+Level 120 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4137984
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 2 braids
+    projlen=20: 6 braids
+    projlen=21: 93 braids
+    projlen=22: 226 braids
+    projlen=23: 805 braids
+    projlen=24: 2005 braids
+    projlen=25: 8378 braids
+    projlen=26: 22394 braids
+    projlen=27: 70540 braids
+    projlen=28: 174335 braids
+  Braids kept: 3851015 (in 14 buckets, 39.37 GB)
+  ⚡ Timing: matmul=2.89s, sampling=2.09s, total=16.10s
+
+============================================================
+Level 121 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4145168
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 4 braids
+    projlen=19: 12 braids
+    projlen=20: 16 braids
+    projlen=21: 155 braids
+    projlen=22: 318 braids
+    projlen=23: 949 braids
+    projlen=24: 2679 braids
+    projlen=25: 7938 braids
+    projlen=26: 20113 braids
+    projlen=27: 68938 braids
+  Braids kept: 3826393 (in 15 buckets, 39.11 GB)
+  ⚡ Timing: matmul=2.99s, sampling=2.21s, total=16.41s
+
+============================================================
+Level 122 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4154466
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 6 braids
+    projlen=20: 55 braids
+    projlen=21: 205 braids
+    projlen=22: 468 braids
+    projlen=23: 1414 braids
+    projlen=24: 3296 braids
+    projlen=25: 9296 braids
+    projlen=26: 22886 braids
+    projlen=27: 65397 braids
+    projlen=28: 154393 braids
+  Braids kept: 3821512 (in 14 buckets, 39.06 GB)
+  ⚡ Timing: matmul=3.01s, sampling=2.13s, total=16.39s
+
+============================================================
+Level 123 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4162674
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=20: 26 braids
+    projlen=21: 194 braids
+    projlen=22: 646 braids
+    projlen=23: 2031 braids
+    projlen=24: 4563 braids
+    projlen=25: 11775 braids
+    projlen=26: 27573 braids
+    projlen=27: 72844 braids
+    projlen=28: 167577 braids
+    projlen=29: 423882 braids
+  Braids kept: 3810536 (in 13 buckets, 38.95 GB)
+  ⚡ Timing: matmul=2.74s, sampling=2.21s, total=16.44s
+
+============================================================
+Level 124 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4125722
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 8 braids
+    projlen=20: 20 braids
+    projlen=21: 192 braids
+    projlen=22: 514 braids
+    projlen=23: 1886 braids
+    projlen=24: 5677 braids
+    projlen=25: 15318 braids
+    projlen=26: 35555 braids
+    projlen=27: 86105 braids
+    projlen=28: 194716 braids
+  Braids kept: 3883551 (in 14 buckets, 39.70 GB)
+  ⚡ Timing: matmul=2.87s, sampling=2.05s, total=16.10s
+
+============================================================
+Level 125 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4100666
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 12 braids
+    projlen=18: 36 braids
+    projlen=19: 22 braids
+    projlen=20: 75 braids
+    projlen=21: 208 braids
+    projlen=22: 577 braids
+    projlen=23: 2056 braids
+    projlen=24: 5234 braids
+    projlen=25: 15419 braids
+    projlen=26: 40646 braids
+  Braids kept: 3982503 (in 16 buckets, 40.71 GB)
+  ⚡ Timing: matmul=2.80s, sampling=1.99s, total=15.87s
+
+============================================================
+Level 126 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4077796
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 37 braids
+    projlen=18: 107 braids
+    projlen=19: 72 braids
+    projlen=20: 282 braids
+    projlen=21: 252 braids
+    projlen=22: 1057 braids
+    projlen=23: 1839 braids
+    projlen=24: 5769 braids
+    projlen=25: 17289 braids
+    projlen=26: 43027 braids
+  Braids kept: 4077796 (in 16 buckets, 41.68 GB)
+  ⚡ Timing: matmul=2.76s, sampling=1.67s, total=16.04s
+
+============================================================
+Level 127 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4095404
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 65 braids
+    projlen=18: 151 braids
+    projlen=19: 188 braids
+    projlen=20: 567 braids
+    projlen=21: 574 braids
+    projlen=22: 1928 braids
+    projlen=23: 2129 braids
+    projlen=24: 8507 braids
+    projlen=25: 15937 braids
+    projlen=26: 43679 braids
+  Braids kept: 4095404 (in 16 buckets, 41.86 GB)
+  ⚡ Timing: matmul=2.79s, sampling=1.73s, total=15.42s
+
+============================================================
+Level 128 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4107132
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 79 braids
+    projlen=18: 248 braids
+    projlen=19: 287 braids
+    projlen=20: 836 braids
+    projlen=21: 1110 braids
+    projlen=22: 3372 braids
+    projlen=23: 3836 braids
+    projlen=24: 12463 braids
+    projlen=25: 17012 braids
+    projlen=26: 61339 braids
+  Braids kept: 4107132 (in 16 buckets, 41.98 GB)
+  ⚡ Timing: matmul=2.83s, sampling=1.67s, total=15.40s
+
+============================================================
+Level 129 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4119900
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 57 braids
+    projlen=18: 180 braids
+    projlen=19: 493 braids
+    projlen=20: 1390 braids
+    projlen=21: 1823 braids
+    projlen=22: 5276 braids
+    projlen=23: 6666 braids
+    projlen=24: 21032 braids
+    projlen=25: 26268 braids
+    projlen=26: 81216 braids
+  Braids kept: 4119900 (in 16 buckets, 42.11 GB)
+  ⚡ Timing: matmul=2.86s, sampling=1.63s, total=15.29s
+
+============================================================
+Level 130 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4098080
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 14 braids
+    projlen=18: 84 braids
+    projlen=19: 489 braids
+    projlen=20: 1132 braids
+    projlen=21: 3339 braids
+    projlen=22: 9139 braids
+    projlen=23: 12383 braids
+    projlen=24: 34047 braids
+    projlen=25: 43273 braids
+    projlen=26: 132080 braids
+  Braids kept: 3890056 (in 16 buckets, 39.76 GB)
+  ⚡ Timing: matmul=2.87s, sampling=2.12s, total=16.18s
+
+============================================================
+Level 131 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4058164
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 15 braids
+    projlen=19: 223 braids
+    projlen=20: 693 braids
+    projlen=21: 3478 braids
+    projlen=22: 8478 braids
+    projlen=23: 22709 braids
+    projlen=24: 60572 braids
+    projlen=25: 81597 braids
+    projlen=26: 216466 braids
+    projlen=27: 264488 braids
+  Braids kept: 4058164 (in 14 buckets, 41.48 GB)
+  ⚡ Timing: matmul=2.71s, sampling=1.53s, total=14.98s
+
+============================================================
+Level 132 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4051280
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 12 braids
+    projlen=19: 76 braids
+    projlen=20: 617 braids
+    projlen=21: 2543 braids
+    projlen=22: 6637 braids
+    projlen=23: 24224 braids
+    projlen=24: 60791 braids
+    projlen=25: 145973 braids
+    projlen=26: 379402 braids
+    projlen=27: 481133 braids
+  Braids kept: 4051280 (in 14 buckets, 41.41 GB)
+  ⚡ Timing: matmul=2.69s, sampling=1.72s, total=15.10s
+
+============================================================
+Level 133 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4088820
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 49 braids
+    projlen=19: 98 braids
+    projlen=20: 392 braids
+    projlen=21: 1978 braids
+    projlen=22: 7722 braids
+    projlen=23: 21830 braids
+    projlen=24: 57646 braids
+    projlen=25: 156639 braids
+    projlen=26: 386360 braids
+    projlen=27: 744476 braids
+  Braids kept: 3873827 (in 13 buckets, 39.60 GB)
+  ⚡ Timing: matmul=2.78s, sampling=2.28s, total=16.30s
+
+============================================================
+Level 134 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4100360
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 14 braids
+    projlen=18: 52 braids
+    projlen=19: 181 braids
+    projlen=20: 415 braids
+    projlen=21: 1996 braids
+    projlen=22: 7343 braids
+    projlen=23: 20990 braids
+    projlen=24: 66330 braids
+    projlen=25: 152713 braids
+    projlen=26: 375198 braids
+  Braids kept: 3912470 (in 14 buckets, 39.99 GB)
+  ⚡ Timing: matmul=2.83s, sampling=2.19s, total=16.21s
+
+============================================================
+Level 135 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4120352
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 51 braids
+    projlen=19: 128 braids
+    projlen=20: 373 braids
+    projlen=21: 2010 braids
+    projlen=22: 5880 braids
+    projlen=23: 21149 braids
+    projlen=24: 61211 braids
+    projlen=25: 153181 braids
+    projlen=26: 413503 braids
+    projlen=27: 790104 braids
+  Braids kept: 3973527 (in 13 buckets, 40.62 GB)
+  ⚡ Timing: matmul=2.85s, sampling=2.19s, total=16.24s
+
+============================================================
+Level 136 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4121754
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 4 braids
+    projlen=19: 16 braids
+    projlen=20: 373 braids
+    projlen=21: 1149 braids
+    projlen=22: 3733 braids
+    projlen=23: 17110 braids
+    projlen=24: 45394 braids
+    projlen=25: 150715 braids
+    projlen=26: 378942 braids
+    projlen=27: 802840 braids
+  Braids kept: 3836700 (in 13 buckets, 39.22 GB)
+  ⚡ Timing: matmul=2.90s, sampling=2.29s, total=16.49s
+
+============================================================
+Level 137 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4117920
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 1 braids
+    projlen=18: 2 braids
+    projlen=19: 8 braids
+    projlen=20: 96 braids
+    projlen=21: 420 braids
+    projlen=22: 3132 braids
+    projlen=23: 9326 braids
+    projlen=24: 28092 braids
+    projlen=25: 119767 braids
+    projlen=26: 281999 braids
+  Braids kept: 3949546 (in 14 buckets, 40.37 GB)
+  ⚡ Timing: matmul=2.85s, sampling=2.17s, total=16.24s
+
+============================================================
+Level 138 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4140232
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 7 braids
+    projlen=20: 38 braids
+    projlen=21: 226 braids
+    projlen=22: 1298 braids
+    projlen=23: 4442 braids
+    projlen=24: 22693 braids
+    projlen=25: 68490 braids
+    projlen=26: 186587 braids
+    projlen=27: 649170 braids
+    projlen=28: 1212501 braids
+  Braids kept: 4086492 (in 12 buckets, 41.77 GB)
+  ⚡ Timing: matmul=2.90s, sampling=1.77s, total=15.77s
+
+============================================================
+Level 139 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4206226
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=20: 13 braids
+    projlen=21: 110 braids
+    projlen=22: 608 braids
+    projlen=23: 2631 braids
+    projlen=24: 11608 braids
+    projlen=25: 38054 braids
+    projlen=26: 151557 braids
+    projlen=27: 404506 braids
+    projlen=28: 885950 braids
+    projlen=29: 1826317 braids
+  Braids kept: 3779909 (in 11 buckets, 38.64 GB)
+  ⚡ Timing: matmul=2.85s, sampling=2.32s, total=16.81s
+
+============================================================
+Level 140 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4195682
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 8 braids
+    projlen=20: 18 braids
+    projlen=21: 54 braids
+    projlen=22: 288 braids
+    projlen=23: 1583 braids
+    projlen=24: 6471 braids
+    projlen=25: 24332 braids
+    projlen=26: 89905 braids
+    projlen=27: 256916 braids
+    projlen=28: 791865 braids
+  Braids kept: 3920359 (in 13 buckets, 40.07 GB)
+  ⚡ Timing: matmul=2.80s, sampling=2.41s, total=16.96s
+
+============================================================
+Level 141 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4221804
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=20: 44 braids
+    projlen=21: 65 braids
+    projlen=22: 267 braids
+    projlen=23: 978 braids
+    projlen=24: 4329 braids
+    projlen=25: 16729 braids
+    projlen=26: 56430 braids
+    projlen=27: 179796 braids
+    projlen=28: 518056 braids
+    projlen=29: 1133990 braids
+  Braids kept: 3980744 (in 12 buckets, 40.69 GB)
+  ⚡ Timing: matmul=2.90s, sampling=1.98s, total=16.25s
+
+============================================================
+Level 142 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4236234
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=21: 53 braids
+    projlen=22: 372 braids
+    projlen=23: 879 braids
+    projlen=24: 3593 braids
+    projlen=25: 12163 braids
+    projlen=26: 41477 braids
+    projlen=27: 132884 braids
+    projlen=28: 365340 braids
+    projlen=29: 891992 braids
+    projlen=30: 1861153 braids
+  Braids kept: 3775081 (in 11 buckets, 38.59 GB)
+  ⚡ Timing: matmul=2.90s, sampling=2.23s, total=16.67s
+
+============================================================
+Level 143 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4203116
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=21: 42 braids
+    projlen=22: 175 braids
+    projlen=23: 804 braids
+    projlen=24: 3909 braids
+    projlen=25: 9984 braids
+    projlen=26: 34014 braids
+    projlen=27: 102734 braids
+    projlen=28: 289195 braids
+    projlen=29: 710185 braids
+    projlen=30: 1519633 braids
+  Braids kept: 4083483 (in 12 buckets, 41.74 GB)
+  ⚡ Timing: matmul=2.83s, sampling=2.46s, total=16.95s
+
+============================================================
+Level 144 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4203292
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=21: 29 braids
+    projlen=22: 126 braids
+    projlen=23: 736 braids
+    projlen=24: 2602 braids
+    projlen=25: 8500 braids
+    projlen=26: 32952 braids
+    projlen=27: 85337 braids
+    projlen=28: 244438 braids
+    projlen=29: 580302 braids
+    projlen=30: 1257177 braids
+  Braids kept: 4160626 (in 12 buckets, 42.53 GB)
+  ⚡ Timing: matmul=2.74s, sampling=2.60s, total=16.86s
+
+============================================================
+Level 145 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4194064
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=21: 13 braids
+    projlen=22: 84 braids
+    projlen=23: 506 braids
+    projlen=24: 2104 braids
+    projlen=25: 7538 braids
+    projlen=26: 25545 braids
+    projlen=27: 73192 braids
+    projlen=28: 231580 braids
+    projlen=29: 501046 braids
+    projlen=30: 1121159 braids
+  Braids kept: 4047308 (in 12 buckets, 41.37 GB)
+  ⚡ Timing: matmul=2.80s, sampling=2.02s, total=16.28s
+
+============================================================
+Level 146 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4173800
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=20: 1 braids
+    projlen=21: 14 braids
+    projlen=22: 72 braids
+    projlen=23: 411 braids
+    projlen=24: 1819 braids
+    projlen=25: 6528 braids
+    projlen=26: 21625 braids
+    projlen=27: 64823 braids
+    projlen=28: 191194 braids
+    projlen=29: 451883 braids
+  Braids kept: 3985024 (in 13 buckets, 40.73 GB)
+  ⚡ Timing: matmul=2.77s, sampling=1.98s, total=16.08s
+
+============================================================
+Level 147 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4192996
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=21: 13 braids
+    projlen=22: 62 braids
+    projlen=23: 424 braids
+    projlen=24: 1915 braids
+    projlen=25: 6094 braids
+    projlen=26: 19440 braids
+    projlen=27: 58973 braids
+    projlen=28: 168234 braids
+    projlen=29: 416744 braids
+    projlen=30: 975822 braids
+  Braids kept: 3902470 (in 12 buckets, 39.89 GB)
+  ⚡ Timing: matmul=2.80s, sampling=2.11s, total=16.39s
+
+============================================================
+Level 148 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4183914
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=21: 16 braids
+    projlen=22: 45 braids
+    projlen=23: 412 braids
+    projlen=24: 1730 braids
+    projlen=25: 5872 braids
+    projlen=26: 19768 braids
+    projlen=27: 54460 braids
+    projlen=28: 156642 braids
+    projlen=29: 394399 braids
+    projlen=30: 893419 braids
+  Braids kept: 3924577 (in 13 buckets, 40.12 GB)
+  ⚡ Timing: matmul=2.78s, sampling=2.37s, total=16.67s
+
+============================================================
+Level 149 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4183556
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=20: 8 braids
+    projlen=21: 24 braids
+    projlen=22: 53 braids
+    projlen=23: 414 braids
+    projlen=24: 1348 braids
+    projlen=25: 5616 braids
+    projlen=26: 17610 braids
+    projlen=27: 51607 braids
+    projlen=28: 154901 braids
+    projlen=29: 370115 braids
+  Braids kept: 4002693 (in 14 buckets, 40.92 GB)
+  ⚡ Timing: matmul=2.78s, sampling=2.35s, total=16.72s
+
+============================================================
+Level 150 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4159802
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 11 braids
+    projlen=21: 36 braids
+    projlen=22: 133 braids
+    projlen=23: 477 braids
+    projlen=24: 1369 braids
+    projlen=25: 5170 braids
+    projlen=26: 15554 braids
+    projlen=27: 49977 braids
+    projlen=28: 138762 braids
+    projlen=29: 351393 braids
+  Braids kept: 4065219 (in 14 buckets, 41.55 GB)
+  ⚡ Timing: matmul=2.95s, sampling=2.26s, total=16.51s
+
+============================================================
+Level 151 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4156580
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 9 braids
+    projlen=21: 37 braids
+    projlen=22: 136 braids
+    projlen=23: 554 braids
+    projlen=24: 1631 braids
+    projlen=25: 5613 braids
+    projlen=26: 14959 braids
+    projlen=27: 46380 braids
+    projlen=28: 126406 braids
+    projlen=29: 340266 braids
+  Braids kept: 4127918 (in 14 buckets, 42.20 GB)
+  ⚡ Timing: matmul=2.94s, sampling=2.00s, total=16.08s
+
+============================================================
+Level 152 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4157406
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 8 braids
+    projlen=20: 21 braids
+    projlen=21: 39 braids
+    projlen=22: 102 braids
+    projlen=23: 420 braids
+    projlen=24: 1541 braids
+    projlen=25: 5558 braids
+    projlen=26: 15674 braids
+    projlen=27: 48067 braids
+    projlen=28: 120824 braids
+  Braids kept: 4157406 (in 15 buckets, 42.50 GB)
+  ⚡ Timing: matmul=2.94s, sampling=1.73s, total=15.54s
+
+============================================================
+Level 153 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4152632
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 12 braids
+    projlen=18: 25 braids
+    projlen=19: 17 braids
+    projlen=20: 52 braids
+    projlen=21: 49 braids
+    projlen=22: 164 braids
+    projlen=23: 461 braids
+    projlen=24: 1297 braids
+    projlen=25: 4734 braids
+    projlen=26: 14183 braids
+  Braids kept: 4152632 (in 17 buckets, 42.45 GB)
+  ⚡ Timing: matmul=2.93s, sampling=1.71s, total=15.54s
+
+============================================================
+Level 154 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4136326
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=16: 1 braids
+    projlen=17: 4 braids
+    projlen=18: 21 braids
+    projlen=19: 90 braids
+    projlen=20: 135 braids
+    projlen=21: 157 braids
+    projlen=22: 376 braids
+    projlen=23: 486 braids
+    projlen=24: 1699 braids
+    projlen=25: 4618 braids
+  Braids kept: 4136326 (in 18 buckets, 42.28 GB)
+  ⚡ Timing: matmul=2.94s, sampling=1.68s, total=15.54s
+
+============================================================
+Level 155 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4138770
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=16: 1 braids
+    projlen=17: 4 braids
+    projlen=18: 13 braids
+    projlen=19: 66 braids
+    projlen=20: 162 braids
+    projlen=21: 522 braids
+    projlen=22: 855 braids
+    projlen=23: 1156 braids
+    projlen=24: 2834 braids
+    projlen=25: 5129 braids
+  Braids kept: 4138770 (in 18 buckets, 42.31 GB)
+  ⚡ Timing: matmul=2.90s, sampling=1.71s, total=15.49s
+
+============================================================
+Level 156 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4139336
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=16: 1 braids
+    projlen=17: 10 braids
+    projlen=18: 22 braids
+    projlen=19: 45 braids
+    projlen=20: 131 braids
+    projlen=21: 444 braids
+    projlen=22: 952 braids
+    projlen=23: 3155 braids
+    projlen=24: 5098 braids
+    projlen=25: 9698 braids
+  Braids kept: 4139336 (in 18 buckets, 42.31 GB)
+  ⚡ Timing: matmul=2.91s, sampling=1.67s, total=15.48s
+
+============================================================
+Level 157 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4137210
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 4 braids
+    projlen=18: 12 braids
+    projlen=19: 78 braids
+    projlen=20: 176 braids
+    projlen=21: 364 braids
+    projlen=22: 875 braids
+    projlen=23: 2753 braids
+    projlen=24: 6000 braids
+    projlen=25: 19245 braids
+    projlen=26: 33045 braids
+  Braids kept: 4137210 (in 17 buckets, 42.29 GB)
+  ⚡ Timing: matmul=2.90s, sampling=1.71s, total=15.49s
+
+============================================================
+Level 158 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4099312
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 15 braids
+    projlen=19: 24 braids
+    projlen=20: 117 braids
+    projlen=21: 428 braids
+    projlen=22: 1115 braids
+    projlen=23: 2909 braids
+    projlen=24: 6230 braids
+    projlen=25: 19475 braids
+    projlen=26: 39485 braids
+    projlen=27: 119473 braids
+  Braids kept: 4099312 (in 16 buckets, 41.90 GB)
+  ⚡ Timing: matmul=2.91s, sampling=1.72s, total=15.51s
+
+============================================================
+Level 159 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4067498
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 4 braids
+    projlen=19: 8 braids
+    projlen=20: 182 braids
+    projlen=21: 290 braids
+    projlen=22: 907 braids
+    projlen=23: 2944 braids
+    projlen=24: 7944 braids
+    projlen=25: 23069 braids
+    projlen=26: 45646 braids
+    projlen=27: 128428 braids
+  Braids kept: 4067498 (in 15 buckets, 41.58 GB)
+  ⚡ Timing: matmul=2.74s, sampling=1.61s, total=15.21s
+
+============================================================
+Level 160 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4090430
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 7 braids
+    projlen=20: 64 braids
+    projlen=21: 338 braids
+    projlen=22: 1451 braids
+    projlen=23: 3060 braids
+    projlen=24: 8213 braids
+    projlen=25: 22897 braids
+    projlen=26: 53308 braids
+    projlen=27: 157120 braids
+    projlen=28: 284813 braids
+  Braids kept: 4090430 (in 14 buckets, 41.81 GB)
+  ⚡ Timing: matmul=2.81s, sampling=1.73s, total=15.45s
+
+============================================================
+Level 161 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4090690
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 8 braids
+    projlen=19: 55 braids
+    projlen=20: 120 braids
+    projlen=21: 262 braids
+    projlen=22: 953 braids
+    projlen=23: 2871 braids
+    projlen=24: 11332 braids
+    projlen=25: 23847 braids
+    projlen=26: 57925 braids
+    projlen=27: 156290 braids
+  Braids kept: 4090690 (in 15 buckets, 41.82 GB)
+  ⚡ Timing: matmul=2.81s, sampling=1.82s, total=15.55s
+
+============================================================
+Level 162 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4081094
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 16 braids
+    projlen=19: 89 braids
+    projlen=20: 294 braids
+    projlen=21: 543 braids
+    projlen=22: 1321 braids
+    projlen=23: 2182 braids
+    projlen=24: 7450 braids
+    projlen=25: 20344 braids
+    projlen=26: 74873 braids
+    projlen=27: 163067 braids
+  Braids kept: 4081094 (in 15 buckets, 41.72 GB)
+  ⚡ Timing: matmul=2.78s, sampling=1.70s, total=15.34s
+
+============================================================
+Level 163 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4081380
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=16: 2 braids
+    projlen=17: 2 braids
+    projlen=18: 4 braids
+    projlen=19: 88 braids
+    projlen=20: 308 braids
+    projlen=21: 768 braids
+    projlen=22: 2764 braids
+    projlen=23: 3394 braids
+    projlen=24: 9615 braids
+    projlen=25: 16599 braids
+  Braids kept: 4009616 (in 17 buckets, 40.99 GB)
+  ⚡ Timing: matmul=2.78s, sampling=2.13s, total=16.79s
+
+============================================================
+Level 164 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4111616
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=15: 2 braids
+    projlen=16: 5 braids
+    projlen=17: 8 braids
+    projlen=18: 14 braids
+    projlen=19: 42 braids
+    projlen=20: 104 braids
+    projlen=21: 831 braids
+    projlen=22: 2784 braids
+    projlen=23: 5042 braids
+    projlen=24: 18264 braids
+  Braids kept: 3721487 (in 18 buckets, 38.04 GB)
+  ⚡ Timing: matmul=2.84s, sampling=2.18s, total=16.30s
+
+============================================================
+Level 165 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4101610
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=15: 1 braids
+    projlen=16: 11 braids
+    projlen=17: 22 braids
+    projlen=18: 28 braids
+    projlen=19: 72 braids
+    projlen=20: 101 braids
+    projlen=21: 444 braids
+    projlen=22: 1343 braids
+    projlen=23: 6128 braids
+    projlen=24: 19663 braids
+  Braids kept: 4101610 (in 18 buckets, 41.93 GB)
+  ⚡ Timing: matmul=2.80s, sampling=1.81s, total=15.55s
+
+============================================================
+Level 166 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4059916
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=16: 3 braids
+    projlen=17: 8 braids
+    projlen=18: 86 braids
+    projlen=19: 129 braids
+    projlen=20: 218 braids
+    projlen=21: 586 braids
+    projlen=22: 1129 braids
+    projlen=23: 3946 braids
+    projlen=24: 11727 braids
+    projlen=25: 43372 braids
+  Braids kept: 3957184 (in 16 buckets, 40.45 GB)
+  ⚡ Timing: matmul=2.74s, sampling=1.93s, total=15.71s
+
+============================================================
+Level 167 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4095956
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 10 braids
+    projlen=18: 52 braids
+    projlen=19: 56 braids
+    projlen=20: 565 braids
+    projlen=21: 932 braids
+    projlen=22: 1923 braids
+    projlen=23: 4577 braids
+    projlen=24: 9592 braids
+    projlen=25: 29991 braids
+    projlen=26: 88839 braids
+  Braids kept: 4095956 (in 15 buckets, 41.87 GB)
+  ⚡ Timing: matmul=2.81s, sampling=1.79s, total=15.67s
+
+============================================================
+Level 168 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4151026
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 9 braids
+    projlen=18: 33 braids
+    projlen=19: 78 braids
+    projlen=20: 375 braids
+    projlen=21: 615 braids
+    projlen=22: 3773 braids
+    projlen=23: 6806 braids
+    projlen=24: 14436 braids
+    projlen=25: 32967 braids
+    projlen=26: 71503 braids
+  Braids kept: 4021131 (in 15 buckets, 41.10 GB)
+  ⚡ Timing: matmul=2.93s, sampling=1.80s, total=15.71s
+
+============================================================
+Level 169 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4163334
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=17: 3 braids
+    projlen=18: 25 braids
+    projlen=19: 82 braids
+    projlen=20: 336 braids
+    projlen=21: 756 braids
+    projlen=22: 2376 braids
+    projlen=23: 5425 braids
+    projlen=24: 24764 braids
+    projlen=25: 46217 braids
+    projlen=26: 97961 braids
+  Braids kept: 3928977 (in 15 buckets, 40.16 GB)
+  ⚡ Timing: matmul=2.73s, sampling=2.10s, total=16.27s
+
+============================================================
+Level 170 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4097648
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 2 braids
+    projlen=18: 5 braids
+    projlen=19: 41 braids
+    projlen=20: 167 braids
+    projlen=21: 954 braids
+    projlen=22: 2687 braids
+    projlen=23: 5735 braids
+    projlen=24: 16009 braids
+    projlen=25: 38994 braids
+    projlen=26: 154557 braids
+  Braids kept: 4097648 (in 15 buckets, 41.89 GB)
+  ⚡ Timing: matmul=2.81s, sampling=1.74s, total=15.43s
+
+============================================================
+Level 171 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4071752
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 3 braids
+    projlen=19: 27 braids
+    projlen=20: 70 braids
+    projlen=21: 454 braids
+    projlen=22: 1412 braids
+    projlen=23: 7197 braids
+    projlen=24: 19579 braids
+    projlen=25: 40128 braids
+    projlen=26: 108415 braids
+    projlen=27: 247527 braids
+  Braids kept: 4071752 (in 14 buckets, 41.62 GB)
+  ⚡ Timing: matmul=2.74s, sampling=1.63s, total=15.23s
+
+============================================================
+Level 172 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4124646
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 5 braids
+    projlen=20: 62 braids
+    projlen=21: 351 braids
+    projlen=22: 938 braids
+    projlen=23: 3930 braids
+    projlen=24: 12169 braids
+    projlen=25: 49491 braids
+    projlen=26: 131299 braids
+    projlen=27: 251299 braids
+    projlen=28: 595304 braids
+  Braids kept: 4075707 (in 13 buckets, 41.66 GB)
+  ⚡ Timing: matmul=2.87s, sampling=1.81s, total=15.64s
+
+============================================================
+Level 173 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4112628
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 3 braids
+    projlen=20: 35 braids
+    projlen=21: 172 braids
+    projlen=22: 906 braids
+    projlen=23: 3055 braids
+    projlen=24: 9081 braids
+    projlen=25: 30563 braids
+    projlen=26: 89484 braids
+    projlen=27: 305143 braids
+    projlen=28: 708900 braids
+  Braids kept: 4112628 (in 13 buckets, 42.04 GB)
+  ⚡ Timing: matmul=2.84s, sampling=1.78s, total=15.63s
+
+============================================================
+Level 174 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4133048
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 1 braids
+    projlen=19: 2 braids
+    projlen=20: 22 braids
+    projlen=21: 128 braids
+    projlen=22: 655 braids
+    projlen=23: 1834 braids
+    projlen=24: 8467 braids
+    projlen=25: 24675 braids
+    projlen=26: 70599 braids
+    projlen=27: 206196 braids
+  Braids kept: 4060842 (in 14 buckets, 41.51 GB)
+  ⚡ Timing: matmul=2.89s, sampling=1.80s, total=15.67s
+
+============================================================
+Level 175 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4180376
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 1 braids
+    projlen=19: 5 braids
+    projlen=20: 20 braids
+    projlen=21: 96 braids
+    projlen=22: 584 braids
+    projlen=23: 1669 braids
+    projlen=24: 6427 braids
+    projlen=25: 17114 braids
+    projlen=26: 65416 braids
+    projlen=27: 171364 braids
+  Braids kept: 3887695 (in 14 buckets, 39.74 GB)
+  ⚡ Timing: matmul=2.80s, sampling=2.33s, total=16.75s
+
+============================================================
+Level 176 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4158948
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 3 braids
+    projlen=19: 9 braids
+    projlen=20: 18 braids
+    projlen=21: 77 braids
+    projlen=22: 325 braids
+    projlen=23: 1379 braids
+    projlen=24: 6174 braids
+    projlen=25: 15332 braids
+    projlen=26: 51967 braids
+    projlen=27: 130245 braids
+  Braids kept: 3814934 (in 15 buckets, 39.00 GB)
+  ⚡ Timing: matmul=2.94s, sampling=2.10s, total=16.21s
+
+============================================================
+Level 177 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4169204
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 2 braids
+    projlen=19: 14 braids
+    projlen=20: 21 braids
+    projlen=21: 77 braids
+    projlen=22: 310 braids
+    projlen=23: 1037 braids
+    projlen=24: 3909 braids
+    projlen=25: 13219 braids
+    projlen=26: 49553 braids
+    projlen=27: 118389 braids
+  Braids kept: 3902519 (in 15 buckets, 39.89 GB)
+  ⚡ Timing: matmul=2.79s, sampling=2.46s, total=16.96s
+
+============================================================
+Level 178 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4167216
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 10 braids
+    projlen=20: 16 braids
+    projlen=21: 134 braids
+    projlen=22: 260 braids
+    projlen=23: 1018 braids
+    projlen=24: 3488 braids
+    projlen=25: 11095 braids
+    projlen=26: 35314 braids
+    projlen=27: 105079 braids
+    projlen=28: 334931 braids
+  Braids kept: 4097400 (in 14 buckets, 41.88 GB)
+  ⚡ Timing: matmul=2.76s, sampling=2.34s, total=16.68s
+
+============================================================
+Level 179 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4154604
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 12 braids
+    projlen=21: 91 braids
+    projlen=22: 248 braids
+    projlen=23: 1095 braids
+    projlen=24: 3155 braids
+    projlen=25: 10902 braids
+    projlen=26: 32100 braids
+    projlen=27: 92293 braids
+    projlen=28: 256384 braids
+    projlen=29: 582739 braids
+  Braids kept: 4130319 (in 13 buckets, 42.22 GB)
+  ⚡ Timing: matmul=2.94s, sampling=1.91s, total=15.89s
+
+============================================================
+Level 180 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4182480
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=20: 15 braids
+    projlen=21: 76 braids
+    projlen=22: 215 braids
+    projlen=23: 1034 braids
+    projlen=24: 2908 braids
+    projlen=25: 10444 braids
+    projlen=26: 29146 braids
+    projlen=27: 89940 braids
+    projlen=28: 234718 braids
+    projlen=29: 535238 braids
+  Braids kept: 4098043 (in 13 buckets, 41.89 GB)
+  ⚡ Timing: matmul=2.77s, sampling=1.94s, total=16.02s
+
+============================================================
+Level 181 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4171870
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=20: 20 braids
+    projlen=21: 108 braids
+    projlen=22: 232 braids
+    projlen=23: 1139 braids
+    projlen=24: 2687 braids
+    projlen=25: 10149 braids
+    projlen=26: 27507 braids
+    projlen=27: 84182 braids
+    projlen=28: 215834 braids
+    projlen=29: 527256 braids
+  Braids kept: 4042000 (in 13 buckets, 41.32 GB)
+  ⚡ Timing: matmul=2.77s, sampling=1.99s, total=16.12s
+
+============================================================
+Level 182 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4170336
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=20: 16 braids
+    projlen=21: 131 braids
+    projlen=22: 263 braids
+    projlen=23: 1352 braids
+    projlen=24: 3138 braids
+    projlen=25: 10886 braids
+    projlen=26: 26594 braids
+    projlen=27: 82421 braids
+    projlen=28: 203653 braids
+    projlen=29: 500893 braids
+  Braids kept: 3981526 (in 13 buckets, 40.70 GB)
+  ⚡ Timing: matmul=2.75s, sampling=2.70s, total=17.01s
+
+============================================================
+Level 183 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4164600
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 2 braids
+    projlen=20: 11 braids
+    projlen=21: 93 braids
+    projlen=22: 273 braids
+    projlen=23: 1556 braids
+    projlen=24: 3362 braids
+    projlen=25: 12482 braids
+    projlen=26: 28405 braids
+    projlen=27: 87907 braids
+    projlen=28: 198512 braids
+  Braids kept: 3958251 (in 14 buckets, 40.46 GB)
+  ⚡ Timing: matmul=2.76s, sampling=2.16s, total=16.40s
+
+============================================================
+Level 184 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4164136
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=20: 17 braids
+    projlen=21: 89 braids
+    projlen=22: 286 braids
+    projlen=23: 1212 braids
+    projlen=24: 3455 braids
+    projlen=25: 13485 braids
+    projlen=26: 29463 braids
+    projlen=27: 96490 braids
+    projlen=28: 205710 braids
+    projlen=29: 534771 braids
+  Braids kept: 3971452 (in 13 buckets, 40.60 GB)
+  ⚡ Timing: matmul=2.74s, sampling=2.05s, total=16.22s
+
+============================================================
+Level 185 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4146176
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 2 braids
+    projlen=20: 4 braids
+    projlen=21: 88 braids
+    projlen=22: 260 braids
+    projlen=23: 1260 braids
+    projlen=24: 3221 braids
+    projlen=25: 11661 braids
+    projlen=26: 30536 braids
+    projlen=27: 99962 braids
+    projlen=28: 209342 braids
+  Braids kept: 3980210 (in 14 buckets, 40.69 GB)
+  ⚡ Timing: matmul=2.92s, sampling=1.81s, total=15.67s
+
+============================================================
+Level 186 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4135238
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 2 braids
+    projlen=20: 10 braids
+    projlen=21: 67 braids
+    projlen=22: 191 braids
+    projlen=23: 1197 braids
+    projlen=24: 3155 braids
+    projlen=25: 11949 braids
+    projlen=26: 28038 braids
+    projlen=27: 91493 braids
+    projlen=28: 212531 braids
+  Braids kept: 3966878 (in 14 buckets, 40.55 GB)
+  ⚡ Timing: matmul=2.92s, sampling=1.84s, total=15.77s
+
+============================================================
+Level 187 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4133598
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 12 braids
+    projlen=21: 66 braids
+    projlen=22: 198 braids
+    projlen=23: 1074 braids
+    projlen=24: 2746 braids
+    projlen=25: 11653 braids
+    projlen=26: 26956 braids
+    projlen=27: 92327 braids
+    projlen=28: 196711 braids
+    projlen=29: 540961 braids
+  Braids kept: 3938622 (in 13 buckets, 40.26 GB)
+  ⚡ Timing: matmul=2.89s, sampling=1.87s, total=15.77s
+
+============================================================
+Level 188 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4147650
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 2 braids
+    projlen=19: 11 braids
+    projlen=20: 27 braids
+    projlen=21: 77 braids
+    projlen=22: 185 braids
+    projlen=23: 1031 braids
+    projlen=24: 2630 braids
+    projlen=25: 10982 braids
+    projlen=26: 24683 braids
+    projlen=27: 88978 braids
+  Braids kept: 3917323 (in 15 buckets, 40.04 GB)
+  ⚡ Timing: matmul=2.93s, sampling=1.99s, total=16.03s
+
+============================================================
+Level 189 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4146828
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 4 braids
+    projlen=20: 33 braids
+    projlen=21: 156 braids
+    projlen=22: 242 braids
+    projlen=23: 1182 braids
+    projlen=24: 2646 braids
+    projlen=25: 10091 braids
+    projlen=26: 24451 braids
+    projlen=27: 85188 braids
+    projlen=28: 178149 braids
+  Braids kept: 3881328 (in 14 buckets, 39.67 GB)
+  ⚡ Timing: matmul=2.93s, sampling=1.89s, total=15.87s
+
+============================================================
+Level 190 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4160582
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 13 braids
+    projlen=20: 23 braids
+    projlen=21: 151 braids
+    projlen=22: 340 braids
+    projlen=23: 1461 braids
+    projlen=24: 2996 braids
+    projlen=25: 10655 braids
+    projlen=26: 24164 braids
+    projlen=27: 79984 braids
+    projlen=28: 176584 braids
+  Braids kept: 3849989 (in 14 buckets, 39.35 GB)
+  ⚡ Timing: matmul=2.78s, sampling=2.17s, total=16.52s
+
+============================================================
+Level 191 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4162962
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 10 braids
+    projlen=20: 46 braids
+    projlen=21: 161 braids
+    projlen=22: 494 braids
+    projlen=23: 1450 braids
+    projlen=24: 3326 braids
+    projlen=25: 11740 braids
+    projlen=26: 26314 braids
+    projlen=27: 82182 braids
+    projlen=28: 175460 braids
+  Braids kept: 3846656 (in 14 buckets, 39.32 GB)
+  ⚡ Timing: matmul=2.75s, sampling=2.22s, total=16.46s
+
+============================================================
+Level 192 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4153184
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 2 braids
+    projlen=19: 9 braids
+    projlen=20: 60 braids
+    projlen=21: 169 braids
+    projlen=22: 550 braids
+    projlen=23: 1722 braids
+    projlen=24: 4298 braids
+    projlen=25: 12085 braids
+    projlen=26: 27862 braids
+    projlen=27: 87975 braids
+  Braids kept: 3870983 (in 15 buckets, 39.57 GB)
+  ⚡ Timing: matmul=2.95s, sampling=2.01s, total=16.03s
+
+============================================================
+Level 193 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4138678
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=16: 2 braids
+    projlen=17: 2 braids
+    projlen=18: 8 braids
+    projlen=19: 21 braids
+    projlen=20: 78 braids
+    projlen=21: 198 braids
+    projlen=22: 662 braids
+    projlen=23: 1686 braids
+    projlen=24: 4556 braids
+    projlen=25: 13285 braids
+  Braids kept: 3901166 (in 17 buckets, 39.88 GB)
+  ⚡ Timing: matmul=2.90s, sampling=1.93s, total=15.90s
+
+============================================================
+Level 194 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4135884
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=16: 2 braids
+    projlen=17: 8 braids
+    projlen=18: 22 braids
+    projlen=19: 30 braids
+    projlen=20: 102 braids
+    projlen=21: 278 braids
+    projlen=22: 737 braids
+    projlen=23: 1974 braids
+    projlen=24: 5182 braids
+    projlen=25: 13153 braids
+  Braids kept: 3935666 (in 17 buckets, 40.23 GB)
+  ⚡ Timing: matmul=2.90s, sampling=1.91s, total=15.85s
+
+============================================================
+Level 195 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4109498
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 8 braids
+    projlen=18: 16 braids
+    projlen=19: 74 braids
+    projlen=20: 157 braids
+    projlen=21: 344 braids
+    projlen=22: 834 braids
+    projlen=23: 2424 braids
+    projlen=24: 5410 braids
+    projlen=25: 15624 braids
+    projlen=26: 37710 braids
+  Braids kept: 3986359 (in 16 buckets, 40.75 GB)
+  ⚡ Timing: matmul=2.83s, sampling=1.92s, total=15.75s
+
+============================================================
+Level 196 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4112890
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 46 braids
+    projlen=20: 151 braids
+    projlen=21: 596 braids
+    projlen=22: 1158 braids
+    projlen=23: 3071 braids
+    projlen=24: 6068 braids
+    projlen=25: 18431 braids
+    projlen=26: 39511 braids
+    projlen=27: 110238 braids
+    projlen=28: 243828 braids
+  Braids kept: 4038327 (in 14 buckets, 41.28 GB)
+  ⚡ Timing: matmul=2.84s, sampling=1.92s, total=15.81s
+
+============================================================
+Level 197 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4104670
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 2 braids
+    projlen=20: 34 braids
+    projlen=21: 419 braids
+    projlen=22: 1202 braids
+    projlen=23: 4487 braids
+    projlen=24: 7777 braids
+    projlen=25: 22898 braids
+    projlen=26: 43943 braids
+    projlen=27: 126528 braids
+    projlen=28: 255833 braids
+  Braids kept: 4104670 (in 14 buckets, 41.96 GB)
+  ⚡ Timing: matmul=2.82s, sampling=1.64s, total=15.31s
+
+============================================================
+Level 198 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4100160
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 4 braids
+    projlen=20: 21 braids
+    projlen=21: 123 braids
+    projlen=22: 594 braids
+    projlen=23: 3390 braids
+    projlen=24: 8410 braids
+    projlen=25: 30333 braids
+    projlen=26: 52943 braids
+    projlen=27: 153943 braids
+    projlen=28: 281131 braids
+  Braids kept: 4100160 (in 14 buckets, 41.91 GB)
+  ⚡ Timing: matmul=2.81s, sampling=1.63s, total=15.26s
+
+============================================================
+Level 199 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4084368
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 2 braids
+    projlen=19: 16 braids
+    projlen=20: 40 braids
+    projlen=21: 124 braids
+    projlen=22: 493 braids
+    projlen=23: 1914 braids
+    projlen=24: 5479 braids
+    projlen=25: 24948 braids
+    projlen=26: 55845 braids
+    projlen=27: 192884 braids
+  Braids kept: 4084368 (in 15 buckets, 41.75 GB)
+  ⚡ Timing: matmul=2.78s, sampling=1.78s, total=15.57s
+
+============================================================
+Level 200 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4065142
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 10 braids
+    projlen=18: 10 braids
+    projlen=19: 40 braids
+    projlen=20: 57 braids
+    projlen=21: 197 braids
+    projlen=22: 474 braids
+    projlen=23: 1767 braids
+    projlen=24: 4914 braids
+    projlen=25: 17451 braids
+    projlen=26: 43805 braids
+  Braids kept: 4065142 (in 16 buckets, 41.55 GB)
+  ⚡ Timing: matmul=2.74s, sampling=1.77s, total=15.49s
+
+============================================================
+Level 201 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4123966
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 12 braids
+    projlen=18: 23 braids
+    projlen=19: 66 braids
+    projlen=20: 95 braids
+    projlen=21: 360 braids
+    projlen=22: 720 braids
+    projlen=23: 1737 braids
+    projlen=24: 4806 braids
+    projlen=25: 15376 braids
+    projlen=26: 39257 braids
+  Braids kept: 4123966 (in 16 buckets, 42.16 GB)
+  ⚡ Timing: matmul=2.87s, sampling=1.64s, total=16.40s
+
+============================================================
+Level 202 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4184490
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=17: 2 braids
+    projlen=18: 19 braids
+    projlen=19: 83 braids
+    projlen=20: 177 braids
+    projlen=21: 454 braids
+    projlen=22: 756 braids
+    projlen=23: 2892 braids
+    projlen=24: 6035 braids
+    projlen=25: 15500 braids
+    projlen=26: 36584 braids
+  Braids kept: 4184490 (in 16 buckets, 42.77 GB)
+  ⚡ Timing: matmul=2.81s, sampling=1.77s, total=15.88s
+
+============================================================
+Level 203 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4193862
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=17: 2 braids
+    projlen=18: 9 braids
+    projlen=19: 71 braids
+    projlen=20: 174 braids
+    projlen=21: 487 braids
+    projlen=22: 1256 braids
+    projlen=23: 3040 braids
+    projlen=24: 5887 braids
+    projlen=25: 21530 braids
+    projlen=26: 44857 braids
+  Braids kept: 4143600 (in 16 buckets, 42.36 GB)
+  ⚡ Timing: matmul=2.83s, sampling=1.93s, total=16.18s
+
+============================================================
+Level 204 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4166938
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=17: 14 braids
+    projlen=18: 33 braids
+    projlen=19: 68 braids
+    projlen=20: 173 braids
+    projlen=21: 530 braids
+    projlen=22: 1377 braids
+    projlen=23: 3187 braids
+    projlen=24: 7973 braids
+    projlen=25: 21466 braids
+    projlen=26: 42397 braids
+  Braids kept: 4166938 (in 16 buckets, 42.59 GB)
+  ⚡ Timing: matmul=2.77s, sampling=1.78s, total=15.82s
+
+============================================================
+Level 205 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4130054
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 24 braids
+    projlen=18: 56 braids
+    projlen=19: 98 braids
+    projlen=20: 338 braids
+    projlen=21: 564 braids
+    projlen=22: 1496 braids
+    projlen=23: 3825 braids
+    projlen=24: 9095 braids
+    projlen=25: 22230 braids
+    projlen=26: 51821 braids
+  Braids kept: 4130054 (in 16 buckets, 42.22 GB)
+  ⚡ Timing: matmul=2.87s, sampling=1.71s, total=15.60s
+
+============================================================
+Level 206 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4113928
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 18 braids
+    projlen=18: 78 braids
+    projlen=19: 186 braids
+    projlen=20: 460 braids
+    projlen=21: 666 braids
+    projlen=22: 2408 braids
+    projlen=23: 4167 braids
+    projlen=24: 10455 braids
+    projlen=25: 26553 braids
+    projlen=26: 57830 braids
+  Braids kept: 4113928 (in 16 buckets, 42.05 GB)
+  ⚡ Timing: matmul=2.84s, sampling=1.65s, total=15.32s
+
+============================================================
+Level 207 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4079516
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 2 braids
+    projlen=18: 24 braids
+    projlen=19: 206 braids
+    projlen=20: 624 braids
+    projlen=21: 1290 braids
+    projlen=22: 3339 braids
+    projlen=23: 4817 braids
+    projlen=24: 15535 braids
+    projlen=25: 29219 braids
+    projlen=26: 69277 braids
+  Braids kept: 4079516 (in 16 buckets, 41.70 GB)
+  ⚡ Timing: matmul=2.76s, sampling=1.80s, total=15.59s
+
+============================================================
+Level 208 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4063452
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 4 braids
+    projlen=19: 68 braids
+    projlen=20: 239 braids
+    projlen=21: 1593 braids
+    projlen=22: 4542 braids
+    projlen=23: 8900 braids
+    projlen=24: 22042 braids
+    projlen=25: 34628 braids
+    projlen=26: 99745 braids
+    projlen=27: 191399 braids
+  Braids kept: 4061502 (in 15 buckets, 41.52 GB)
+  ⚡ Timing: matmul=2.71s, sampling=1.91s, total=15.61s
+
+============================================================
+Level 209 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4038124
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 1 braids
+    projlen=19: 20 braids
+    projlen=20: 65 braids
+    projlen=21: 699 braids
+    projlen=22: 2206 braids
+    projlen=23: 11301 braids
+    projlen=24: 30618 braids
+    projlen=25: 60285 braids
+    projlen=26: 143625 braids
+    projlen=27: 226662 braids
+  Braids kept: 4011642 (in 14 buckets, 41.01 GB)
+  ⚡ Timing: matmul=2.67s, sampling=1.81s, total=15.49s
+
+============================================================
+Level 210 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4013290
+  Processing in 31 chunks...
+  Projlen distribution:
+    projlen=19: 4 braids
+    projlen=20: 20 braids
+    projlen=21: 260 braids
+    projlen=22: 889 braids
+    projlen=23: 5938 braids
+    projlen=24: 17325 braids
+    projlen=25: 77110 braids
+    projlen=26: 199525 braids
+    projlen=27: 368758 braids
+    projlen=28: 785415 braids
+  Braids kept: 4013290 (in 13 buckets, 41.02 GB)
+  ⚡ Timing: matmul=2.83s, sampling=1.63s, total=14.97s
+
+============================================================
+Level 211 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 3991626
+  Processing in 31 chunks...
+  Projlen distribution:
+    projlen=20: 17 braids
+    projlen=21: 102 braids
+    projlen=22: 466 braids
+    projlen=23: 3132 braids
+    projlen=24: 8556 braids
+    projlen=25: 46102 braids
+    projlen=26: 123000 braids
+    projlen=27: 464615 braids
+    projlen=28: 1032177 braids
+    projlen=29: 1459300 braids
+  Braids kept: 3932326 (in 12 buckets, 40.20 GB)
+  ⚡ Timing: matmul=2.77s, sampling=1.76s, total=15.15s
+
+============================================================
+Level 212 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4115516
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=20: 20 braids
+    projlen=21: 97 braids
+    projlen=22: 390 braids
+    projlen=23: 1580 braids
+    projlen=24: 5264 braids
+    projlen=25: 28392 braids
+    projlen=26: 69919 braids
+    projlen=27: 297715 braids
+    projlen=28: 663256 braids
+    projlen=29: 1833170 braids
+  Braids kept: 3682346 (in 12 buckets, 37.64 GB)
+  ⚡ Timing: matmul=2.84s, sampling=2.29s, total=16.42s
+
+============================================================
+Level 213 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4199270
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 4 braids
+    projlen=20: 13 braids
+    projlen=21: 127 braids
+    projlen=22: 357 braids
+    projlen=23: 1402 braids
+    projlen=24: 4440 braids
+    projlen=25: 16181 braids
+    projlen=26: 46902 braids
+    projlen=27: 200529 braids
+    projlen=28: 411392 braids
+  Braids kept: 4037645 (in 13 buckets, 41.27 GB)
+  ⚡ Timing: matmul=2.82s, sampling=2.10s, total=16.42s
+
+============================================================
+Level 214 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4207854
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 1 braids
+    projlen=20: 15 braids
+    projlen=21: 111 braids
+    projlen=22: 337 braids
+    projlen=23: 1546 braids
+    projlen=24: 4139 braids
+    projlen=25: 13552 braids
+    projlen=26: 38683 braids
+    projlen=27: 127378 braids
+    projlen=28: 308124 braids
+  Braids kept: 3918486 (in 14 buckets, 40.05 GB)
+  ⚡ Timing: matmul=2.83s, sampling=2.08s, total=16.37s
+
+============================================================
+Level 215 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4212718
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 1 braids
+    projlen=20: 9 braids
+    projlen=21: 61 braids
+    projlen=22: 291 braids
+    projlen=23: 1349 braids
+    projlen=24: 3907 braids
+    projlen=25: 14063 braids
+    projlen=26: 34771 braids
+    projlen=27: 108467 braids
+    projlen=28: 261270 braids
+  Braids kept: 4212718 (in 14 buckets, 43.06 GB)
+  ⚡ Timing: matmul=2.91s, sampling=1.82s, total=16.06s
+
+============================================================
+Level 216 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4205284
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 2 braids
+    projlen=20: 24 braids
+    projlen=21: 41 braids
+    projlen=22: 209 braids
+    projlen=23: 990 braids
+    projlen=24: 3448 braids
+    projlen=25: 12720 braids
+    projlen=26: 33009 braids
+    projlen=27: 107416 braids
+    projlen=28: 237852 braids
+  Braids kept: 4131404 (in 14 buckets, 42.23 GB)
+  ⚡ Timing: matmul=2.83s, sampling=2.16s, total=16.38s
+
+============================================================
+Level 217 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4180576
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 6 braids
+    projlen=20: 14 braids
+    projlen=21: 77 braids
+    projlen=22: 256 braids
+    projlen=23: 832 braids
+    projlen=24: 2726 braids
+    projlen=25: 10641 braids
+    projlen=26: 30601 braids
+    projlen=27: 98200 braids
+    projlen=28: 228837 braids
+  Braids kept: 4076423 (in 14 buckets, 41.67 GB)
+  ⚡ Timing: matmul=2.78s, sampling=1.99s, total=16.20s
+
+============================================================
+Level 218 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4181860
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 8 braids
+    projlen=20: 20 braids
+    projlen=21: 104 braids
+    projlen=22: 256 braids
+    projlen=23: 1002 braids
+    projlen=24: 3015 braids
+    projlen=25: 9205 braids
+    projlen=26: 26734 braids
+    projlen=27: 86562 braids
+    projlen=28: 215149 braids
+  Braids kept: 4021278 (in 14 buckets, 41.11 GB)
+  ⚡ Timing: matmul=2.77s, sampling=1.99s, total=16.18s
+
+============================================================
+Level 219 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4186626
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=17: 2 braids
+    projlen=19: 12 braids
+    projlen=20: 37 braids
+    projlen=21: 97 braids
+    projlen=22: 281 braids
+    projlen=23: 1043 braids
+    projlen=24: 3087 braids
+    projlen=25: 9517 braids
+    projlen=26: 27806 braids
+    projlen=27: 77085 braids
+  Braids kept: 3968417 (in 15 buckets, 40.57 GB)
+  ⚡ Timing: matmul=2.79s, sampling=2.11s, total=16.35s
+
+============================================================
+Level 220 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4184480
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 2 braids
+    projlen=19: 27 braids
+    projlen=20: 44 braids
+    projlen=21: 122 braids
+    projlen=22: 321 braids
+    projlen=23: 1064 braids
+    projlen=24: 3020 braids
+    projlen=25: 9941 braids
+    projlen=26: 26372 braids
+    projlen=27: 77385 braids
+  Braids kept: 3927471 (in 15 buckets, 40.15 GB)
+  ⚡ Timing: matmul=2.79s, sampling=2.36s, total=17.39s
+
+============================================================
+Level 221 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4151716
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 9 braids
+    projlen=20: 47 braids
+    projlen=21: 190 braids
+    projlen=22: 449 braids
+    projlen=23: 1129 braids
+    projlen=24: 3424 braids
+    projlen=25: 9632 braids
+    projlen=26: 25621 braids
+    projlen=27: 78326 braids
+    projlen=28: 189704 braids
+  Braids kept: 3932889 (in 14 buckets, 40.20 GB)
+  ⚡ Timing: matmul=2.94s, sampling=2.04s, total=16.08s
+
+============================================================
+Level 222 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4137504
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 10 braids
+    projlen=20: 40 braids
+    projlen=21: 121 braids
+    projlen=22: 479 braids
+    projlen=23: 1502 braids
+    projlen=24: 4083 braids
+    projlen=25: 9949 braids
+    projlen=26: 28226 braids
+    projlen=27: 75030 braids
+    projlen=28: 185291 braids
+  Braids kept: 3898466 (in 14 buckets, 39.85 GB)
+  ⚡ Timing: matmul=2.89s, sampling=2.09s, total=16.19s
+
+============================================================
+Level 223 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4140328
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 2 braids
+    projlen=18: 2 braids
+    projlen=19: 11 braids
+    projlen=20: 43 braids
+    projlen=21: 134 braids
+    projlen=22: 480 braids
+    projlen=23: 1216 braids
+    projlen=24: 4338 braids
+    projlen=25: 11484 braids
+    projlen=26: 31286 braids
+  Braids kept: 3892969 (in 16 buckets, 39.79 GB)
+  ⚡ Timing: matmul=2.90s, sampling=2.01s, total=15.99s
+
+============================================================
+Level 224 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4119062
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 6 braids
+    projlen=18: 16 braids
+    projlen=19: 19 braids
+    projlen=20: 38 braids
+    projlen=21: 141 braids
+    projlen=22: 501 braids
+    projlen=23: 1490 braids
+    projlen=24: 4292 braids
+    projlen=25: 10458 braids
+    projlen=26: 32376 braids
+  Braids kept: 3938348 (in 16 buckets, 40.26 GB)
+  ⚡ Timing: matmul=2.87s, sampling=1.97s, total=15.94s
+
+============================================================
+Level 225 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4106476
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 2 braids
+    projlen=18: 14 braids
+    projlen=19: 60 braids
+    projlen=20: 114 braids
+    projlen=21: 271 braids
+    projlen=22: 482 braids
+    projlen=23: 1386 braids
+    projlen=24: 4559 braids
+    projlen=25: 12236 braids
+    projlen=26: 33135 braids
+  Braids kept: 3964419 (in 16 buckets, 40.52 GB)
+  ⚡ Timing: matmul=2.83s, sampling=1.94s, total=15.82s
+
+============================================================
+Level 226 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4110872
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 6 braids
+    projlen=19: 60 braids
+    projlen=20: 112 braids
+    projlen=21: 434 braids
+    projlen=22: 921 braids
+    projlen=23: 2149 braids
+    projlen=24: 4951 braids
+    projlen=25: 11895 braids
+    projlen=26: 34700 braids
+    projlen=27: 89104 braids
+  Braids kept: 3976364 (in 15 buckets, 40.65 GB)
+  ⚡ Timing: matmul=2.86s, sampling=1.92s, total=15.88s
+
+============================================================
+Level 227 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4115776
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 17 braids
+    projlen=20: 99 braids
+    projlen=21: 451 braids
+    projlen=22: 903 braids
+    projlen=23: 3021 braids
+    projlen=24: 6684 braids
+    projlen=25: 16415 braids
+    projlen=26: 38275 braids
+    projlen=27: 89378 braids
+    projlen=28: 233558 braids
+  Braids kept: 4040257 (in 14 buckets, 41.30 GB)
+  ⚡ Timing: matmul=2.85s, sampling=1.83s, total=15.66s
+
+============================================================
+Level 228 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4108516
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=19: 17 braids
+    projlen=20: 38 braids
+    projlen=21: 282 braids
+    projlen=22: 927 braids
+    projlen=23: 3181 braids
+    projlen=24: 7067 braids
+    projlen=25: 21004 braids
+    projlen=26: 47241 braids
+    projlen=27: 113387 braids
+    projlen=28: 256023 braids
+  Braids kept: 4072909 (in 14 buckets, 41.63 GB)
+  ⚡ Timing: matmul=2.83s, sampling=1.69s, total=15.36s
+
+============================================================
+Level 229 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4092016
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 1 braids
+    projlen=19: 20 braids
+    projlen=20: 89 braids
+    projlen=21: 289 braids
+    projlen=22: 692 braids
+    projlen=23: 2575 braids
+    projlen=24: 7355 braids
+    projlen=25: 22888 braids
+    projlen=26: 51226 braids
+    projlen=27: 138987 braids
+  Braids kept: 4092016 (in 15 buckets, 41.83 GB)
+  ⚡ Timing: matmul=2.79s, sampling=1.73s, total=15.43s
+
+============================================================
+Level 230 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4081542
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 2 braids
+    projlen=18: 8 braids
+    projlen=19: 24 braids
+    projlen=20: 85 braids
+    projlen=21: 329 braids
+    projlen=22: 1154 braids
+    projlen=23: 2679 braids
+    projlen=24: 6282 braids
+    projlen=25: 20789 braids
+    projlen=26: 54225 braids
+  Braids kept: 4081542 (in 16 buckets, 41.72 GB)
+  ⚡ Timing: matmul=2.79s, sampling=1.63s, total=15.26s
+
+============================================================
+Level 231 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4099282
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 8 braids
+    projlen=18: 15 braids
+    projlen=19: 67 braids
+    projlen=20: 148 braids
+    projlen=21: 446 braids
+    projlen=22: 1028 braids
+    projlen=23: 3318 braids
+    projlen=24: 8896 braids
+    projlen=25: 21419 braids
+    projlen=26: 49191 braids
+  Braids kept: 4099282 (in 16 buckets, 41.90 GB)
+  ⚡ Timing: matmul=2.81s, sampling=1.67s, total=15.34s
+
+============================================================
+Level 232 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4140536
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 14 braids
+    projlen=18: 33 braids
+    projlen=19: 152 braids
+    projlen=20: 319 braids
+    projlen=21: 732 braids
+    projlen=22: 1552 braids
+    projlen=23: 3964 braids
+    projlen=24: 8496 braids
+    projlen=25: 24846 braids
+    projlen=26: 62151 braids
+  Braids kept: 4108002 (in 16 buckets, 41.99 GB)
+  ⚡ Timing: matmul=2.99s, sampling=2.18s, total=16.42s
+
+============================================================
+Level 233 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4133946
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=15: 4 braids
+    projlen=16: 8 braids
+    projlen=17: 22 braids
+    projlen=18: 49 braids
+    projlen=19: 192 braids
+    projlen=20: 370 braids
+    projlen=21: 1424 braids
+    projlen=22: 2595 braids
+    projlen=23: 5934 braids
+    projlen=24: 12308 braids
+  Braids kept: 4133946 (in 18 buckets, 42.26 GB)
+  ⚡ Timing: matmul=2.89s, sampling=1.62s, total=15.40s
+
+============================================================
+Level 234 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4103194
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=13: 4 braids
+    projlen=14: 2 braids
+    projlen=15: 18 braids
+    projlen=16: 16 braids
+    projlen=17: 42 braids
+    projlen=18: 51 braids
+    projlen=19: 248 braids
+    projlen=20: 468 braids
+    projlen=21: 1703 braids
+    projlen=22: 3059 braids
+  Braids kept: 3946454 (in 20 buckets, 40.34 GB)
+  ⚡ Timing: matmul=2.81s, sampling=2.13s, total=16.09s
+
+============================================================
+Level 235 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4094536
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=11: 4 braids
+    projlen=12: 2 braids
+    projlen=13: 12 braids
+    projlen=14: 14 braids
+    projlen=15: 24 braids
+    projlen=16: 38 braids
+    projlen=17: 136 braids
+    projlen=18: 163 braids
+    projlen=19: 409 braids
+    projlen=20: 513 braids
+  Braids kept: 4033792 (in 21 buckets, 41.23 GB)
+  ⚡ Timing: matmul=2.79s, sampling=1.82s, total=15.67s
+
+============================================================
+Level 236 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4046004
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=12: 8 braids
+    projlen=13: 26 braids
+    projlen=14: 30 braids
+    projlen=15: 78 braids
+    projlen=16: 128 braids
+    projlen=17: 200 braids
+    projlen=18: 393 braids
+    projlen=19: 884 braids
+    projlen=20: 1275 braids
+    projlen=21: 2925 braids
+  Braids kept: 4046004 (in 20 buckets, 41.36 GB)
+  ⚡ Timing: matmul=2.70s, sampling=1.71s, total=15.34s
+
+============================================================
+Level 237 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4064666
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=13: 2 braids
+    projlen=14: 70 braids
+    projlen=15: 195 braids
+    projlen=16: 282 braids
+    projlen=17: 630 braids
+    projlen=18: 933 braids
+    projlen=19: 1657 braids
+    projlen=20: 2683 braids
+    projlen=21: 5716 braids
+    projlen=22: 8539 braids
+  Braids kept: 3951957 (in 19 buckets, 40.40 GB)
+  ⚡ Timing: matmul=2.72s, sampling=2.16s, total=16.14s
+
+============================================================
+Level 238 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4090220
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=13: 6 braids
+    projlen=14: 10 braids
+    projlen=15: 35 braids
+    projlen=16: 553 braids
+    projlen=17: 1373 braids
+    projlen=18: 2094 braids
+    projlen=19: 4450 braids
+    projlen=20: 6442 braids
+    projlen=21: 12060 braids
+    projlen=22: 18618 braids
+  Braids kept: 3831652 (in 18 buckets, 39.17 GB)
+  ⚡ Timing: matmul=2.80s, sampling=2.17s, total=16.11s
+
+============================================================
+Level 239 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4058916
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=14: 1 braids
+    projlen=15: 93 braids
+    projlen=16: 159 braids
+    projlen=17: 410 braids
+    projlen=18: 3731 braids
+    projlen=19: 9408 braids
+    projlen=20: 14304 braids
+    projlen=21: 30656 braids
+    projlen=22: 43661 braids
+    projlen=23: 82917 braids
+  Braids kept: 4058916 (in 17 buckets, 41.49 GB)
+  ⚡ Timing: matmul=2.65s, sampling=2.10s, total=15.71s
+
+============================================================
+Level 240 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4026082
+  Processing in 31 chunks...
+  Projlen distribution:
+    projlen=15: 4 braids
+    projlen=16: 17 braids
+    projlen=17: 871 braids
+    projlen=18: 1490 braids
+    projlen=19: 4149 braids
+    projlen=20: 25516 braids
+    projlen=21: 60030 braids
+    projlen=22: 98617 braids
+    projlen=23: 195602 braids
+    projlen=24: 283922 braids
+  Braids kept: 4026082 (in 15 buckets, 41.15 GB)
+  ⚡ Timing: matmul=2.87s, sampling=1.59s, total=14.86s
+
+============================================================
+Level 241 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4029944
+  Processing in 31 chunks...
+  Projlen distribution:
+    projlen=16: 1 braids
+    projlen=17: 106 braids
+    projlen=18: 264 braids
+    projlen=19: 7156 braids
+    projlen=20: 12340 braids
+    projlen=21: 36344 braids
+    projlen=22: 163935 braids
+    projlen=23: 362726 braids
+    projlen=24: 606247 braids
+    projlen=25: 981999 braids
+  Braids kept: 4029944 (in 13 buckets, 41.19 GB)
+  ⚡ Timing: matmul=2.92s, sampling=1.60s, total=15.04s
+
+============================================================
+Level 242 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4030882
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=17: 21 braids
+    projlen=18: 107 braids
+    projlen=19: 1181 braids
+    projlen=20: 3484 braids
+    projlen=21: 52263 braids
+    projlen=22: 89501 braids
+    projlen=23: 253192 braids
+    projlen=24: 860217 braids
+    projlen=25: 1488365 braids
+    projlen=26: 1047581 braids
+  Braids kept: 3942517 (in 11 buckets, 40.30 GB)
+  ⚡ Timing: matmul=2.67s, sampling=2.14s, total=15.99s
+
+============================================================
+Level 243 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4166016
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=17: 2 braids
+    projlen=18: 48 braids
+    projlen=19: 409 braids
+    projlen=20: 1411 braids
+    projlen=21: 11348 braids
+    projlen=22: 30413 braids
+    projlen=23: 327529 braids
+    projlen=24: 488359 braids
+    projlen=25: 1132717 braids
+    projlen=26: 1530392 braids
+  Braids kept: 4035624 (in 11 buckets, 41.25 GB)
+  ⚡ Timing: matmul=2.74s, sampling=2.08s, total=16.44s
+
+============================================================
+Level 244 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4107394
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 28 braids
+    projlen=19: 98 braids
+    projlen=20: 563 braids
+    projlen=21: 4711 braids
+    projlen=22: 13955 braids
+    projlen=23: 89809 braids
+    projlen=24: 191400 braids
+    projlen=25: 1500157 braids
+    projlen=26: 1580236 braids
+    projlen=27: 726437 braids
+  Braids kept: 3827001 (in 10 buckets, 39.12 GB)
+  ⚡ Timing: matmul=2.82s, sampling=2.17s, total=16.14s
+
+============================================================
+Level 245 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4253662
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 7 braids
+    projlen=19: 64 braids
+    projlen=20: 327 braids
+    projlen=21: 1556 braids
+    projlen=22: 6419 braids
+    projlen=23: 41406 braids
+    projlen=24: 102575 braids
+    projlen=25: 521862 braids
+    projlen=26: 826852 braids
+    projlen=27: 1919746 braids
+  Braids kept: 3733916 (in 11 buckets, 38.17 GB)
+  ⚡ Timing: matmul=2.96s, sampling=2.21s, total=16.71s
+
+============================================================
+Level 246 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4329380
+  Processing in 34 chunks...
+  Projlen distribution:
+    projlen=19: 24 braids
+    projlen=20: 176 braids
+    projlen=21: 825 braids
+    projlen=22: 3645 braids
+    projlen=23: 17495 braids
+    projlen=24: 56278 braids
+    projlen=25: 279907 braids
+    projlen=26: 546613 braids
+    projlen=27: 2174806 braids
+    projlen=28: 1192407 braids
+  Braids kept: 3554574 (in 11 buckets, 36.33 GB)
+  ⚡ Timing: matmul=2.91s, sampling=2.54s, total=17.56s
+
+============================================================
+Level 247 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4227078
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 19 braids
+    projlen=20: 106 braids
+    projlen=21: 476 braids
+    projlen=22: 2440 braids
+    projlen=23: 9373 braids
+    projlen=24: 34888 braids
+    projlen=25: 143861 braids
+    projlen=26: 346960 braids
+    projlen=27: 1319550 braids
+    projlen=28: 1618942 braids
+  Braids kept: 4008136 (in 11 buckets, 40.97 GB)
+  ⚡ Timing: matmul=2.90s, sampling=2.14s, total=16.57s
+
+============================================================
+Level 248 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4275492
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 11 braids
+    projlen=20: 99 braids
+    projlen=21: 411 braids
+    projlen=22: 1713 braids
+    projlen=23: 6644 braids
+    projlen=24: 24090 braids
+    projlen=25: 85979 braids
+    projlen=26: 240031 braids
+    projlen=27: 811639 braids
+    projlen=28: 1428624 braids
+  Braids kept: 4246868 (in 12 buckets, 43.41 GB)
+  ⚡ Timing: matmul=2.99s, sampling=2.11s, total=16.69s
+
+============================================================
+Level 249 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4302788
+  Processing in 34 chunks...
+  Projlen distribution:
+    projlen=19: 14 braids
+    projlen=20: 63 braids
+    projlen=21: 372 braids
+    projlen=22: 1546 braids
+    projlen=23: 5838 braids
+    projlen=24: 18244 braids
+    projlen=25: 63369 braids
+    projlen=26: 176826 braids
+    projlen=27: 530836 braids
+    projlen=28: 1056101 braids
+  Braids kept: 3980757 (in 12 buckets, 40.69 GB)
+  ⚡ Timing: matmul=2.84s, sampling=2.35s, total=17.18s
+
+============================================================
+Level 250 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4262850
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 5 braids
+    projlen=20: 39 braids
+    projlen=21: 344 braids
+    projlen=22: 1263 braids
+    projlen=23: 5034 braids
+    projlen=24: 15843 braids
+    projlen=25: 54323 braids
+    projlen=26: 140702 braids
+    projlen=27: 422637 braids
+    projlen=28: 851058 braids
+  Braids kept: 3799848 (in 12 buckets, 38.84 GB)
+  ⚡ Timing: matmul=2.98s, sampling=2.41s, total=17.05s
+
+============================================================
+Level 251 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4209582
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=19: 10 braids
+    projlen=20: 35 braids
+    projlen=21: 235 braids
+    projlen=22: 938 braids
+    projlen=23: 4387 braids
+    projlen=24: 13269 braids
+    projlen=25: 46576 braids
+    projlen=26: 124333 braids
+    projlen=27: 371934 braids
+    projlen=28: 735175 braids
+  Braids kept: 3872752 (in 13 buckets, 39.59 GB)
+  ⚡ Timing: matmul=2.85s, sampling=2.33s, total=16.83s
+
+============================================================
+Level 252 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4160944
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 3 braids
+    projlen=19: 18 braids
+    projlen=20: 69 braids
+    projlen=21: 244 braids
+    projlen=22: 906 braids
+    projlen=23: 3423 braids
+    projlen=24: 11057 braids
+    projlen=25: 40466 braids
+    projlen=26: 107391 braids
+    projlen=27: 325096 braids
+  Braids kept: 4020037 (in 14 buckets, 41.09 GB)
+  ⚡ Timing: matmul=2.75s, sampling=2.37s, total=16.81s
+
+============================================================
+Level 253 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4157744
+  Processing in 32 chunks...
+  Projlen distribution:
+    projlen=18: 15 braids
+    projlen=19: 11 braids
+    projlen=20: 87 braids
+    projlen=21: 311 braids
+    projlen=22: 959 braids
+    projlen=23: 3340 braids
+    projlen=24: 10165 braids
+    projlen=25: 33726 braids
+    projlen=26: 93570 braids
+    projlen=27: 288974 braids
+  Braids kept: 4157744 (in 14 buckets, 42.50 GB)
+  ⚡ Timing: matmul=2.95s, sampling=1.73s, total=15.58s
+
+============================================================
+Level 254 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4162428
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 16 braids
+    projlen=19: 22 braids
+    projlen=20: 106 braids
+    projlen=21: 305 braids
+    projlen=22: 1054 braids
+    projlen=23: 3621 braids
+    projlen=24: 9859 braids
+    projlen=25: 32376 braids
+    projlen=26: 85295 braids
+    projlen=27: 250927 braids
+  Braids kept: 4150954 (in 14 buckets, 42.43 GB)
+  ⚡ Timing: matmul=2.73s, sampling=2.10s, total=16.20s
+
+============================================================
+Level 255 - SAMPLING
+============================================================
+  Starting braids: 700000
+  Candidates to generate: 4168780
+  Processing in 33 chunks...
+  Projlen distribution:
+    projlen=18: 6 braids
+    projlen=19: 14 braids
+    projlen=20: 139 braids
+    projlen=21: 355 braids
+    projlen=22: 1089 braids
+    projlen=23: 3619 braids
+    projlen=24: 10280 braids
+    projlen=25: 33228 braids
+    projlen=26: 81074 braids
+    projlen=27: 239606 braids
+  Braids kept: 4082851 (in 14 buckets, 41.73 GB)
+  ⚡ Timing: matmul=2.78s, sampling=1.95s, total=16.16s
+
+============================================================
+SEARCH COMPLETE
+============================================================
+Final level: 255
+Total time: 3986.37s
+Avg time per level: 15.63s
+Total kernel elements: 0
+
+============================================================
+VERIFICATION
+============================================================
+No projlen=1 braids found.
+JOB COMPLETED!
