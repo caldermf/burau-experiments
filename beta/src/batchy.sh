@@ -9,10 +9,10 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=6
 #SBATCH --mem=64G                 # CRITICAL: Need lots of CPU RAM for checkpointing
-#SBATCH --time=00:06:00            # Scavenge allows longer times
+#SBATCH --time=00:18:00            # Scavenge allows longer times
 #SBATCH --requeue                  # Automatically requeue if preempted
 #SBATCH --signal=B:USR1@60        # Send signal 120s before timeout
-#SBATCH --array=12                 # Defines the range of tasks
+#SBATCH --array=1-12                 # Defines the range of tasks
 #SBATCH --output=slurm_logs/moonshot_%A_%a.out
 #SBATCH --error=slurm_logs/moonshot_%A_%a.err
 
