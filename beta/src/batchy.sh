@@ -27,6 +27,6 @@ PYTHON_PATH="/home/com36/.conda/envs/burau_gpu/bin/python"
 export PYTHONUNBUFFERED=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
-$PYTHON_PATH find_kernel.py --n 6 --r 2 --p 3 --bucket-size 1000 --matmul-chunk 8500 --use-best 2000 --bootstrap-length 2 --max-length 127 --chunk-size 70000
+$PYTHON_PATH find_kernel.py --n 6 --r 2 --p 3 --bucket-size 1000 --matmul-chunk 8500 --use-best 2000 --bootstrap-length 2 --max-length 255 --chunk-size 70000
 
 echo "JOB COMPLETED!"
