@@ -1,0 +1,24 @@
+============================================================
+SEARCHING FOR KERNEL ELEMENTS
+============================================================
+Braid group: B_6
+Representation: (4, 2)
+Dimension: 9
+Number of simples: 720
+Prime: 3
+Device: cuda
+Bucket size: 10000
+Max length: 127
+Bootstrap length: 2
+Degree multiplier: 2
+Degree window: [0, 254] (255 coeffs)
+Use best: 20000
+Expansion chunk size: 70000
+Matmul chunk size: 8500
+
+ERROR: Could not find table file tables_B6_r2_p3.pt
+Searched in: ['precomputed_tables/tables_B6_r2_p3.pt', '/nfs/roberts/project/pi_com36/com36/burau-experiments/beta/src/precomputed_tables/tables_B6_r2_p3.pt', '/nfs/roberts/project/pi_com36/com36/burau-experiments/beta/src/precomputed_tables/tables_B6_r2_p3.pt', '/nfs/roberts/project/pi_com36/com36/burau-experiments/beta/precomputed_tables/tables_B6_r2_p3.pt']
+
+Generate tables first with:
+  python generate_tables.py --n 6 --r 2 --p 3
+JOB COMPLETED!

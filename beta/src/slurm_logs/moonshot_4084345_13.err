@@ -1,0 +1,26 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) StdEnv
+Traceback (most recent call last):
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/beta/src/find_kernel.py", line 383, in <module>
+    find_kernel(
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/beta/src/find_kernel.py", line 243, in find_kernel
+    kernel_braids = search.run()
+                    ^^^^^^^^^^^^
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/beta/src/braid_search.py", line 605, in run
+    success = self.process_level(level)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/beta/src/braid_search.py", line 539, in process_level
+    chunk_matrices, chunk_words, chunk_lengths = self.expand_and_multiply_chunk(
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/beta/src/braid_search.py", line 464, in expand_and_multiply_chunk
+    new_matrices = self.fast_matmul.matmul_batch(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/beta/src/braid_search.py", line 133, in matmul_batch
+    C_fft = torch.einsum('nikf,nkjf->nijf', A_fft, B_fft)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/com36/.conda/envs/burau_gpu/lib/python3.11/site-packages/torch/functional.py", line 402, in einsum
+    return _VF.einsum(equation, operands)  # type: ignore[attr-defined]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.63 GiB. GPU 0 has a total capacity of 44.40 GiB of which 341.31 MiB is free. Including non-PyTorch memory, this process has 44.06 GiB memory in use. Of the allocated memory 43.47 GiB is allocated by PyTorch, and 99.80 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
