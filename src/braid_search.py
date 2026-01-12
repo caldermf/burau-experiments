@@ -138,6 +138,53 @@ def compute_projlen_batch(matrices: torch.Tensor) -> torch.Tensor:
     return projlens
 
 
+def is_scalar_identity_batch(matrices: torch.Tensor) -> torch.Tensor:
+    """
+    Check if matrices are scalar multiples of the identity matrix.
+    
+    A matrix is a scalar multiple of identity iff:
+    - All off-diagonal entries are zero
+    - All diagonal entries are equal (as polynomials)
+    
+    Returns a boolean tensor of shape (N,).
+    """
+    N, _, _, D = matrices.shape
+    device = matrices.device
+    
+    is_scalar_id = torch.ones(N, dtype=torch.bool, device=device)
+    
+    sub_batch_size = 50000
+    for start in range(0, N, sub_batch_size):
+        end = min(start + sub_batch_size, N)
+        batch = matrices[start:end]
+        batch_N = end - start
+        
+        # Check off-diagonal entries are all zero
+        # Off-diagonal positions: (0,1), (0,2), (1,0), (1,2), (2,0), (2,1)
+        off_diag_zero = (
+            (batch[:, 0, 1, :] == 0).all(dim=-1) &
+            (batch[:, 0, 2, :] == 0).all(dim=-1) &
+            (batch[:, 1, 0, :] == 0).all(dim=-1) &
+            (batch[:, 1, 2, :] == 0).all(dim=-1) &
+            (batch[:, 2, 0, :] == 0).all(dim=-1) &
+            (batch[:, 2, 1, :] == 0).all(dim=-1)
+        )
+        
+        # Check all diagonal entries are equal
+        diag_00 = batch[:, 0, 0, :]  # (batch_N, D)
+        diag_11 = batch[:, 1, 1, :]
+        diag_22 = batch[:, 2, 2, :]
+        
+        diag_equal = (
+            (diag_00 == diag_11).all(dim=-1) &
+            (diag_11 == diag_22).all(dim=-1)
+        )
+        
+        is_scalar_id[start:end] = off_diag_zero & diag_equal
+    
+    return is_scalar_id
+
+
 # =============================================================================
 # VECTORIZED SUFFIX EXPANSION
 # =============================================================================
@@ -461,11 +508,12 @@ class BraidSearchUltra:
             
             chunk_projlens = compute_projlen_batch(chunk_matrices)
             
-            one_mask = (chunk_projlens == 1)
-            num_ones = one_mask.sum().item()
-            if num_ones > 0:
-                print(f"\n  🎉 FOUND {num_ones} KERNEL ELEMENTS (projlen=1)! 🎉")
-                self.kernel_braids.append(chunk_words[one_mask].cpu())
+            # Check for true kernel elements (scalar multiples of identity)
+            kernel_mask = is_scalar_identity_batch(chunk_matrices)
+            num_kernel = kernel_mask.sum().item()
+            if num_kernel > 0:
+                print(f"\n  🎉 FOUND {num_kernel} KERNEL ELEMENTS! 🎉")
+                self.kernel_braids.append(chunk_words[kernel_mask].cpu())
             
             unique_pls, counts = torch.unique(chunk_projlens, return_counts=True)
             for pl, c in zip(unique_pls.tolist(), counts.tolist()):

@@ -13,6 +13,7 @@ import torch
 import os
 
 from braid_search import Config, BraidSearchUltra as BraidSearch, load_tables_from_file
+import kernel_database
 
 # For verification (optional)
 try:
@@ -26,7 +27,19 @@ except ImportError:
 
 
 def verify_kernel_element(word_list, n=4, r=1, p=2):
-    """Verify that a braid word is actually in the kernel using peyl."""
+    """Verify that a braid word is actually in the kernel using peyl.
+    
+    A braid is in the kernel (up to central elements) if it evaluates to a scalar
+    multiple of some power of Delta. Since Delta is central, if the braid evaluates
+    to c(v) * Delta^k, then multiplying by Delta^{-k} gives c(v) * I, which is in
+    the kernel.
+    
+    Delta's Burau representation is the anti-diagonal matrix:
+    [[0, 0, -v^4], [0, -v^4, 0], [-v^4, 0, 0]]
+    
+    So Delta^(even) is a scalar multiple of I, and Delta^(odd) is a scalar multiple
+    of the anti-diagonal permutation matrix.
+    """
     if not PEYL_AVAILABLE:
         return True, "Verification skipped (peyl not available)"
     
@@ -37,6 +50,83 @@ def verify_kernel_element(word_list, n=4, r=1, p=2):
         braid = GNF(n=n, power=0, factors=tuple(word_list))
     except AssertionError as e:
         return False, f"Invalid normal form: {e}"
+    
+    rep = JonesCellRep(n=n, r=r, p=p)
+    result = rep.polymat_evaluate_braid(braid)
+    if p > 0:
+        result = result % p
+    
+    # Check if it's a scalar multiple of I (Delta^even case)
+    is_scalar_identity = True
+    diag_poly = result[0, 0, :]
+    
+    for i in range(3):
+        for j in range(3):
+            if i == j:
+                if not np.array_equal(result[i, j, :], diag_poly):
+                    is_scalar_identity = False
+                    break
+            else:
+                if np.any(result[i, j, :] != 0):
+                    is_scalar_identity = False
+                    break
+        if not is_scalar_identity:
+            break
+    
+    if is_scalar_identity:
+        nonzero_degs = np.where(diag_poly != 0)[0]
+        if len(nonzero_degs) == 0:
+            return True, "Kernel element! Evaluates to 0 (trivial)"
+        if len(nonzero_degs) == 1:
+            deg = nonzero_degs[0]
+            coeff = diag_poly[deg]
+            scalar_str = f"{coeff}*v^{deg}" if coeff != 1 else f"v^{deg}"
+        else:
+            terms = [f"{diag_poly[d]}*v^{d}" for d in nonzero_degs]
+            scalar_str = " + ".join(terms)
+        return True, f"Kernel element! Evaluates to ({scalar_str}) * I"
+    
+    # Check if it's a scalar multiple of the anti-diagonal permutation (Delta^odd case)
+    # Anti-diagonal: (0,2), (1,1), (2,0) should all be equal; everything else zero
+    is_scalar_antidiag = True
+    antidiag_poly = result[0, 2, :]
+    
+    # Check anti-diagonal entries are all equal
+    if not np.array_equal(result[1, 1, :], antidiag_poly):
+        is_scalar_antidiag = False
+    if not np.array_equal(result[2, 0, :], antidiag_poly):
+        is_scalar_antidiag = False
+    
+    # Check all other entries are zero
+    if is_scalar_antidiag:
+        for i, j in [(0, 0), (0, 1), (1, 0), (1, 2), (2, 1), (2, 2)]:
+            if np.any(result[i, j, :] != 0):
+                is_scalar_antidiag = False
+                break
+    
+    if is_scalar_antidiag:
+        nonzero_degs = np.where(antidiag_poly != 0)[0]
+        if len(nonzero_degs) == 0:
+            return True, "Kernel element! Evaluates to 0 (trivial)"
+        if len(nonzero_degs) == 1:
+            deg = nonzero_degs[0]
+            coeff = antidiag_poly[deg]
+            scalar_str = f"{coeff}*v^{deg}" if coeff != 1 else f"v^{deg}"
+        else:
+            terms = [f"{antidiag_poly[d]}*v^{d}" for d in nonzero_degs]
+            scalar_str = " + ".join(terms)
+        return True, f"Kernel element! Evaluates to ({scalar_str}) * Delta"
+    
+    # Not a scalar multiple of any power of Delta
+    # Provide diagnostic info about which entry failed
+    for i in range(3):
+        for j in range(3):
+            if np.any(result[i, j, :] != 0):
+                if (i == j) or (i + j == 2):  # diagonal or anti-diagonal
+                    continue
+                return False, f"Off-diagonal nonzero at [{i},{j}]"
+    
+    return False, "Not a scalar multiple of I or Delta"
     
     rep = JonesCellRep(n=n, r=r, p=p)
     result = rep.polymat_evaluate_braid(braid)
@@ -198,8 +288,16 @@ def find_kernel(
     print(f"Total candidates with projlen=1: {sum(len(b) for b in kernel_braids)}")
     print(f"Verified kernel elements: {len(verified)}")
     
+    # Save verified kernel elements to database
     if verified:
+        num_new, num_total = kernel_database.add_kernel_elements(p, verified)
         print(f"\n✓ SUCCESS! Found {len(verified)} kernel elements for p={p}")
+        print(f"  Database updated: {num_new} new, {num_total} total for p={p}")
+    else:
+        # Still show database stats even if no new elements
+        stats = kernel_database.get_statistics()
+        if str(p) in [str(k) for k in stats["primes"].keys()]:
+            print(f"\n  Database has {stats['primes'][p]['count']} kernel elements for p={p}")
     
     return verified
 

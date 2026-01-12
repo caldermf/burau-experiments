@@ -358,7 +358,7 @@ Recommended settings for RTX 5000 (32GB):
     parser.add_argument("--degree-multiplier", type=int, default=2,
                         help="Degree window = multiplier * max_length + 1")
     
-    parser.add_argument("--matmul-chunk", type=int, default=20000,
+    parser.add_argument("--matmul-chunk", type=int, default=8000,
                         help="Chunk size for batched FFT matmul")
     
     parser.add_argument("--table-dir", type=str, default="precomputed_tables",
