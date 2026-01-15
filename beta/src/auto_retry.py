@@ -28,15 +28,15 @@ def run_auto_search():
     N = 6
     R = 2
     P = 3
-    MAX_LENGTH = 63
+    MAX_LENGTH = 127
     
     # The "Give Up" Condition
-    CHECK_LEVEL = 23
-    PROJLEN_CUTOFF = 21  # Must be strictly less than this to continue
+    CHECK_LEVEL = 64
+    PROJLEN_CUTOFF = 123  # Must be strictly less than this to continue
     
     # Search hyperparameters (matched to your log)
-    BUCKET_SIZE = 2000    # Increased slightly from 1000 for robustness
-    USE_BEST = 10000
+    BUCKET_SIZE = 10000    # Increased slightly from 1000 for robustness
+    USE_BEST = 20000
     MATMUL_CHUNK = 8000
     EXPANSION_CHUNK = 50000
     DEGREE_MULTIPLIER = 2
