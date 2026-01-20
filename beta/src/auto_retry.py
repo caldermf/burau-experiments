@@ -35,9 +35,9 @@ def run_auto_search():
     PROJLEN_CUTOFF = 100  # Must be strictly less than this to continue
     
     # Search hyperparameters (matched to your log)
-    BUCKET_SIZE = 10000    # Increased slightly from 1000 for robustness
-    USE_BEST = 20000
-    MATMUL_CHUNK = 8000
+    BUCKET_SIZE = 4500    # Increased slightly from 1000 for robustness
+    USE_BEST = 9000
+    MATMUL_CHUNK = 9000
     EXPANSION_CHUNK = 50000
     DEGREE_MULTIPLIER = 2
     
