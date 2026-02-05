@@ -167,128 +167,206 @@ def ring_matmul_kernel(
     # We define a macro-like helper (since triton functions inline)
     
     # A Matrix in frequency domain
-    # Each 'af_x' is a tuple of 6 values (the spectrum at that cell)
+    # Unpack and DFT, storing frequency components explicitly
     a0_c0, a0_c1, a0_c2, a0_c3, a0_c4, a0_c5 = unpack_poly(a0)
-    af0 = dft_6_point(a0_c0, a0_c1, a0_c2, a0_c3, a0_c4, a0_c5)
+    af0_0, af0_1, af0_2, af0_3, af0_4, af0_5 = dft_6_point(a0_c0, a0_c1, a0_c2, a0_c3, a0_c4, a0_c5)
     a1_c0, a1_c1, a1_c2, a1_c3, a1_c4, a1_c5 = unpack_poly(a1)
-    af1 = dft_6_point(a1_c0, a1_c1, a1_c2, a1_c3, a1_c4, a1_c5)
+    af1_0, af1_1, af1_2, af1_3, af1_4, af1_5 = dft_6_point(a1_c0, a1_c1, a1_c2, a1_c3, a1_c4, a1_c5)
     a2_c0, a2_c1, a2_c2, a2_c3, a2_c4, a2_c5 = unpack_poly(a2)
-    af2 = dft_6_point(a2_c0, a2_c1, a2_c2, a2_c3, a2_c4, a2_c5)
+    af2_0, af2_1, af2_2, af2_3, af2_4, af2_5 = dft_6_point(a2_c0, a2_c1, a2_c2, a2_c3, a2_c4, a2_c5)
     a3_c0, a3_c1, a3_c2, a3_c3, a3_c4, a3_c5 = unpack_poly(a3)
-    af3 = dft_6_point(a3_c0, a3_c1, a3_c2, a3_c3, a3_c4, a3_c5)
+    af3_0, af3_1, af3_2, af3_3, af3_4, af3_5 = dft_6_point(a3_c0, a3_c1, a3_c2, a3_c3, a3_c4, a3_c5)
     a4_c0, a4_c1, a4_c2, a4_c3, a4_c4, a4_c5 = unpack_poly(a4)
-    af4 = dft_6_point(a4_c0, a4_c1, a4_c2, a4_c3, a4_c4, a4_c5)
+    af4_0, af4_1, af4_2, af4_3, af4_4, af4_5 = dft_6_point(a4_c0, a4_c1, a4_c2, a4_c3, a4_c4, a4_c5)
     a5_c0, a5_c1, a5_c2, a5_c3, a5_c4, a5_c5 = unpack_poly(a5)
-    af5 = dft_6_point(a5_c0, a5_c1, a5_c2, a5_c3, a5_c4, a5_c5)
+    af5_0, af5_1, af5_2, af5_3, af5_4, af5_5 = dft_6_point(a5_c0, a5_c1, a5_c2, a5_c3, a5_c4, a5_c5)
     a6_c0, a6_c1, a6_c2, a6_c3, a6_c4, a6_c5 = unpack_poly(a6)
-    af6 = dft_6_point(a6_c0, a6_c1, a6_c2, a6_c3, a6_c4, a6_c5)
+    af6_0, af6_1, af6_2, af6_3, af6_4, af6_5 = dft_6_point(a6_c0, a6_c1, a6_c2, a6_c3, a6_c4, a6_c5)
     a7_c0, a7_c1, a7_c2, a7_c3, a7_c4, a7_c5 = unpack_poly(a7)
-    af7 = dft_6_point(a7_c0, a7_c1, a7_c2, a7_c3, a7_c4, a7_c5)
+    af7_0, af7_1, af7_2, af7_3, af7_4, af7_5 = dft_6_point(a7_c0, a7_c1, a7_c2, a7_c3, a7_c4, a7_c5)
     a8_c0, a8_c1, a8_c2, a8_c3, a8_c4, a8_c5 = unpack_poly(a8)
-    af8 = dft_6_point(a8_c0, a8_c1, a8_c2, a8_c3, a8_c4, a8_c5)
+    af8_0, af8_1, af8_2, af8_3, af8_4, af8_5 = dft_6_point(a8_c0, a8_c1, a8_c2, a8_c3, a8_c4, a8_c5)
 
     # B Matrix in frequency domain
     b0_c0, b0_c1, b0_c2, b0_c3, b0_c4, b0_c5 = unpack_poly(b0)
-    bf0 = dft_6_point(b0_c0, b0_c1, b0_c2, b0_c3, b0_c4, b0_c5)
+    bf0_0, bf0_1, bf0_2, bf0_3, bf0_4, bf0_5 = dft_6_point(b0_c0, b0_c1, b0_c2, b0_c3, b0_c4, b0_c5)
     b1_c0, b1_c1, b1_c2, b1_c3, b1_c4, b1_c5 = unpack_poly(b1)
-    bf1 = dft_6_point(b1_c0, b1_c1, b1_c2, b1_c3, b1_c4, b1_c5)
+    bf1_0, bf1_1, bf1_2, bf1_3, bf1_4, bf1_5 = dft_6_point(b1_c0, b1_c1, b1_c2, b1_c3, b1_c4, b1_c5)
     b2_c0, b2_c1, b2_c2, b2_c3, b2_c4, b2_c5 = unpack_poly(b2)
-    bf2 = dft_6_point(b2_c0, b2_c1, b2_c2, b2_c3, b2_c4, b2_c5)
+    bf2_0, bf2_1, bf2_2, bf2_3, bf2_4, bf2_5 = dft_6_point(b2_c0, b2_c1, b2_c2, b2_c3, b2_c4, b2_c5)
     b3_c0, b3_c1, b3_c2, b3_c3, b3_c4, b3_c5 = unpack_poly(b3)
-    bf3 = dft_6_point(b3_c0, b3_c1, b3_c2, b3_c3, b3_c4, b3_c5)
+    bf3_0, bf3_1, bf3_2, bf3_3, bf3_4, bf3_5 = dft_6_point(b3_c0, b3_c1, b3_c2, b3_c3, b3_c4, b3_c5)
     b4_c0, b4_c1, b4_c2, b4_c3, b4_c4, b4_c5 = unpack_poly(b4)
-    bf4 = dft_6_point(b4_c0, b4_c1, b4_c2, b4_c3, b4_c4, b4_c5)
+    bf4_0, bf4_1, bf4_2, bf4_3, bf4_4, bf4_5 = dft_6_point(b4_c0, b4_c1, b4_c2, b4_c3, b4_c4, b4_c5)
     b5_c0, b5_c1, b5_c2, b5_c3, b5_c4, b5_c5 = unpack_poly(b5)
-    bf5 = dft_6_point(b5_c0, b5_c1, b5_c2, b5_c3, b5_c4, b5_c5)
+    bf5_0, bf5_1, bf5_2, bf5_3, bf5_4, bf5_5 = dft_6_point(b5_c0, b5_c1, b5_c2, b5_c3, b5_c4, b5_c5)
     b6_c0, b6_c1, b6_c2, b6_c3, b6_c4, b6_c5 = unpack_poly(b6)
-    bf6 = dft_6_point(b6_c0, b6_c1, b6_c2, b6_c3, b6_c4, b6_c5)
+    bf6_0, bf6_1, bf6_2, bf6_3, bf6_4, bf6_5 = dft_6_point(b6_c0, b6_c1, b6_c2, b6_c3, b6_c4, b6_c5)
     b7_c0, b7_c1, b7_c2, b7_c3, b7_c4, b7_c5 = unpack_poly(b7)
-    bf7 = dft_6_point(b7_c0, b7_c1, b7_c2, b7_c3, b7_c4, b7_c5)
+    bf7_0, bf7_1, bf7_2, bf7_3, bf7_4, bf7_5 = dft_6_point(b7_c0, b7_c1, b7_c2, b7_c3, b7_c4, b7_c5)
     b8_c0, b8_c1, b8_c2, b8_c3, b8_c4, b8_c5 = unpack_poly(b8)
-    bf8 = dft_6_point(b8_c0, b8_c1, b8_c2, b8_c3, b8_c4, b8_c5)
+    bf8_0, bf8_1, bf8_2, bf8_3, bf8_4, bf8_5 = dft_6_point(b8_c0, b8_c1, b8_c2, b8_c3, b8_c4, b8_c5)
 
     # --- 3. FREQUENCY DOMAIN MATMUL ---
     # We now have 6 independent 3x3 matmuls.
-    # A = [[af0, af1, af2], [af3, af4, af5], [af6, af7, af8]]
-    # B = [[bf0, bf1, bf2], ... ]
-    # C = A @ B
+    # We unroll k=0..5 explicitly since Triton doesn't support tuple indexing or Python lists.
     
-    # We need to perform this for EACH of the 6 frequencies k=0..5.
-    # To do this cleanly, we iterate k in 0..5.
+    # k=0: frequency component 0
+    acc0_k0 = af0_0*bf0_0 + af1_0*bf3_0 + af2_0*bf6_0
+    acc1_k0 = af0_0*bf1_0 + af1_0*bf4_0 + af2_0*bf7_0
+    acc2_k0 = af0_0*bf2_0 + af1_0*bf5_0 + af2_0*bf8_0
+    acc3_k0 = af3_0*bf0_0 + af4_0*bf3_0 + af5_0*bf6_0
+    acc4_k0 = af3_0*bf1_0 + af4_0*bf4_0 + af5_0*bf7_0
+    acc5_k0 = af3_0*bf2_0 + af4_0*bf5_0 + af5_0*bf8_0
+    acc6_k0 = af6_0*bf0_0 + af7_0*bf3_0 + af8_0*bf6_0
+    acc7_k0 = af6_0*bf1_0 + af7_0*bf4_0 + af8_0*bf7_0
+    acc8_k0 = af6_0*bf2_0 + af7_0*bf5_0 + af8_0*bf8_0
     
-    # We need storage for result C (9 cells, each 6 frequencies)
-    # We'll build lists of frequencies for c0..c8
-    c0_freqs = []; c1_freqs = []; c2_freqs = []
-    c3_freqs = []; c4_freqs = []; c5_freqs = []
-    c6_freqs = []; c7_freqs = []; c8_freqs = []
-
-    for k in range(6):
-        # Extract the k-th frequency component for the entire 3x3 matrix
-        # A matrix at freq k
-        Ak_00 = af0[k]; Ak_01 = af1[k]; Ak_02 = af2[k]
-        Ak_10 = af3[k]; Ak_11 = af4[k]; Ak_12 = af5[k]
-        Ak_20 = af6[k]; Ak_21 = af7[k]; Ak_22 = af8[k]
-        
-        # B matrix at freq k
-        Bk_00 = bf0[k]; Bk_01 = bf1[k]; Bk_02 = bf2[k]
-        Bk_10 = bf3[k]; Bk_11 = bf4[k]; Bk_12 = bf5[k]
-        Bk_20 = bf6[k]; Bk_21 = bf7[k]; Bk_22 = bf8[k]
-
-        # Standard 3x3 MatMul: Row 0
-        # C00 = A00*B00 + A01*B10 + A02*B20
-        # We accumulate and THEN mod 7.
-        # Max val is 6*6 + 6*6 + 6*6 = 108. Safe for int32.
-        
-        acc0 = Ak_00*Bk_00 + Ak_01*Bk_10 + Ak_02*Bk_20
-        c0_freqs.append(fast_mod7(acc0))
-        
-        acc1 = Ak_00*Bk_01 + Ak_01*Bk_11 + Ak_02*Bk_21
-        c1_freqs.append(fast_mod7(acc1))
-        
-        acc2 = Ak_00*Bk_02 + Ak_01*Bk_12 + Ak_02*Bk_22
-        c2_freqs.append(fast_mod7(acc2))
-
-        # Row 1
-        acc3 = Ak_10*Bk_00 + Ak_11*Bk_10 + Ak_12*Bk_20
-        c3_freqs.append(fast_mod7(acc3))
-        
-        acc4 = Ak_10*Bk_01 + Ak_11*Bk_11 + Ak_12*Bk_21
-        c4_freqs.append(fast_mod7(acc4))
-        
-        acc5 = Ak_10*Bk_02 + Ak_11*Bk_12 + Ak_12*Bk_22
-        c5_freqs.append(fast_mod7(acc5))
-        
-        # Row 2
-        acc6 = Ak_20*Bk_00 + Ak_21*Bk_10 + Ak_22*Bk_20
-        c6_freqs.append(fast_mod7(acc6))
-        
-        acc7 = Ak_20*Bk_01 + Ak_21*Bk_11 + Ak_22*Bk_21
-        c7_freqs.append(fast_mod7(acc7))
-        
-        acc8 = Ak_20*Bk_02 + Ak_21*Bk_12 + Ak_22*Bk_22
-        c8_freqs.append(fast_mod7(acc8))
+    c0_f0 = fast_mod7(acc0_k0)
+    c1_f0 = fast_mod7(acc1_k0)
+    c2_f0 = fast_mod7(acc2_k0)
+    c3_f0 = fast_mod7(acc3_k0)
+    c4_f0 = fast_mod7(acc4_k0)
+    c5_f0 = fast_mod7(acc5_k0)
+    c6_f0 = fast_mod7(acc6_k0)
+    c7_f0 = fast_mod7(acc7_k0)
+    c8_f0 = fast_mod7(acc8_k0)
+    
+    # k=1: frequency component 1
+    acc0_k1 = af0_1*bf0_1 + af1_1*bf3_1 + af2_1*bf6_1
+    acc1_k1 = af0_1*bf1_1 + af1_1*bf4_1 + af2_1*bf7_1
+    acc2_k1 = af0_1*bf2_1 + af1_1*bf5_1 + af2_1*bf8_1
+    acc3_k1 = af3_1*bf0_1 + af4_1*bf3_1 + af5_1*bf6_1
+    acc4_k1 = af3_1*bf1_1 + af4_1*bf4_1 + af5_1*bf7_1
+    acc5_k1 = af3_1*bf2_1 + af4_1*bf5_1 + af5_1*bf8_1
+    acc6_k1 = af6_1*bf0_1 + af7_1*bf3_1 + af8_1*bf6_1
+    acc7_k1 = af6_1*bf1_1 + af7_1*bf4_1 + af8_1*bf7_1
+    acc8_k1 = af6_1*bf2_1 + af7_1*bf5_1 + af8_1*bf8_1
+    
+    c0_f1 = fast_mod7(acc0_k1)
+    c1_f1 = fast_mod7(acc1_k1)
+    c2_f1 = fast_mod7(acc2_k1)
+    c3_f1 = fast_mod7(acc3_k1)
+    c4_f1 = fast_mod7(acc4_k1)
+    c5_f1 = fast_mod7(acc5_k1)
+    c6_f1 = fast_mod7(acc6_k1)
+    c7_f1 = fast_mod7(acc7_k1)
+    c8_f1 = fast_mod7(acc8_k1)
+    
+    # k=2: frequency component 2
+    acc0_k2 = af0_2*bf0_2 + af1_2*bf3_2 + af2_2*bf6_2
+    acc1_k2 = af0_2*bf1_2 + af1_2*bf4_2 + af2_2*bf7_2
+    acc2_k2 = af0_2*bf2_2 + af1_2*bf5_2 + af2_2*bf8_2
+    acc3_k2 = af3_2*bf0_2 + af4_2*bf3_2 + af5_2*bf6_2
+    acc4_k2 = af3_2*bf1_2 + af4_2*bf4_2 + af5_2*bf7_2
+    acc5_k2 = af3_2*bf2_2 + af4_2*bf5_2 + af5_2*bf8_2
+    acc6_k2 = af6_2*bf0_2 + af7_2*bf3_2 + af8_2*bf6_2
+    acc7_k2 = af6_2*bf1_2 + af7_2*bf4_2 + af8_2*bf7_2
+    acc8_k2 = af6_2*bf2_2 + af7_2*bf5_2 + af8_2*bf8_2
+    
+    c0_f2 = fast_mod7(acc0_k2)
+    c1_f2 = fast_mod7(acc1_k2)
+    c2_f2 = fast_mod7(acc2_k2)
+    c3_f2 = fast_mod7(acc3_k2)
+    c4_f2 = fast_mod7(acc4_k2)
+    c5_f2 = fast_mod7(acc5_k2)
+    c6_f2 = fast_mod7(acc6_k2)
+    c7_f2 = fast_mod7(acc7_k2)
+    c8_f2 = fast_mod7(acc8_k2)
+    
+    # k=3: frequency component 3
+    acc0_k3 = af0_3*bf0_3 + af1_3*bf3_3 + af2_3*bf6_3
+    acc1_k3 = af0_3*bf1_3 + af1_3*bf4_3 + af2_3*bf7_3
+    acc2_k3 = af0_3*bf2_3 + af1_3*bf5_3 + af2_3*bf8_3
+    acc3_k3 = af3_3*bf0_3 + af4_3*bf3_3 + af5_3*bf6_3
+    acc4_k3 = af3_3*bf1_3 + af4_3*bf4_3 + af5_3*bf7_3
+    acc5_k3 = af3_3*bf2_3 + af4_3*bf5_3 + af5_3*bf8_3
+    acc6_k3 = af6_3*bf0_3 + af7_3*bf3_3 + af8_3*bf6_3
+    acc7_k3 = af6_3*bf1_3 + af7_3*bf4_3 + af8_3*bf7_3
+    acc8_k3 = af6_3*bf2_3 + af7_3*bf5_3 + af8_3*bf8_3
+    
+    c0_f3 = fast_mod7(acc0_k3)
+    c1_f3 = fast_mod7(acc1_k3)
+    c2_f3 = fast_mod7(acc2_k3)
+    c3_f3 = fast_mod7(acc3_k3)
+    c4_f3 = fast_mod7(acc4_k3)
+    c5_f3 = fast_mod7(acc5_k3)
+    c6_f3 = fast_mod7(acc6_k3)
+    c7_f3 = fast_mod7(acc7_k3)
+    c8_f3 = fast_mod7(acc8_k3)
+    
+    # k=4: frequency component 4
+    acc0_k4 = af0_4*bf0_4 + af1_4*bf3_4 + af2_4*bf6_4
+    acc1_k4 = af0_4*bf1_4 + af1_4*bf4_4 + af2_4*bf7_4
+    acc2_k4 = af0_4*bf2_4 + af1_4*bf5_4 + af2_4*bf8_4
+    acc3_k4 = af3_4*bf0_4 + af4_4*bf3_4 + af5_4*bf6_4
+    acc4_k4 = af3_4*bf1_4 + af4_4*bf4_4 + af5_4*bf7_4
+    acc5_k4 = af3_4*bf2_4 + af4_4*bf5_4 + af5_4*bf8_4
+    acc6_k4 = af6_4*bf0_4 + af7_4*bf3_4 + af8_4*bf6_4
+    acc7_k4 = af6_4*bf1_4 + af7_4*bf4_4 + af8_4*bf7_4
+    acc8_k4 = af6_4*bf2_4 + af7_4*bf5_4 + af8_4*bf8_4
+    
+    c0_f4 = fast_mod7(acc0_k4)
+    c1_f4 = fast_mod7(acc1_k4)
+    c2_f4 = fast_mod7(acc2_k4)
+    c3_f4 = fast_mod7(acc3_k4)
+    c4_f4 = fast_mod7(acc4_k4)
+    c5_f4 = fast_mod7(acc5_k4)
+    c6_f4 = fast_mod7(acc6_k4)
+    c7_f4 = fast_mod7(acc7_k4)
+    c8_f4 = fast_mod7(acc8_k4)
+    
+    # k=5: frequency component 5
+    acc0_k5 = af0_5*bf0_5 + af1_5*bf3_5 + af2_5*bf6_5
+    acc1_k5 = af0_5*bf1_5 + af1_5*bf4_5 + af2_5*bf7_5
+    acc2_k5 = af0_5*bf2_5 + af1_5*bf5_5 + af2_5*bf8_5
+    acc3_k5 = af3_5*bf0_5 + af4_5*bf3_5 + af5_5*bf6_5
+    acc4_k5 = af3_5*bf1_5 + af4_5*bf4_5 + af5_5*bf7_5
+    acc5_k5 = af3_5*bf2_5 + af4_5*bf5_5 + af5_5*bf8_5
+    acc6_k5 = af6_5*bf0_5 + af7_5*bf3_5 + af8_5*bf6_5
+    acc7_k5 = af6_5*bf1_5 + af7_5*bf4_5 + af8_5*bf7_5
+    acc8_k5 = af6_5*bf2_5 + af7_5*bf5_5 + af8_5*bf8_5
+    
+    c0_f5 = fast_mod7(acc0_k5)
+    c1_f5 = fast_mod7(acc1_k5)
+    c2_f5 = fast_mod7(acc2_k5)
+    c3_f5 = fast_mod7(acc3_k5)
+    c4_f5 = fast_mod7(acc4_k5)
+    c5_f5 = fast_mod7(acc5_k5)
+    c6_f5 = fast_mod7(acc6_k5)
+    c7_f5 = fast_mod7(acc7_k5)
+    c8_f5 = fast_mod7(acc8_k5)
 
     # --- 4. IDFT & REPACK ---
     # We now have the spectrum for C. We must inverse transform and repack.
+    # Each cell c0..c8 has 6 frequency components, we IDFT each and pack.
     
-    # Helper lambda to pack from list of freqs
-    def finish_cell(freq_list):
-        # Unpack list to args
-        f0, f1, f2, f3, f4, f5 = freq_list[0], freq_list[1], freq_list[2], freq_list[3], freq_list[4], freq_list[5]
-        # IDFT
-        c0, c1, c2, c3, c4, c5 = idft_6_point(f0, f1, f2, f3, f4, f5)
-        # Pack
-        return pack_poly(c0, c1, c2, c3, c4, c5)
-
-    res0 = finish_cell(c0_freqs)
-    res1 = finish_cell(c1_freqs)
-    res2 = finish_cell(c2_freqs)
-    res3 = finish_cell(c3_freqs)
-    res4 = finish_cell(c4_freqs)
-    res5 = finish_cell(c5_freqs)
-    res6 = finish_cell(c6_freqs)
-    res7 = finish_cell(c7_freqs)
-    res8 = finish_cell(c8_freqs)
+    c0_c0, c0_c1, c0_c2, c0_c3, c0_c4, c0_c5 = idft_6_point(c0_f0, c0_f1, c0_f2, c0_f3, c0_f4, c0_f5)
+    res0 = pack_poly(c0_c0, c0_c1, c0_c2, c0_c3, c0_c4, c0_c5)
+    
+    c1_c0, c1_c1, c1_c2, c1_c3, c1_c4, c1_c5 = idft_6_point(c1_f0, c1_f1, c1_f2, c1_f3, c1_f4, c1_f5)
+    res1 = pack_poly(c1_c0, c1_c1, c1_c2, c1_c3, c1_c4, c1_c5)
+    
+    c2_c0, c2_c1, c2_c2, c2_c3, c2_c4, c2_c5 = idft_6_point(c2_f0, c2_f1, c2_f2, c2_f3, c2_f4, c2_f5)
+    res2 = pack_poly(c2_c0, c2_c1, c2_c2, c2_c3, c2_c4, c2_c5)
+    
+    c3_c0, c3_c1, c3_c2, c3_c3, c3_c4, c3_c5 = idft_6_point(c3_f0, c3_f1, c3_f2, c3_f3, c3_f4, c3_f5)
+    res3 = pack_poly(c3_c0, c3_c1, c3_c2, c3_c3, c3_c4, c3_c5)
+    
+    c4_c0, c4_c1, c4_c2, c4_c3, c4_c4, c4_c5 = idft_6_point(c4_f0, c4_f1, c4_f2, c4_f3, c4_f4, c4_f5)
+    res4 = pack_poly(c4_c0, c4_c1, c4_c2, c4_c3, c4_c4, c4_c5)
+    
+    c5_c0, c5_c1, c5_c2, c5_c3, c5_c4, c5_c5 = idft_6_point(c5_f0, c5_f1, c5_f2, c5_f3, c5_f4, c5_f5)
+    res5 = pack_poly(c5_c0, c5_c1, c5_c2, c5_c3, c5_c4, c5_c5)
+    
+    c6_c0, c6_c1, c6_c2, c6_c3, c6_c4, c6_c5 = idft_6_point(c6_f0, c6_f1, c6_f2, c6_f3, c6_f4, c6_f5)
+    res6 = pack_poly(c6_c0, c6_c1, c6_c2, c6_c3, c6_c4, c6_c5)
+    
+    c7_c0, c7_c1, c7_c2, c7_c3, c7_c4, c7_c5 = idft_6_point(c7_f0, c7_f1, c7_f2, c7_f3, c7_f4, c7_f5)
+    res7 = pack_poly(c7_c0, c7_c1, c7_c2, c7_c3, c7_c4, c7_c5)
+    
+    c8_c0, c8_c1, c8_c2, c8_c3, c8_c4, c8_c5 = idft_6_point(c8_f0, c8_f1, c8_f2, c8_f3, c8_f4, c8_f5)
+    res8 = pack_poly(c8_c0, c8_c1, c8_c2, c8_c3, c8_c4, c8_c5)
 
     # --- 5. STORE ---
     base_C = C_ptr + offs * 9
