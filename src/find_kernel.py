@@ -74,30 +74,31 @@ def verify_kernel_element(word_list, n=4, r=1, p=2):
             break
     
     if is_scalar_identity:
+        # Only accept if diagonal is v^{8k} for some k (i.e. a power of Delta^2)
         nonzero_degs = np.where(diag_poly != 0)[0]
         if len(nonzero_degs) == 0:
-            return True, "Kernel element! Evaluates to 0 (trivial)"
-        if len(nonzero_degs) == 1:
-            deg = nonzero_degs[0]
-            coeff = diag_poly[deg]
-            scalar_str = f"{coeff}*v^{deg}" if coeff != 1 else f"v^{deg}"
-        else:
-            terms = [f"{diag_poly[d]}*v^{d}" for d in nonzero_degs]
-            scalar_str = " + ".join(terms)
-        return True, f"Kernel element! Evaluates to ({scalar_str}) * I"
+            return False, "Evaluates to 0 (not a power of Delta)"
+        if len(nonzero_degs) != 1:
+            return False, f"Diagonal is not a single power of v: {nonzero_degs}"
+        deg = int(nonzero_degs[0])
+        coeff = int(diag_poly[deg])
+        if deg % 8 != 0:
+            return False, f"Diagonal degree {deg} is not 8k (expected v^{{8k}})"
+        if coeff != 1:
+            return False, f"Diagonal coefficient {coeff} is not 1 (expected v^{deg})"
+        k = deg // 8
+        return True, f"Kernel element! Evaluates to v^{deg} * I = Delta^{2*k}"
     
-    # Check if it's a scalar multiple of the anti-diagonal permutation (Delta^odd case)
-    # Anti-diagonal: (0,2), (1,1), (2,0) should all be equal; everything else zero
+    # Check if it's a scalar multiple of the anti-diagonal (Delta^odd case)
+    # Delta = [[0,0,-v^4],[0,-v^4,0],[-v^4,0,0]]; odd powers are -v^{8k+4} on antidiag
     is_scalar_antidiag = True
     antidiag_poly = result[0, 2, :]
     
-    # Check anti-diagonal entries are all equal
     if not np.array_equal(result[1, 1, :], antidiag_poly):
         is_scalar_antidiag = False
     if not np.array_equal(result[2, 0, :], antidiag_poly):
         is_scalar_antidiag = False
     
-    # Check all other entries are zero
     if is_scalar_antidiag:
         for i, j in [(0, 0), (0, 1), (1, 0), (1, 2), (2, 1), (2, 2)]:
             if np.any(result[i, j, :] != 0):
@@ -105,19 +106,23 @@ def verify_kernel_element(word_list, n=4, r=1, p=2):
                 break
     
     if is_scalar_antidiag:
+        # Only accept if antidiagonal is -v^{8k+4} for some k (coefficient -1 mod p)
         nonzero_degs = np.where(antidiag_poly != 0)[0]
         if len(nonzero_degs) == 0:
-            return True, "Kernel element! Evaluates to 0 (trivial)"
-        if len(nonzero_degs) == 1:
-            deg = nonzero_degs[0]
-            coeff = antidiag_poly[deg]
-            scalar_str = f"{coeff}*v^{deg}" if coeff != 1 else f"v^{deg}"
-        else:
-            terms = [f"{antidiag_poly[d]}*v^{d}" for d in nonzero_degs]
-            scalar_str = " + ".join(terms)
-        return True, f"Kernel element! Evaluates to ({scalar_str}) * Delta"
+            return False, "Evaluates to 0 (not a power of Delta)"
+        if len(nonzero_degs) != 1:
+            return False, f"Antidiagonal is not a single power of v: {nonzero_degs}"
+        deg = int(nonzero_degs[0])
+        coeff = int(antidiag_poly[deg])
+        minus_one = (p - 1) % p
+        if deg % 8 != 4:
+            return False, f"Antidiagonal degree {deg} is not 8k+4 (expected -v^{{8k+4}})"
+        if coeff != minus_one:
+            return False, f"Antidiagonal coefficient {coeff} is not -1 mod p (expected -v^{deg})"
+        k = (deg - 4) // 8
+        return True, f"Kernel element! Evaluates to -v^{deg} * Delta = Delta^{2*k+1}"
     
-    # Not a scalar multiple of any power of Delta
+    # Not a power of Delta
     # Provide diagnostic info about which entry failed
     for i in range(3):
         for j in range(3):
@@ -126,7 +131,7 @@ def verify_kernel_element(word_list, n=4, r=1, p=2):
                     continue
                 return False, f"Off-diagonal nonzero at [{i},{j}]"
     
-    return False, "Not a scalar multiple of I or Delta"
+    return False, "Not a power of Delta (wrong scalar form)"
     
     rep = JonesCellRep(n=n, r=r, p=p)
     result = rep.polymat_evaluate_braid(braid)
