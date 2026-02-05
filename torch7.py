@@ -98,8 +98,8 @@ def dft_6_point(coeffs: torch.Tensor) -> torch.Tensor:
         raise ValueError(f"coeffs last dim must be 6, got {coeffs.shape}")
     M = _dft_matrix_f7(device=coeffs.device, dtype=torch.int64)  # (6,6)
     x = coeffs.to(torch.int64)
-    # (...,6) = (...,6) @ (6,6)^T where rows are k and cols are n
-    freqs = x @ M.T
+    # CUDA does not implement matmul for int64; use float then round and mod 7.
+    freqs = (x.to(torch.float32) @ M.T.to(torch.float32)).round().to(torch.int64)
     return _mod7(freqs)
 
 
@@ -116,7 +116,8 @@ def idft_6_point(freqs: torch.Tensor) -> torch.Tensor:
         raise ValueError(f"freqs last dim must be 6, got {freqs.shape}")
     N = _idft_matrix_f7(device=freqs.device, dtype=torch.int64)  # (6,6)
     f = freqs.to(torch.int64)
-    coeffs = f @ N.T  # (...,6)
+    # CUDA does not implement matmul for int64; use float then round and mod 7.
+    coeffs = (f.to(torch.float32) @ N.T.to(torch.float32)).round().to(torch.int64)
     return _mod7(coeffs)
 
 
@@ -156,7 +157,8 @@ def ring_matmul(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
     A_fk = A_f.permute(3, 0, 1, 2).contiguous()
     B_fk = B_f.permute(3, 0, 1, 2).contiguous()
 
-    C_fk = torch.matmul(A_fk.to(torch.int64), B_fk.to(torch.int64))
+    # CUDA does not implement matmul for int64; use float then round and mod 7.
+    C_fk = (A_fk.to(torch.float32) @ B_fk.to(torch.float32)).round().to(torch.int64)
     C_fk = _mod7(C_fk)  # (6, batch, 3, 3)
 
     # Back to (batch, 3, 3, 6)
