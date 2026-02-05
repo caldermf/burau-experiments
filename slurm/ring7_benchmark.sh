@@ -14,11 +14,9 @@
 #SBATCH --error=slurm_logs/ring7_benchmark_%j.err
 
 set -e
+# Run from the directory where sbatch was submitted (repo root)
+cd "${SLURM_SUBMIT_DIR:-.}"
 mkdir -p slurm_logs
-
-# Run from repo root so benchmark7.py, triton7.py, torch7.py are on path
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "${SCRIPT_DIR}/.."
 
 module purge
 module load miniconda
