@@ -22,6 +22,12 @@ try:
 except ImportError:
     TORCH_AVAILABLE = False
 
+try:
+    import torch7
+    TORCH7_AVAILABLE = True
+except ImportError:
+    TORCH7_AVAILABLE = False
+
 
 class TestPackUnpack(unittest.TestCase):
     """Pack/unpack roundtrip and edge cases."""
@@ -222,6 +228,86 @@ class TestRingMatmulKernel(unittest.TestCase):
         C = ring_matmul(A, B)
         expected = np.full((batch, 9), zero, dtype=np.int32)
         np.testing.assert_array_equal(C.cpu().numpy(), expected)
+
+
+@unittest.skipUnless(
+    TORCH_AVAILABLE and TORCH7_AVAILABLE and torch.cuda.is_available(),
+    "torch, torch7, and CUDA required",
+)
+class TestTorch7VsTriton7(unittest.TestCase):
+    """Ensure torch7.ring_matmul and triton7.ring_matmul give identical results."""
+
+    def test_torch7_vs_triton7_small_batch(self):
+        np.random.seed(789)
+        batch = 32
+        A = torch.from_numpy(
+            np.random.randint(0, 2**18, size=(batch, 9), dtype=np.int32)
+        ).cuda()
+        B = torch.from_numpy(
+            np.random.randint(0, 2**18, size=(batch, 9), dtype=np.int32)
+        ).cuda()
+        C_triton = ring_matmul(A, B)
+        C_torch = torch7.ring_matmul(A, B)
+        np.testing.assert_array_equal(
+            C_triton.cpu().numpy(),
+            C_torch.cpu().numpy(),
+            err_msg="torch7 and triton7 should match for small batch",
+        )
+
+    def test_torch7_vs_triton7_larger_batch(self):
+        np.random.seed(101)
+        batch = 256
+        A = torch.from_numpy(
+            np.random.randint(0, 2**18, size=(batch, 9), dtype=np.int32)
+        ).cuda()
+        B = torch.from_numpy(
+            np.random.randint(0, 2**18, size=(batch, 9), dtype=np.int32)
+        ).cuda()
+        C_triton = ring_matmul(A, B)
+        C_torch = torch7.ring_matmul(A, B)
+        np.testing.assert_array_equal(
+            C_triton.cpu().numpy(),
+            C_torch.cpu().numpy(),
+            err_msg="torch7 and triton7 should match for larger batch",
+        )
+
+    def test_torch7_vs_triton7_batch_not_multiple_of_block(self):
+        np.random.seed(202)
+        batch = 7
+        A = torch.randint(0, 2**18, (batch, 9), dtype=torch.int32, device="cuda")
+        B = torch.randint(0, 2**18, (batch, 9), dtype=torch.int32, device="cuda")
+        C_triton = ring_matmul(A, B)
+        C_torch = torch7.ring_matmul(A, B)
+        np.testing.assert_array_equal(
+            C_triton.cpu().numpy(),
+            C_torch.cpu().numpy(),
+            err_msg="torch7 and triton7 should match when batch is not multiple of block",
+        )
+
+    def test_torch7_vs_triton7_zero_inputs(self):
+        batch = 16
+        zero = _pack_poly([0] * 6)
+        A = torch.full((batch, 9), zero, dtype=torch.int32, device="cuda")
+        B = torch.randint(0, 2**18, (batch, 9), dtype=torch.int32, device="cuda")
+        C_triton = ring_matmul(A, B)
+        C_torch = torch7.ring_matmul(A, B)
+        np.testing.assert_array_equal(
+            C_triton.cpu().numpy(),
+            C_torch.cpu().numpy(),
+            err_msg="torch7 and triton7 should match for zero A",
+        )
+
+    def test_torch7_vs_triton7_single_matrix(self):
+        np.random.seed(303)
+        A = torch.randint(0, 2**18, (1, 9), dtype=torch.int32, device="cuda")
+        B = torch.randint(0, 2**18, (1, 9), dtype=torch.int32, device="cuda")
+        C_triton = ring_matmul(A, B)
+        C_torch = torch7.ring_matmul(A, B)
+        np.testing.assert_array_equal(
+            C_triton.cpu().numpy(),
+            C_torch.cpu().numpy(),
+            err_msg="torch7 and triton7 should match for batch=1",
+        )
 
 
 if __name__ == "__main__":
