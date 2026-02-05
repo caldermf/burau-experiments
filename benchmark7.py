@@ -41,8 +41,9 @@ BYTES_PER_BATCH_ELEMENT = 108
 def check_correctness(batch_size: int = 256):
     """Assert that both implementations produce identical results."""
     torch.manual_seed(42)
-    A = torch.randint(0, 2**18, (batch_size, 9), dtype=torch.int32, device="cuda")
-    B = torch.randint(0, 2**18, (batch_size, 9), dtype=torch.int32, device="cuda")
+    # SoA layout: (9, batch) for coalesced memory access
+    A = torch.randint(0, 2**18, (9, batch_size), dtype=torch.int32, device="cuda")
+    B = torch.randint(0, 2**18, (9, batch_size), dtype=torch.int32, device="cuda")
 
     C_triton = triton7.ring_matmul(A, B)
     C_torch = torch7.ring_matmul(A, B)
@@ -66,8 +67,9 @@ def benchmark_single(
     Returns dict with timing and derived metrics.
     """
     torch.manual_seed(0)
-    A = torch.randint(0, 2**18, (batch_size, 9), dtype=torch.int32, device="cuda")
-    B = torch.randint(0, 2**18, (batch_size, 9), dtype=torch.int32, device="cuda")
+    # SoA layout: (9, batch) for coalesced memory access
+    A = torch.randint(0, 2**18, (9, batch_size), dtype=torch.int32, device="cuda")
+    B = torch.randint(0, 2**18, (9, batch_size), dtype=torch.int32, device="cuda")
 
     # Triton kernel
     ms_triton = triton.testing.do_bench(

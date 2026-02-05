@@ -126,21 +126,25 @@ def ring_matmul(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
     Torch implementation of the same batched ring matmul as `triton7.ring_matmul`.
 
     Args:
-        A, B: int32 tensors of shape (batch, 9). Each row is a flattened 3x3 matrix
-              of packed polynomials (6 coeffs, 3 bits each).
+        A, B: int32 tensors of shape (9, batch) - SoA layout for coalesced memory access.
+              Each row i contains component i of all matrices in the batch.
     Returns:
-        C: int32 tensor of shape (batch, 9), same packed format.
+        C: int32 tensor of shape (9, batch), same SoA layout.
     """
     if A.dtype != torch.int32 or B.dtype != torch.int32:
         raise TypeError(f"A,B must be int32, got {A.dtype}, {B.dtype}")
-    if A.ndim != 2 or B.ndim != 2 or A.shape != B.shape or A.shape[1] != 9:
-        raise ValueError(f"A,B must be shape (batch, 9) and equal; got {A.shape}, {B.shape}")
+    if A.ndim != 2 or B.ndim != 2 or A.shape != B.shape or A.shape[0] != 9:
+        raise ValueError(f"A,B must be shape (9, batch) and equal; got {A.shape}, {B.shape}")
 
-    batch = A.shape[0]
+    batch = A.shape[1]
+
+    # Transpose to (batch, 9) for internal processing, then back at the end
+    A_t = A.T.contiguous()  # (batch, 9)
+    B_t = B.T.contiguous()  # (batch, 9)
 
     # Unpack: (batch, 9) -> (batch, 9, 6)
-    A_c = unpack_poly(A)  # int64
-    B_c = unpack_poly(B)
+    A_c = unpack_poly(A_t)  # int64
+    B_c = unpack_poly(B_t)
 
     # DFT along polynomial axis: (batch, 9, 6)
     A_f = dft_6_point(A_c)
@@ -167,6 +171,8 @@ def ring_matmul(A: torch.Tensor, B: torch.Tensor) -> torch.Tensor:
 
     # IDFT and pack back to int32
     C_c = idft_6_point(C_f)
-    C = pack_poly(C_c)
-    return C
+    C_t = pack_poly(C_c)  # (batch, 9)
+    
+    # Transpose back to SoA layout (9, batch)
+    return C_t.T.contiguous()
 

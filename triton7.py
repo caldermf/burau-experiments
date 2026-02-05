@@ -133,8 +133,7 @@ def idft_6_point(f0, f1, f2, f3, f4, f5):
 @triton.jit
 def ring_matmul_kernel(
     A_ptr, B_ptr, C_ptr,
-    M_stride, # Stride between matrices (9 ints)
-    n_matrices,
+    n_matrices,  # batch size
     BLOCK_SIZE: tl.constexpr
 ):
     pid = tl.program_id(0)
@@ -143,24 +142,30 @@ def ring_matmul_kernel(
     mask = offs < n_matrices
 
     # --- 1. LOAD DATA ---
-    # We load 3x3 matrices. Flattened to 9 elements.
-    # We need 9 pointers for A and 9 for B.
-    # This looks verbose, but we want these in registers, not a tensor loop.
+    # SoA layout: A is (9, Batch), so component i is at A_ptr + i * n_matrices + batch_idx
+    # This gives perfect memory coalescing: adjacent threads access adjacent addresses.
     
-    # Offsets for each cell in the 3x3 matrix
-    # A is (Batch, 9)
-    base_A = A_ptr + offs * 9
-    base_B = B_ptr + offs * 9
-    
-    # Load A (9 packed polys)
-    a0 = tl.load(base_A + 0, mask=mask, other=0); a1 = tl.load(base_A + 1, mask=mask, other=0); a2 = tl.load(base_A + 2, mask=mask, other=0)
-    a3 = tl.load(base_A + 3, mask=mask, other=0); a4 = tl.load(base_A + 4, mask=mask, other=0); a5 = tl.load(base_A + 5, mask=mask, other=0)
-    a6 = tl.load(base_A + 6, mask=mask, other=0); a7 = tl.load(base_A + 7, mask=mask, other=0); a8 = tl.load(base_A + 8, mask=mask, other=0)
+    # Load A (9 packed polys) - coalesced access pattern
+    a0 = tl.load(A_ptr + 0 * n_matrices + offs, mask=mask, other=0)
+    a1 = tl.load(A_ptr + 1 * n_matrices + offs, mask=mask, other=0)
+    a2 = tl.load(A_ptr + 2 * n_matrices + offs, mask=mask, other=0)
+    a3 = tl.load(A_ptr + 3 * n_matrices + offs, mask=mask, other=0)
+    a4 = tl.load(A_ptr + 4 * n_matrices + offs, mask=mask, other=0)
+    a5 = tl.load(A_ptr + 5 * n_matrices + offs, mask=mask, other=0)
+    a6 = tl.load(A_ptr + 6 * n_matrices + offs, mask=mask, other=0)
+    a7 = tl.load(A_ptr + 7 * n_matrices + offs, mask=mask, other=0)
+    a8 = tl.load(A_ptr + 8 * n_matrices + offs, mask=mask, other=0)
 
-    # Load B (9 packed polys)
-    b0 = tl.load(base_B + 0, mask=mask, other=0); b1 = tl.load(base_B + 1, mask=mask, other=0); b2 = tl.load(base_B + 2, mask=mask, other=0)
-    b3 = tl.load(base_B + 3, mask=mask, other=0); b4 = tl.load(base_B + 4, mask=mask, other=0); b5 = tl.load(base_B + 5, mask=mask, other=0)
-    b6 = tl.load(base_B + 6, mask=mask, other=0); b7 = tl.load(base_B + 7, mask=mask, other=0); b8 = tl.load(base_B + 8, mask=mask, other=0)
+    # Load B (9 packed polys) - coalesced access pattern
+    b0 = tl.load(B_ptr + 0 * n_matrices + offs, mask=mask, other=0)
+    b1 = tl.load(B_ptr + 1 * n_matrices + offs, mask=mask, other=0)
+    b2 = tl.load(B_ptr + 2 * n_matrices + offs, mask=mask, other=0)
+    b3 = tl.load(B_ptr + 3 * n_matrices + offs, mask=mask, other=0)
+    b4 = tl.load(B_ptr + 4 * n_matrices + offs, mask=mask, other=0)
+    b5 = tl.load(B_ptr + 5 * n_matrices + offs, mask=mask, other=0)
+    b6 = tl.load(B_ptr + 6 * n_matrices + offs, mask=mask, other=0)
+    b7 = tl.load(B_ptr + 7 * n_matrices + offs, mask=mask, other=0)
+    b8 = tl.load(B_ptr + 8 * n_matrices + offs, mask=mask, other=0)
 
     # --- 2. UNPACK & DFT ---
     # This is the heavy lifting. We convert 9 packed ints into 9 frequency vectors (tuples of 6).
@@ -368,28 +373,36 @@ def ring_matmul_kernel(
     c8_c0, c8_c1, c8_c2, c8_c3, c8_c4, c8_c5 = idft_6_point(c8_f0, c8_f1, c8_f2, c8_f3, c8_f4, c8_f5)
     res8 = pack_poly(c8_c0, c8_c1, c8_c2, c8_c3, c8_c4, c8_c5)
 
-    # --- 5. STORE ---
-    base_C = C_ptr + offs * 9
-    tl.store(base_C + 0, res0, mask=mask)
-    tl.store(base_C + 1, res1, mask=mask)
-    tl.store(base_C + 2, res2, mask=mask)
-    tl.store(base_C + 3, res3, mask=mask)
-    tl.store(base_C + 4, res4, mask=mask)
-    tl.store(base_C + 5, res5, mask=mask)
-    tl.store(base_C + 6, res6, mask=mask)
-    tl.store(base_C + 7, res7, mask=mask)
-    tl.store(base_C + 8, res8, mask=mask)
+    # --- 5. STORE --- (SoA layout: coalesced writes)
+    tl.store(C_ptr + 0 * n_matrices + offs, res0, mask=mask)
+    tl.store(C_ptr + 1 * n_matrices + offs, res1, mask=mask)
+    tl.store(C_ptr + 2 * n_matrices + offs, res2, mask=mask)
+    tl.store(C_ptr + 3 * n_matrices + offs, res3, mask=mask)
+    tl.store(C_ptr + 4 * n_matrices + offs, res4, mask=mask)
+    tl.store(C_ptr + 5 * n_matrices + offs, res5, mask=mask)
+    tl.store(C_ptr + 6 * n_matrices + offs, res6, mask=mask)
+    tl.store(C_ptr + 7 * n_matrices + offs, res7, mask=mask)
+    tl.store(C_ptr + 8 * n_matrices + offs, res8, mask=mask)
 
 def ring_matmul(A, B):
-    # A and B are shape (Batch, 9) int32
-    batch_size = A.shape[0]
+    """
+    Batched ring matrix multiplication with SoA layout.
+    
+    Args:
+        A, B: int32 tensors of shape (9, Batch) - SoA layout for coalesced memory access.
+              Each row i contains component i of all matrices in the batch.
+    Returns:
+        C: int32 tensor of shape (9, Batch), same SoA layout.
+    """
+    # A and B are shape (9, Batch) int32 - SoA layout
+    assert A.shape[0] == 9 and B.shape[0] == 9, f"Expected (9, Batch), got A={A.shape}, B={B.shape}"
+    batch_size = A.shape[1]
     C = torch.empty_like(A)
     
     grid = lambda meta: (triton.cdiv(batch_size, meta['BLOCK_SIZE']),)
     
     ring_matmul_kernel[grid](
         A, B, C,
-        M_stride=9,
         n_matrices=batch_size,
         BLOCK_SIZE=128
     )
@@ -454,21 +467,22 @@ def _poly_mul_conv(a, b):
 def ring_matmul_reference(A, B):
     """
     Reference implementation: batched 3x3 matrix multiply in the polynomial ring.
-    A, B: (batch, 9) int32 tensors (numpy or torch).
-    Returns (batch, 9) int32.
+    A, B: (9, batch) int32 tensors (numpy or torch) - SoA layout.
+    Returns (9, batch) int32.
     """
     import numpy as np
     is_torch = torch.is_tensor(A)
     if is_torch:
         A, B = A.cpu().numpy(), B.cpu().numpy()
-    batch = A.shape[0]
-    C = np.empty((batch, 9), dtype=np.int32)
-    for b in range(batch):
-        # 3x3 of packed polys
-        a_flat = A[b]
-        b_flat = B[b]
-        a_mat = [a_flat[i:i+3] for i in (0, 3, 6)]
-        b_mat = [b_flat[i:i+3] for i in (0, 3, 6)]
+    batch = A.shape[1]
+    C = np.empty((9, batch), dtype=np.int32)
+    for b_idx in range(batch):
+        # Extract the 9 components for this batch element
+        a_flat = A[:, b_idx]  # (9,)
+        b_flat = B[:, b_idx]  # (9,)
+        # Reshape to 3x3 (row-major)
+        a_mat = [[a_flat[i*3 + j] for j in range(3)] for i in range(3)]
+        b_mat = [[b_flat[i*3 + j] for j in range(3)] for i in range(3)]
         c_mat = [[None]*3 for _ in range(3)]
         for i in range(3):
             for j in range(3):
@@ -483,5 +497,5 @@ def ring_matmul_reference(A, B):
                 c_mat[i][j] = _pack_poly(acc)
         for i in range(3):
             for j in range(3):
-                C[b, i*3 + j] = c_mat[i][j]
+                C[i*3 + j, b_idx] = c_mat[i][j]
     return torch.from_numpy(C) if is_torch else C

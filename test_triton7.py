@@ -145,11 +145,12 @@ class TestRingMatmulReference(unittest.TestCase):
             zero, zero, zero,
         ], dtype=np.int32)
         B_flat = np.random.randint(0, 2**18, size=9, dtype=np.int32)
+        # SoA layout: (9, batch) = (9, 1)
         # I @ B: only first row of I is non-zero, so result row0 = B row0, row1/2 = 0
         # Actually I is [[1,0,0],[0,0,0],[0,0,0]] so (I@B)[i,j] = B[0,j] if i==0 else 0
         C = ring_matmul_reference(
-            I_flat.reshape(1, 9),
-            B_flat.reshape(1, 9),
+            I_flat.reshape(9, 1),
+            B_flat.reshape(9, 1),
         )
         C = np.array(C).reshape(9)
         self.assertEqual(C[0], B_flat[0])
@@ -166,12 +167,13 @@ class TestRingMatmulReference(unittest.TestCase):
         if not TORCH_AVAILABLE:
             self.skipTest("torch/triton not available")
         np.random.seed(42)
-        A = np.random.randint(0, 2**18, size=(4, 9), dtype=np.int32)
-        B = np.random.randint(0, 2**18, size=(4, 9), dtype=np.int32)
+        # SoA layout: (9, batch)
+        A = np.random.randint(0, 2**18, size=(9, 4), dtype=np.int32)
+        B = np.random.randint(0, 2**18, size=(9, 4), dtype=np.int32)
         C = ring_matmul_reference(A, B)
         for b in range(4):
-            Cb = ring_matmul_reference(A[b:b+1], B[b:b+1])
-            np.testing.assert_array_equal(C[b], np.array(Cb).reshape(9))
+            Cb = ring_matmul_reference(A[:, b:b+1], B[:, b:b+1])
+            np.testing.assert_array_equal(C[:, b], np.array(Cb).reshape(9))
 
 
 @unittest.skipUnless(TORCH_AVAILABLE and torch.cuda.is_available(), "CUDA required")
@@ -181,11 +183,12 @@ class TestRingMatmulKernel(unittest.TestCase):
     def test_kernel_vs_reference_small_batch(self):
         np.random.seed(123)
         batch = 32
+        # SoA layout: (9, batch)
         A = torch.from_numpy(
-            np.random.randint(0, 2**18, size=(batch, 9), dtype=np.int32)
+            np.random.randint(0, 2**18, size=(9, batch), dtype=np.int32)
         ).cuda()
         B = torch.from_numpy(
-            np.random.randint(0, 2**18, size=(batch, 9), dtype=np.int32)
+            np.random.randint(0, 2**18, size=(9, batch), dtype=np.int32)
         ).cuda()
         C_kernel = ring_matmul(A, B)
         C_ref = ring_matmul_reference(A.cpu().numpy(), B.cpu().numpy())
@@ -198,11 +201,12 @@ class TestRingMatmulKernel(unittest.TestCase):
     def test_kernel_vs_reference_larger_batch(self):
         np.random.seed(456)
         batch = 300
+        # SoA layout: (9, batch)
         A = torch.from_numpy(
-            np.random.randint(0, 2**18, size=(batch, 9), dtype=np.int32)
+            np.random.randint(0, 2**18, size=(9, batch), dtype=np.int32)
         ).cuda()
         B = torch.from_numpy(
-            np.random.randint(0, 2**18, size=(batch, 9), dtype=np.int32)
+            np.random.randint(0, 2**18, size=(9, batch), dtype=np.int32)
         ).cuda()
         C_kernel = ring_matmul(A, B)
         C_ref = ring_matmul_reference(A.cpu().numpy(), B.cpu().numpy())
@@ -214,8 +218,9 @@ class TestRingMatmulKernel(unittest.TestCase):
 
     def test_kernel_batch_not_multiple_of_block(self):
         batch = 7
-        A = torch.randint(0, 2**18, (batch, 9), dtype=torch.int32, device="cuda")
-        B = torch.randint(0, 2**18, (batch, 9), dtype=torch.int32, device="cuda")
+        # SoA layout: (9, batch)
+        A = torch.randint(0, 2**18, (9, batch), dtype=torch.int32, device="cuda")
+        B = torch.randint(0, 2**18, (9, batch), dtype=torch.int32, device="cuda")
         C_kernel = ring_matmul(A, B)
         C_ref = ring_matmul_reference(A.cpu().numpy(), B.cpu().numpy())
         np.testing.assert_array_equal(C_kernel.cpu().numpy(), np.array(C_ref))
@@ -223,10 +228,11 @@ class TestRingMatmulKernel(unittest.TestCase):
     def test_kernel_zero_inputs(self):
         batch = 16
         zero = _pack_poly([0] * 6)
-        A = torch.full((batch, 9), zero, dtype=torch.int32, device="cuda")
-        B = torch.randint(0, 2**18, (batch, 9), dtype=torch.int32, device="cuda")
+        # SoA layout: (9, batch)
+        A = torch.full((9, batch), zero, dtype=torch.int32, device="cuda")
+        B = torch.randint(0, 2**18, (9, batch), dtype=torch.int32, device="cuda")
         C = ring_matmul(A, B)
-        expected = np.full((batch, 9), zero, dtype=np.int32)
+        expected = np.full((9, batch), zero, dtype=np.int32)
         np.testing.assert_array_equal(C.cpu().numpy(), expected)
 
 
@@ -240,11 +246,12 @@ class TestTorch7VsTriton7(unittest.TestCase):
     def test_torch7_vs_triton7_small_batch(self):
         np.random.seed(789)
         batch = 32
+        # SoA layout: (9, batch)
         A = torch.from_numpy(
-            np.random.randint(0, 2**18, size=(batch, 9), dtype=np.int32)
+            np.random.randint(0, 2**18, size=(9, batch), dtype=np.int32)
         ).cuda()
         B = torch.from_numpy(
-            np.random.randint(0, 2**18, size=(batch, 9), dtype=np.int32)
+            np.random.randint(0, 2**18, size=(9, batch), dtype=np.int32)
         ).cuda()
         C_triton = ring_matmul(A, B)
         C_torch = torch7.ring_matmul(A, B)
@@ -257,11 +264,12 @@ class TestTorch7VsTriton7(unittest.TestCase):
     def test_torch7_vs_triton7_larger_batch(self):
         np.random.seed(101)
         batch = 256
+        # SoA layout: (9, batch)
         A = torch.from_numpy(
-            np.random.randint(0, 2**18, size=(batch, 9), dtype=np.int32)
+            np.random.randint(0, 2**18, size=(9, batch), dtype=np.int32)
         ).cuda()
         B = torch.from_numpy(
-            np.random.randint(0, 2**18, size=(batch, 9), dtype=np.int32)
+            np.random.randint(0, 2**18, size=(9, batch), dtype=np.int32)
         ).cuda()
         C_triton = ring_matmul(A, B)
         C_torch = torch7.ring_matmul(A, B)
@@ -274,8 +282,9 @@ class TestTorch7VsTriton7(unittest.TestCase):
     def test_torch7_vs_triton7_batch_not_multiple_of_block(self):
         np.random.seed(202)
         batch = 7
-        A = torch.randint(0, 2**18, (batch, 9), dtype=torch.int32, device="cuda")
-        B = torch.randint(0, 2**18, (batch, 9), dtype=torch.int32, device="cuda")
+        # SoA layout: (9, batch)
+        A = torch.randint(0, 2**18, (9, batch), dtype=torch.int32, device="cuda")
+        B = torch.randint(0, 2**18, (9, batch), dtype=torch.int32, device="cuda")
         C_triton = ring_matmul(A, B)
         C_torch = torch7.ring_matmul(A, B)
         np.testing.assert_array_equal(
@@ -287,8 +296,9 @@ class TestTorch7VsTriton7(unittest.TestCase):
     def test_torch7_vs_triton7_zero_inputs(self):
         batch = 16
         zero = _pack_poly([0] * 6)
-        A = torch.full((batch, 9), zero, dtype=torch.int32, device="cuda")
-        B = torch.randint(0, 2**18, (batch, 9), dtype=torch.int32, device="cuda")
+        # SoA layout: (9, batch)
+        A = torch.full((9, batch), zero, dtype=torch.int32, device="cuda")
+        B = torch.randint(0, 2**18, (9, batch), dtype=torch.int32, device="cuda")
         C_triton = ring_matmul(A, B)
         C_torch = torch7.ring_matmul(A, B)
         np.testing.assert_array_equal(
@@ -299,8 +309,9 @@ class TestTorch7VsTriton7(unittest.TestCase):
 
     def test_torch7_vs_triton7_single_matrix(self):
         np.random.seed(303)
-        A = torch.randint(0, 2**18, (1, 9), dtype=torch.int32, device="cuda")
-        B = torch.randint(0, 2**18, (1, 9), dtype=torch.int32, device="cuda")
+        # SoA layout: (9, batch)
+        A = torch.randint(0, 2**18, (9, 1), dtype=torch.int32, device="cuda")
+        B = torch.randint(0, 2**18, (9, 1), dtype=torch.int32, device="cuda")
         C_triton = ring_matmul(A, B)
         C_torch = torch7.ring_matmul(A, B)
         np.testing.assert_array_equal(
