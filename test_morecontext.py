@@ -173,19 +173,14 @@ class TestRing42Matmul(unittest.TestCase):
         self.assertEqual(C.device.type, "cuda")
 
     def test_kernel_input_validation(self):
-        """Test that input validation works."""
+        """Test that input validation works (wrong shape raises before kernel launch)."""
         batch = 32
-        A = torch.randint(0, 2**18, (63, batch), dtype=torch.int32, device="cuda")
         B = torch.randint(0, 2**18, (63, batch), dtype=torch.int32, device="cuda")
-        
-        # Should work with correct shape
-        C = ring42_matmul(A, B)
-        self.assertEqual(C.shape, (63, batch))
-        
-        # Should fail with wrong shape
+        # Test wrong shape first - hits Python assert, no kernel compile/launch
         A_wrong = torch.randint(0, 2**18, (64, batch), dtype=torch.int32, device="cuda")
         with self.assertRaises(AssertionError):
             ring42_matmul(A_wrong, B)
+        # Correct shape is tested in test_kernel_output_shape
 
 
 if __name__ == "__main__":
