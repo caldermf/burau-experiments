@@ -42,6 +42,36 @@ def mat_mul_mod7(A, B, size=128):
             C[i][j] = acc[:size]
     return C
 
+def normalize_poly_matrix(M, size=128):
+    """
+    Shift a 3x3 polynomial matrix right by its min_degree.
+    This normalizes it so the lowest nonzero coefficient is at degree 0.
+    Returns the normalized matrix (padded/truncated to `size`).
+    """
+    # Find global min_degree
+    min_deg = None
+    for i in range(3):
+        for j in range(3):
+            for k, c in enumerate(M[i][j]):
+                if c != 0:
+                    if min_deg is None or k < min_deg:
+                        min_deg = k
+    
+    if min_deg is None or min_deg == 0:
+        # Zero matrix or already normalized
+        result = [[(m + [0]*size)[:size] for m in row] for row in M]
+        return result
+    
+    # Shift all entries right by min_deg
+    result = [[[0]*size for _ in range(3)] for _ in range(3)]
+    for i in range(3):
+        for j in range(3):
+            for k in range(min_deg, len(M[i][j])):
+                new_k = k - min_deg
+                if new_k < size and M[i][j][k] != 0:
+                    result[i][j][new_k] = M[i][j][k]
+    return result
+
 def suffix_to_poly_matrix(mat_data):
     """Convert raw matrix data to polynomial matrix (list of coefficients)."""
     result = [[[0] for _ in range(3)] for _ in range(3)]
@@ -269,6 +299,8 @@ def test_seed_encoding():
     
     for s in range(22):
         poly_mat = suffix_to_poly_matrix(matrices[s])
+        # Normalize to match GPU's normalized seeds
+        poly_mat = normalize_poly_matrix(poly_mat, size=128)
         
         # Decode the seed braid
         vals = data[s].tolist()
@@ -371,11 +403,10 @@ def test_kernel_one_step():
                 continue
             
             suffix_poly = suffix_to_poly_matrix(matrices[s_idx])
-            result_poly = mat_mul_mod7(parent_poly, suffix_poly)
-            # Pad to 128
-            for i in range(3):
-                for j in range(3):
-                    result_poly[i][j] = (result_poly[i][j] + [0]*128)[:128]
+            # Use larger size for multiply to avoid truncation before normalization
+            result_poly = mat_mul_mod7(parent_poly, suffix_poly, size=256)
+            # Normalize (shift right by min_deg) to match GPU output
+            result_poly = normalize_poly_matrix(result_poly, size=128)
             
             if s_idx not in expected_by_suffix:
                 expected_by_suffix[s_idx] = []

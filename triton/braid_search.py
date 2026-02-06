@@ -74,6 +74,37 @@ def negate_mod7(p0, p1, p2):
 # ==============================================================================
 
 @triton.jit
+def shr128(lo, hi, s):
+    """
+    Logical right-shift of a 128-bit value (lo, hi) by s bits.
+    Safe for s in [0, 127]. Uses uint64 arithmetic for logical shifts.
+    Returns (new_lo, new_hi) as int64.
+    """
+    lo_u = lo.to(tl.uint64)
+    hi_u = hi.to(tl.uint64)
+    # Split into s < 64 and s >= 64 cases
+    # For s < 64: new_lo = (lo >> s) | (hi << (64 - s))
+    #             new_hi = hi >> s
+    # But hi << (64-s) is undefined when s == 0 (shift by 64).
+    # Safe formula: hi << (63 - s) << 1 — when s=0, (hi << 63) << 1 overflows to 0.
+    small = (s < 64)
+    # s < 64 path
+    inv_s = 63 - s
+    lo_small = (lo_u >> s) | ((hi_u << inv_s) << 1)
+    hi_small = hi_u >> s
+    # s >= 64 path
+    s_big = s - 64
+    # When s_big >= 64, result is 0. Clamp to avoid undefined shift.
+    s_big_clamped = tl.where(s_big < 64, s_big, tl.zeros([], dtype=tl.int32) + 63)
+    lo_big = hi_u >> s_big_clamped
+    lo_big = tl.where(s_big < 64, lo_big, tl.zeros([], dtype=tl.uint64))
+    hi_big = tl.zeros([], dtype=tl.uint64)
+    
+    new_lo = tl.where(small, lo_small, lo_big)
+    new_hi = tl.where(small, hi_small, hi_big)
+    return new_lo.to(tl.int64), new_hi.to(tl.int64)
+
+@triton.jit
 def msb64(x):
     """Return index of highest set bit (0..63), or -1 if x==0. Branchless binary search."""
     # x is uint64
@@ -4141,6 +4172,39 @@ def kernel_braid_step(
     
     projlen = tl.where(is_zero_matrix, tl.zeros([], dtype=tl.int32), max_deg - min_deg)
 
+    # --- Normalize: right-shift all polynomials by min_deg ---
+    # This keeps degrees in [0, projlen], preventing overflow of the 128-bit window.
+    # Without this, absolute degrees grow ~4 per step and overflow past bit 127.
+    # shr128 with s=0 is a no-op, so this is safe to call unconditionally.
+    s_norm = tl.where(is_zero_matrix, tl.zeros([], dtype=tl.int32), min_deg)
+    o00_p0_lo, o00_p0_hi = shr128(o00_p0_lo, o00_p0_hi, s_norm)
+    o00_p1_lo, o00_p1_hi = shr128(o00_p1_lo, o00_p1_hi, s_norm)
+    o00_p2_lo, o00_p2_hi = shr128(o00_p2_lo, o00_p2_hi, s_norm)
+    o01_p0_lo, o01_p0_hi = shr128(o01_p0_lo, o01_p0_hi, s_norm)
+    o01_p1_lo, o01_p1_hi = shr128(o01_p1_lo, o01_p1_hi, s_norm)
+    o01_p2_lo, o01_p2_hi = shr128(o01_p2_lo, o01_p2_hi, s_norm)
+    o02_p0_lo, o02_p0_hi = shr128(o02_p0_lo, o02_p0_hi, s_norm)
+    o02_p1_lo, o02_p1_hi = shr128(o02_p1_lo, o02_p1_hi, s_norm)
+    o02_p2_lo, o02_p2_hi = shr128(o02_p2_lo, o02_p2_hi, s_norm)
+    o10_p0_lo, o10_p0_hi = shr128(o10_p0_lo, o10_p0_hi, s_norm)
+    o10_p1_lo, o10_p1_hi = shr128(o10_p1_lo, o10_p1_hi, s_norm)
+    o10_p2_lo, o10_p2_hi = shr128(o10_p2_lo, o10_p2_hi, s_norm)
+    o11_p0_lo, o11_p0_hi = shr128(o11_p0_lo, o11_p0_hi, s_norm)
+    o11_p1_lo, o11_p1_hi = shr128(o11_p1_lo, o11_p1_hi, s_norm)
+    o11_p2_lo, o11_p2_hi = shr128(o11_p2_lo, o11_p2_hi, s_norm)
+    o12_p0_lo, o12_p0_hi = shr128(o12_p0_lo, o12_p0_hi, s_norm)
+    o12_p1_lo, o12_p1_hi = shr128(o12_p1_lo, o12_p1_hi, s_norm)
+    o12_p2_lo, o12_p2_hi = shr128(o12_p2_lo, o12_p2_hi, s_norm)
+    o20_p0_lo, o20_p0_hi = shr128(o20_p0_lo, o20_p0_hi, s_norm)
+    o20_p1_lo, o20_p1_hi = shr128(o20_p1_lo, o20_p1_hi, s_norm)
+    o20_p2_lo, o20_p2_hi = shr128(o20_p2_lo, o20_p2_hi, s_norm)
+    o21_p0_lo, o21_p0_hi = shr128(o21_p0_lo, o21_p0_hi, s_norm)
+    o21_p1_lo, o21_p1_hi = shr128(o21_p1_lo, o21_p1_hi, s_norm)
+    o21_p2_lo, o21_p2_hi = shr128(o21_p2_lo, o21_p2_hi, s_norm)
+    o22_p0_lo, o22_p0_hi = shr128(o22_p0_lo, o22_p0_hi, s_norm)
+    o22_p1_lo, o22_p1_hi = shr128(o22_p1_lo, o22_p1_hi, s_norm)
+    o22_p2_lo, o22_p2_hi = shr128(o22_p2_lo, o22_p2_hi, s_norm)
+
     # --- FCFS bucket check ---
     bucket_slot = tl.atomic_add(Bucket_Counters_Ptr + projlen, 1)
     if bucket_slot >= BUCKET_CAP_PARAM:
@@ -4277,8 +4341,15 @@ def build_seed_braids():
         for idx in range(9):
             base_idx = idx * 6
             for p in range(3):
-                all_bits |= data[s, base_idx + p * 2 + 0].item()
-                all_bits |= (data[s, base_idx + p * 2 + 1].item() << 64)
+                lo_val = data[s, base_idx + p * 2 + 0].item()
+                hi_val = data[s, base_idx + p * 2 + 1].item()
+                # Convert signed int64 to unsigned
+                if lo_val < 0:
+                    lo_val += (1 << 64)
+                if hi_val < 0:
+                    hi_val += (1 << 64)
+                all_bits |= lo_val
+                all_bits |= (hi_val << 64)
         
         if all_bits == 0:
             projlen = 0
@@ -4291,6 +4362,30 @@ def build_seed_braids():
                 min_deg += 1
                 tmp >>= 1
             projlen = max_deg - min_deg
+            
+            # Normalize: shift all polynomials right by min_deg
+            if min_deg > 0:
+                for idx in range(9):
+                    base_idx = idx * 6
+                    for p in range(3):
+                        lo_val = data[s, base_idx + p * 2 + 0].item()
+                        hi_val = data[s, base_idx + p * 2 + 1].item()
+                        if lo_val < 0:
+                            lo_val += (1 << 64)
+                        if hi_val < 0:
+                            hi_val += (1 << 64)
+                        # 128-bit right shift by min_deg
+                        val128 = lo_val | (hi_val << 64)
+                        val128 >>= min_deg
+                        new_lo = val128 & ((1 << 64) - 1)
+                        new_hi = (val128 >> 64) & ((1 << 64) - 1)
+                        # Convert back to signed int64
+                        if new_lo >= (1 << 63):
+                            new_lo -= (1 << 64)
+                        if new_hi >= (1 << 63):
+                            new_hi -= (1 << 64)
+                        data[s, base_idx + p * 2 + 0] = new_lo
+                        data[s, base_idx + p * 2 + 1] = new_hi
         
         meta[s] = (projlen << 8) | s
     
@@ -4373,7 +4468,7 @@ def run_search():
     
     device = torch.device("cuda")
     gpu_name = torch.cuda.get_device_name()
-    vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+    vram_gb = torch.cuda.get_device_properties(0).total_mem / (1024**3)
     print(f"Device: {gpu_name} ({vram_gb:.1f} GB)")
     print(f"Config: USE_BEST={USE_BEST:,}, OUTPUT_CAP={OUTPUT_CAP:,}, BUCKET_CAP={BUCKET_CAP:,}")
     bytes_per_braid = 54 * 8 + 4 + 4  # data + meta + parent_idx
