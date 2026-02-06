@@ -4504,7 +4504,6 @@ def run_search():
     
     total_projlen0 = 0
     if n_seed_zeros > 0:
-        import os
         os.makedirs("projlen0_results", exist_ok=True)
         zero_indices = torch.where(seed_projlens == 0)[0]
         torch.save({
@@ -4644,7 +4643,7 @@ def run_search():
     print("=" * 100)
     print(f"Search complete. Total projlen-0 braids found: {total_projlen0}")
     if total_projlen0 > 0:
-        import os, glob
+        import glob
         files = sorted(glob.glob("projlen0_results/projlen0_length*.pt"))
         for f in files:
             info = torch.load(f, weights_only=True)
