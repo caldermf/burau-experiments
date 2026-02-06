@@ -35,7 +35,7 @@ MAX_STEPS    = 127          # Run from length 1 (seeds) through length 127
 
 # Conservative default (works on ~16 GB):
 USE_BEST     = 6_500_000    # Parents to select for next step
-OUTPUT_CAP   = 50_000_000   # Max children per step (flat buffer, >= USE_BEST * 8)
+OUTPUT_CAP   = 45_000_000   # Max children per step (flat buffer, >= USE_BEST * 8)
 BUCKET_CAP   = 2_500_000    # Max children per projlen bucket (FCFS)
 
 # ==============================================================================
