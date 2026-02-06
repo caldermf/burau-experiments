@@ -36,7 +36,7 @@ MAX_STEPS    = 127          # Run from length 1 (seeds) through length 127
 
 # Conservative default (works on ~16 GB):
 USE_BEST     = 6_000_000    # Parents to select for next step
-OUTPUT_CAP   = 45_000_000   # Max children per step (flat buffer, >= USE_BEST * 8)
+OUTPUT_CAP   = 10_000_000   # Max children per step (flat buffer, >= USE_BEST * 8)
 BUCKET_CAP   = 2_000_000    # Max children per projlen bucket (FCFS)
 
 # ==============================================================================
@@ -4578,11 +4578,7 @@ def run_search():
             keep_indices = torch.arange(n_children, device=device)
             n_keep = n_children
         else:
-            # Random tie-breaker: argsort alone is deterministic for equal projlen.
-            # Add small noise so selection varies across runs when there are ties.
-            tie_breaker = torch.rand(n_children, device=device, generator=rng)
-            sort_key = child_projlens[:n_children].float() + tie_breaker * 0.001
-            sorted_indices = torch.argsort(sort_key)
+            sorted_indices = torch.argsort(child_projlens[:n_children])
             keep_indices = sorted_indices[:USE_BEST]
             n_keep = USE_BEST
         
