@@ -91,7 +91,7 @@ def main():
         4,        # bit 2
         16,       # bit 4
         (1 << 62),  # bit 62 (tests crossing into hi word)
-        (1 << 63) + 1,  # bit 63 + bit 0 (negative as int64)
+        -((1 << 63) - 1),  # bit pattern 0x8000_0000_0000_0001 (negative as int64)
         0xFFFFFFFFFFFFFFFF,  # all 1s (= -1 as int64)
     ]
     
