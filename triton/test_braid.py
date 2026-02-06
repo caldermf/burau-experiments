@@ -353,70 +353,61 @@ def test_kernel_one_step():
     parent_data_cpu = parent_data.cpu()
     parent_meta_cpu = parent_meta.cpu()
     
-    # For each child, we need to figure out which parent produced it.
-    # The child's suffix is stored in meta & 0xFF.
-    # Since we wrote children in arbitrary order, we can't easily trace back to parents.
-    # Instead, let's compute ALL valid (parent, suffix) pairs on CPU and check that
-    # the kernel outputs match.
+    # Build the set of ALL valid expected result matrices, keyed by suffix_idx.
+    # Multiple parents can produce different children with the same suffix_idx,
+    # so we collect them all per suffix.
+    from braid_search import ADJ_TABLE
     
-    # Build set of all expected children
-    expected_children = {}  # (parent_idx, suffix_idx) -> encoded_matrix
+    expected_by_suffix = {}  # suffix_idx -> list of (parent_idx, result_poly)
     
     for p_idx in range(22):
         parent_suffix = parent_meta_cpu[p_idx].item() & 0xFF
         parent_poly = suffix_to_poly_matrix(matrices[parent_suffix])
         
         for s_idx in range(22):
-            # Check adjacency
             if ADJ_TABLE[parent_suffix][s_idx] == 0:
                 continue
             
             suffix_poly = suffix_to_poly_matrix(matrices[s_idx])
             result_poly = mat_mul_mod7(parent_poly, suffix_poly)
-            result_encoded = encode_matrix_bitsliced(result_poly)
-            expected_children[(p_idx, s_idx)] = (result_poly, result_encoded)
+            # Pad to 128
+            for i in range(3):
+                for j in range(3):
+                    result_poly[i][j] = (result_poly[i][j] + [0]*128)[:128]
+            
+            if s_idx not in expected_by_suffix:
+                expected_by_suffix[s_idx] = []
+            expected_by_suffix[s_idx].append((p_idx, result_poly))
     
-    print(f"  Expected {len(expected_children)} valid children.")
+    total_expected = sum(len(v) for v in expected_by_suffix.values())
+    print(f"  Expected {total_expected} valid children.")
     
-    # Check that n_children matches
-    if n_children != len(expected_children):
-        print(f"  WARNING: Got {n_children} children, expected {len(expected_children)}")
+    if n_children != total_expected:
+        print(f"  WARNING: Got {n_children} children, expected {total_expected}")
     
-    # For each kernel output, find a matching expected child
-    kernel_results = []
+    # For each kernel output, check it matches at least one expected result
+    # with the same suffix_idx.
+    errors = 0
+    matched = 0
+    
     for c_idx in range(n_children):
         suffix_idx = out_meta_cpu[c_idx].item() & 0xFF
-        projlen = (out_meta_cpu[c_idx].item() >> 8) & 0x7F
         
         vals = out_data_cpu[c_idx].tolist()
         vals_unsigned = [v if v >= 0 else v + (1 << 64) for v in vals]
         decoded = decode_matrix_bitsliced(vals_unsigned)
         
-        kernel_results.append((suffix_idx, projlen, decoded, vals_unsigned))
-    
-    # Match kernel results against expected
-    matched = 0
-    for (p_idx, s_idx), (expected_poly, expected_encoded) in expected_children.items():
-        # Find matching kernel output
-        found = False
-        for kr_suffix, kr_projlen, kr_decoded, kr_vals in kernel_results:
-            if kr_suffix != s_idx:
-                continue
-            
-            # Compare polynomial matrices
+        # Find a matching expected result
+        candidates = expected_by_suffix.get(suffix_idx, [])
+        found_match = False
+        
+        for (p_idx, expected_poly) in candidates:
             match = True
             for i in range(3):
                 for j in range(3):
                     for k in range(128):
-                        cpu_val = expected_poly[i][j][k] if k < len(expected_poly[i][j]) else 0
-                        gpu_val = kr_decoded[i][j][k]
-                        if cpu_val != gpu_val:
+                        if expected_poly[i][j][k] != decoded[i][j][k]:
                             match = False
-                            if errors < 5:
-                                print(f"  MISMATCH at parent={p_idx}(suffix={parent_meta_cpu[p_idx].item() & 0xFF}), "
-                                      f"child_suffix={s_idx}, entry ({i},{j}), coeff {k}: "
-                                      f"CPU={cpu_val}, GPU={gpu_val}")
-                            errors += 1
                             break
                     if not match:
                         break
@@ -424,18 +415,38 @@ def test_kernel_one_step():
                     break
             
             if match:
-                found = True
+                found_match = True
                 matched += 1
+                # Remove this candidate so each expected result is matched once
+                candidates.remove((p_idx, expected_poly))
                 break
         
-        if not found and errors == 0:
-            # Could be a matching issue (multiple parents produce same suffix)
-            pass
+        if not found_match:
+            errors += 1
+            if errors <= 5:
+                # Show what we got vs what was expected
+                print(f"  UNMATCHED child #{c_idx}, suffix={suffix_idx}")
+                nonzero = []
+                for i in range(3):
+                    for j in range(3):
+                        for k in range(128):
+                            if decoded[i][j][k] != 0:
+                                nonzero.append((i, j, k, decoded[i][j][k]))
+                print(f"    GPU nonzero entries: {nonzero[:10]}")
+                if candidates:
+                    p0, exp0 = candidates[0]
+                    exp_nonzero = []
+                    for i in range(3):
+                        for j in range(3):
+                            for k in range(128):
+                                if exp0[i][j][k] != 0:
+                                    exp_nonzero.append((i, j, k, exp0[i][j][k]))
+                    print(f"    Closest expected (parent={p0}): {exp_nonzero[:10]}")
     
     if errors == 0:
-        print(f"  PASSED: All {n_children} children verified against CPU reference.")
+        print(f"  PASSED: All {n_children} children verified against CPU reference ({matched} matched).")
     else:
-        print(f"  FAILED: {errors} coefficient mismatches found.")
+        print(f"  FAILED: {errors} unmatched children out of {n_children}.")
 
 # ============================================================================
 
