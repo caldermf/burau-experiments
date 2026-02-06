@@ -132,6 +132,7 @@ def kernel_braid_step(
     Parent_Meta_Ptr,     # int32  [N_parents]
     Output_Ptr,          # int64  [OUTPUT_CAP, 54] flattened
     Output_Meta_Ptr,     # int32  [OUTPUT_CAP]
+    Output_Parent_Ptr,   # int32  [OUTPUT_CAP] — parent index for word reconstruction
     Global_Counter_Ptr,  # int32  [1]
     Bucket_Counters_Ptr, # int32  [N_BUCKETS]
     Adj_Ptr,             # int8   [22 * 22]
@@ -4211,6 +4212,9 @@ def kernel_braid_step(
     meta = (projlen << 8) | SUFFIX_IDX
     tl.store(Output_Meta_Ptr + global_slot, meta)
 
+    # --- Write parent index for word reconstruction ---
+    tl.store(Output_Parent_Ptr + global_slot, parent_idx)
+
     # --- Flag zero matrices (kernel elements!) ---
     if is_zero_matrix:
         # Write a sentinel to a known location (slot 0 of bucket counters
@@ -4321,7 +4325,7 @@ def get_raw_matrix_data_pruned_host():
     return m
 
 
-def save_projlen0_braids(out_data, out_meta, n_children, step, save_dir="projlen0_results"):
+def save_projlen0_braids(out_data, out_meta, out_words, n_children, braid_length, save_dir="projlen0_results"):
     """
     Extract and save any braids with projlen == 0 from the output buffer.
     Returns the number of zero-projlen braids found.
@@ -4344,9 +4348,9 @@ def save_projlen0_braids(out_data, out_meta, n_children, step, save_dir="projlen
     zero_indices = torch.where(zero_mask)[0]
     zero_data = out_data[zero_indices].cpu()
     zero_meta = meta_slice[zero_indices].cpu()
+    zero_words = out_words[zero_indices.cpu()]  # words are on CPU
     
-    # Save to disk as a torch file
-    braid_length = step + 1  # step 0 = length 1 (seeds), step k = length k+1
+    # Save to disk
     save_path = os.path.join(save_dir, f"projlen0_length{braid_length:03d}.pt")
     
     # Append if file exists (multiple batches at same length)
@@ -4354,8 +4358,14 @@ def save_projlen0_braids(out_data, out_meta, n_children, step, save_dir="projlen
         existing = torch.load(save_path, weights_only=True)
         zero_data = torch.cat([existing["data"], zero_data], dim=0)
         zero_meta = torch.cat([existing["meta"], zero_meta], dim=0)
+        zero_words = torch.cat([existing["words"], zero_words], dim=0)
     
-    torch.save({"data": zero_data, "meta": zero_meta, "braid_length": braid_length}, save_path)
+    torch.save({
+        "data": zero_data,
+        "meta": zero_meta,
+        "words": zero_words,
+        "braid_length": braid_length,
+    }, save_path)
     
     return n_zeros
 
@@ -4363,8 +4373,9 @@ def save_projlen0_braids(out_data, out_meta, n_children, step, save_dir="projlen
 def run_search():
     """
     Main search loop.
-    Runs from braid length 1 (the 22 seeds) through length 127.
-    At each step, saves any braids with projlen == 0 to disk.
+    Runs from braid length 1 (the 22 seeds) through length 128.
+    Tracks Garside words via parent_idx output from kernel.
+    Saves projlen-0 braids with their full Garside words.
     """
     if not torch.cuda.is_available():
         print("CUDA not available!")
@@ -4372,12 +4383,14 @@ def run_search():
     
     device = torch.device("cuda")
     gpu_name = torch.cuda.get_device_name()
-    vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+    vram_gb = torch.cuda.get_device_properties(0).total_mem / (1024**3)
     print(f"Device: {gpu_name} ({vram_gb:.1f} GB)")
     print(f"Config: USE_BEST={USE_BEST:,}, OUTPUT_CAP={OUTPUT_CAP:,}, BUCKET_CAP={BUCKET_CAP:,}")
-    print(f"Memory per braid: {54*8+4} bytes")
-    print(f"Parent buffer: {USE_BEST * (54*8+4) / (1024**3):.1f} GB")
-    print(f"Output buffer: {OUTPUT_CAP * (54*8+4) / (1024**3):.1f} GB")
+    bytes_per_braid = 54 * 8 + 4 + 4  # data + meta + parent_idx
+    print(f"GPU memory per braid: {bytes_per_braid} bytes")
+    print(f"Parent buffer:  {USE_BEST * bytes_per_braid / (1024**3):.1f} GB")
+    print(f"Output buffer:  {OUTPUT_CAP * bytes_per_braid / (1024**3):.1f} GB")
+    print(f"Word buffer:    ~{USE_BEST * (MAX_STEPS+2) / (1024**3):.2f} GB CPU")
     print(f"Running lengths 1 through {MAX_STEPS + 1}")
     print("=" * 100)
     
@@ -4388,6 +4401,12 @@ def run_search():
     parent_data, parent_meta = build_seed_braids()
     n_parents = parent_data.shape[0]
     
+    # Word tracking on CPU: parent_words[i, :word_len] = Garside word for parent i
+    parent_words = torch.zeros((n_parents, MAX_STEPS + 2), dtype=torch.uint8)
+    for s in range(22):
+        parent_words[s, 0] = s
+    word_len = 1
+    
     # Check seeds for projlen 0
     seed_projlens = (parent_meta >> 8) & 0x7F
     n_seed_zeros = (seed_projlens == 0).sum().item()
@@ -4395,27 +4414,27 @@ def run_search():
     
     total_projlen0 = 0
     if n_seed_zeros > 0:
-        # Save seed projlen-0 braids
         import os
         os.makedirs("projlen0_results", exist_ok=True)
-        zero_mask = (seed_projlens == 0)
-        zero_indices = torch.where(zero_mask)[0]
+        zero_indices = torch.where(seed_projlens == 0)[0]
         torch.save({
             "data": parent_data[zero_indices].cpu(),
             "meta": parent_meta[zero_indices].cpu(),
-            "braid_length": 1
+            "words": parent_words[zero_indices.cpu(), :word_len],
+            "braid_length": 1,
         }, "projlen0_results/projlen0_length001.pt")
         total_projlen0 += n_seed_zeros
     
     # --- Allocate output buffers ---
     out_data = torch.zeros((OUTPUT_CAP, 54), dtype=torch.int64, device=device)
     out_meta = torch.zeros((OUTPUT_CAP,), dtype=torch.int32, device=device)
+    out_parent_idx = torch.zeros((OUTPUT_CAP,), dtype=torch.int32, device=device)
     global_counter = torch.zeros((1,), dtype=torch.int32, device=device)
     bucket_counters = torch.zeros((N_BUCKETS,), dtype=torch.int32, device=device)
     
-    # --- Main loop: step k produces braids of length k+2 (since seeds are length 1) ---
+    # --- Main loop ---
     for step in range(MAX_STEPS):
-        braid_length = step + 2  # length of children produced this step
+        braid_length = step + 2
         t0 = time.time()
         
         # Reset counters
@@ -4427,9 +4446,9 @@ def run_search():
             perm = torch.randperm(n_parents, device=device)
             parent_data = parent_data[perm]
             parent_meta = parent_meta[perm]
+            parent_words = parent_words[perm.cpu()]
         
         # Launch 22 suffix kernels
-        # Reshape 2D data tensors to 1D for flat pointer access in kernel
         parent_data_flat = parent_data.view(-1)
         out_data_flat = out_data.view(-1)
         grid = (n_parents,)
@@ -4439,44 +4458,93 @@ def run_search():
                 parent_meta,
                 out_data_flat,
                 out_meta,
+                out_parent_idx,
                 global_counter,
                 bucket_counters,
                 adj_tensor,
                 n_parents,
                 OUTPUT_CAP,
                 BUCKET_CAP,
-                s,  # SUFFIX_IDX constexpr
+                s,
                 num_warps=1,
             )
         
         torch.cuda.synchronize()
         
-        # Read results
         n_children = min(global_counter.item(), OUTPUT_CAP)
         bucket_counts = bucket_counters.cpu().tolist()
         
-        # --- Save projlen-0 braids ---
-        n_zeros_this_step = save_projlen0_braids(out_data, out_meta, n_children, step + 1)
-        total_projlen0 += n_zeros_this_step
-        
-        # --- Select best braids for next step ---
         if n_children == 0:
             t1 = time.time()
             print(f"Length {braid_length:3d} | {t1-t0:.2f}s | NO CHILDREN. Search exhausted.")
             break
         
+        # --- Select survivors FIRST, then build words only for kept + projlen-0 ---
         child_projlens = (out_meta[:n_children] >> 8).to(torch.int32) & 0x7F
         
         if n_children <= USE_BEST:
-            parent_data = out_data[:n_children].clone()
-            parent_meta = out_meta[:n_children].clone()
-            n_parents = n_children
+            keep_indices = torch.arange(n_children, device=device)
+            n_keep = n_children
         else:
             sorted_indices = torch.argsort(child_projlens[:n_children])
-            keep = sorted_indices[:USE_BEST]
-            parent_data = out_data[keep].clone()
-            parent_meta = out_meta[keep].clone()
-            n_parents = USE_BEST
+            keep_indices = sorted_indices[:USE_BEST]
+            n_keep = USE_BEST
+        
+        # Also find projlen-0 children (may overlap with kept)
+        child_projlens_cpu = child_projlens[:n_children].cpu()
+        zero_mask = (child_projlens_cpu == 0)
+        n_zeros_this_step = zero_mask.sum().item()
+        
+        # Build combined index set: keep_indices ∪ zero_indices
+        if n_zeros_this_step > 0:
+            zero_indices_gpu = torch.where(zero_mask)[0].to(device)
+            all_needed = torch.cat([keep_indices, zero_indices_gpu])
+            all_needed = torch.unique(all_needed)
+        else:
+            all_needed = keep_indices
+        
+        # Build words ONLY for needed children (much smaller than OUTPUT_CAP)
+        needed_cpu = all_needed.cpu()
+        n_needed = needed_cpu.shape[0]
+        needed_parent_indices = out_parent_idx[all_needed].cpu()  # which parent
+        needed_suffixes = (out_meta[all_needed].cpu() & 0xFF).to(torch.uint8)
+        
+        needed_words = torch.zeros((n_needed, braid_length), dtype=torch.uint8)
+        needed_words[:, :word_len] = parent_words[needed_parent_indices.long(), :word_len]
+        needed_words[:, word_len] = needed_suffixes
+        
+        # Create a mapping from all_needed global index -> local index in needed_words
+        # For saving projlen-0 braids
+        if n_zeros_this_step > 0:
+            zero_indices_cpu = torch.where(zero_mask)[0]
+            # Find these in all_needed
+            # Build a lookup: global_idx -> local_idx
+            needed_list = needed_cpu.tolist()
+            needed_lookup = {g: l for l, g in enumerate(needed_list)}
+            
+            zero_local = torch.tensor([needed_lookup[z.item()] for z in zero_indices_cpu])
+            zero_words = needed_words[zero_local]
+            
+            save_projlen0_braids(
+                out_data, out_meta[:n_children],
+                zero_words,  # only the projlen-0 words
+                n_children, braid_length,
+            )
+        
+        total_projlen0 += n_zeros_this_step
+        
+        # --- Extract kept braids ---
+        # Find keep_indices in all_needed
+        keep_cpu = keep_indices.cpu()
+        needed_list = needed_cpu.tolist()
+        needed_lookup = {g: l for l, g in enumerate(needed_list)}
+        keep_local = torch.tensor([needed_lookup[k.item()] for k in keep_cpu])
+        
+        parent_data = out_data[keep_indices].clone()
+        parent_meta = out_meta[keep_indices].clone()
+        parent_words = needed_words[keep_local]
+        n_parents = n_keep
+        word_len = braid_length
         
         t1 = time.time()
         dt = t1 - t0
@@ -4487,7 +4555,6 @@ def run_search():
         max_pl = kept_projlens.max().item()
         mean_pl = kept_projlens.float().mean().item()
         
-        # Bucket histogram (compact)
         nonzero_buckets = [(i, c) for i, c in enumerate(bucket_counts[:127]) if c > 0]
         bucket_str = " ".join(f"[{b}]:{c}" for b, c in nonzero_buckets[:8])
         if len(nonzero_buckets) > 8:

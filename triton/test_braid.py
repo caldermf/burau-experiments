@@ -313,6 +313,7 @@ def test_kernel_one_step():
     bucket_cap = 5000
     out_data = torch.zeros((output_cap, 54), dtype=torch.int64, device=device)
     out_meta = torch.zeros((output_cap,), dtype=torch.int32, device=device)
+    out_parent_idx = torch.zeros((output_cap,), dtype=torch.int32, device=device)
     global_counter = torch.zeros((1,), dtype=torch.int32, device=device)
     bucket_counters = torch.zeros((128,), dtype=torch.int32, device=device)
     
@@ -326,6 +327,7 @@ def test_kernel_one_step():
             parent_meta,
             out_data_flat,
             out_meta,
+            out_parent_idx,
             global_counter,
             bucket_counters,
             adj_tensor,
