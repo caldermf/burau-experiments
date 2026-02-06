@@ -26,17 +26,17 @@ MAX_STEPS    = 127          # Run from length 1 (seeds) through length 127
 # H200 (80 GB):
 #   USE_BEST    = 40_000_000
 #   OUTPUT_CAP  = 120_000_000
-#   BUCKET_CAP  = 2_000_000
+#   BUCKET_CAP  = 20_000_000
 
 # RTX 5000 Ada (32 GB):
-#   USE_BEST    = 15_000_000
-#   OUTPUT_CAP  = 45_000_000
-#   BUCKET_CAP  = 1_000_000
+#   USE_BEST    = 7_000_000
+#   OUTPUT_CAP  = 56_000_000
+#   BUCKET_CAP  = 3_500_000
 
 # Conservative default (works on ~16 GB):
 USE_BEST     = 5_000_000    # Parents to select for next step
-OUTPUT_CAP   = 40_000_000   # Max children per step (flat buffer)
-BUCKET_CAP   = 500_000      # Max children per projlen bucket (FCFS)
+OUTPUT_CAP   = 40_000_000   # Max children per step (flat buffer, >= USE_BEST * 8)
+BUCKET_CAP   = 2_500_000    # Max children per projlen bucket (FCFS)
 
 # ==============================================================================
 # TRITON HELPERS
@@ -4325,35 +4325,25 @@ def get_raw_matrix_data_pruned_host():
     return m
 
 
-def save_projlen0_braids(out_data, out_meta, out_words, n_children, braid_length, save_dir="projlen0_results"):
+def save_projlen0_braids(zero_data, zero_meta, zero_words, braid_length, save_dir="projlen0_results"):
     """
-    Extract and save any braids with projlen == 0 from the output buffer.
-    Returns the number of zero-projlen braids found.
+    Save pre-extracted projlen-0 braids to disk.
+    All inputs should already be filtered to only zero-projlen entries.
+    Returns the number of braids saved.
     """
     import os
     os.makedirs(save_dir, exist_ok=True)
     
-    if n_children == 0:
-        return 0
-    
-    meta_slice = out_meta[:n_children]
-    projlens = (meta_slice >> 8) & 0x7F
-    zero_mask = (projlens == 0)
-    n_zeros = zero_mask.sum().item()
-    
+    n_zeros = zero_data.shape[0]
     if n_zeros == 0:
         return 0
     
-    # Extract the zero-projlen braids
-    zero_indices = torch.where(zero_mask)[0]
-    zero_data = out_data[zero_indices].cpu()
-    zero_meta = meta_slice[zero_indices].cpu()
-    zero_words = out_words[zero_indices.cpu()]  # words are on CPU
+    zero_data = zero_data.cpu()
+    zero_meta = zero_meta.cpu()
+    # zero_words should already be on CPU
     
-    # Save to disk
     save_path = os.path.join(save_dir, f"projlen0_length{braid_length:03d}.pt")
     
-    # Append if file exists (multiple batches at same length)
     if os.path.exists(save_path):
         existing = torch.load(save_path, weights_only=True)
         zero_data = torch.cat([existing["data"], zero_data], dim=0)
@@ -4383,7 +4373,7 @@ def run_search():
     
     device = torch.device("cuda")
     gpu_name = torch.cuda.get_device_name()
-    vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+    vram_gb = torch.cuda.get_device_properties(0).total_mem / (1024**3)
     print(f"Device: {gpu_name} ({vram_gb:.1f} GB)")
     print(f"Config: USE_BEST={USE_BEST:,}, OUTPUT_CAP={OUTPUT_CAP:,}, BUCKET_CAP={BUCKET_CAP:,}")
     bytes_per_braid = 54 * 8 + 4 + 4  # data + meta + parent_idx
@@ -4490,59 +4480,40 @@ def run_search():
             keep_indices = sorted_indices[:USE_BEST]
             n_keep = USE_BEST
         
-        # Also find projlen-0 children (may overlap with kept)
+        # Find projlen-0 children
         child_projlens_cpu = child_projlens[:n_children].cpu()
         zero_mask = (child_projlens_cpu == 0)
         n_zeros_this_step = zero_mask.sum().item()
         
-        # Build combined index set: keep_indices ∪ zero_indices
-        if n_zeros_this_step > 0:
-            zero_indices_gpu = torch.where(zero_mask)[0].to(device)
-            all_needed = torch.cat([keep_indices, zero_indices_gpu])
-            all_needed = torch.unique(all_needed)
-        else:
-            all_needed = keep_indices
-        
-        # Build words ONLY for needed children (much smaller than OUTPUT_CAP)
-        needed_cpu = all_needed.cpu()
-        n_needed = needed_cpu.shape[0]
-        needed_parent_indices = out_parent_idx[all_needed].cpu()  # which parent
-        needed_suffixes = (out_meta[all_needed].cpu() & 0xFF).to(torch.uint8)
-        
-        needed_words = torch.zeros((n_needed, braid_length), dtype=torch.uint8)
-        needed_words[:, :word_len] = parent_words[needed_parent_indices.long(), :word_len]
-        needed_words[:, word_len] = needed_suffixes
-        
-        # Create a mapping from all_needed global index -> local index in needed_words
-        # For saving projlen-0 braids
+        # Save projlen-0 braids (rare, build their words directly)
         if n_zeros_this_step > 0:
             zero_indices_cpu = torch.where(zero_mask)[0]
-            # Find these in all_needed
-            # Build a lookup: global_idx -> local_idx
-            needed_list = needed_cpu.tolist()
-            needed_lookup = {g: l for l, g in enumerate(needed_list)}
+            zero_indices_gpu = zero_indices_cpu.to(device)
             
-            zero_local = torch.tensor([needed_lookup[z.item()] for z in zero_indices_cpu])
-            zero_words = needed_words[zero_local]
+            # Build words for zero-projlen braids directly (they're rare, so this is fast)
+            zero_parent_indices = out_parent_idx[zero_indices_gpu].cpu()
+            zero_suffixes = (out_meta[zero_indices_gpu].cpu() & 0xFF).to(torch.uint8)
+            zero_words = torch.zeros((n_zeros_this_step, braid_length), dtype=torch.uint8)
+            zero_words[:, :word_len] = parent_words[zero_parent_indices.long(), :word_len]
+            zero_words[:, word_len] = zero_suffixes
             
-            save_projlen0_braids(
-                out_data, out_meta[:n_children],
-                zero_words,  # only the projlen-0 words
-                n_children, braid_length,
-            )
+            zero_data = out_data[zero_indices_gpu]
+            zero_meta_save = out_meta[zero_indices_gpu]
+            
+            save_projlen0_braids(zero_data, zero_meta_save, zero_words, braid_length)
         
         total_projlen0 += n_zeros_this_step
         
-        # --- Extract kept braids ---
-        # Find keep_indices in all_needed
-        keep_cpu = keep_indices.cpu()
-        needed_list = needed_cpu.tolist()
-        needed_lookup = {g: l for l, g in enumerate(needed_list)}
-        keep_local = torch.tensor([needed_lookup[k.item()] for k in keep_cpu])
+        # Build words for kept braids
+        kept_parent_indices = out_parent_idx[keep_indices].cpu()
+        kept_suffixes = (out_meta[keep_indices].cpu() & 0xFF).to(torch.uint8)
+        kept_words = torch.zeros((n_keep, braid_length), dtype=torch.uint8)
+        kept_words[:, :word_len] = parent_words[kept_parent_indices.long(), :word_len]
+        kept_words[:, word_len] = kept_suffixes
         
         parent_data = out_data[keep_indices].clone()
         parent_meta = out_meta[keep_indices].clone()
-        parent_words = needed_words[keep_local]
+        parent_words = kept_words
         n_parents = n_keep
         word_len = braid_length
         
