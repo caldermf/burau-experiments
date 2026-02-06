@@ -4578,7 +4578,11 @@ def run_search():
             keep_indices = torch.arange(n_children, device=device)
             n_keep = n_children
         else:
-            sorted_indices = torch.argsort(child_projlens[:n_children])
+            # Random tie-breaker: argsort alone is deterministic for equal projlen.
+            # Add small noise so selection varies across runs when there are ties.
+            tie_breaker = torch.rand(n_children, device=device, generator=rng)
+            sort_key = child_projlens[:n_children].float() + tie_breaker * 0.001
+            sorted_indices = torch.argsort(sort_key)
             keep_indices = sorted_indices[:USE_BEST]
             n_keep = USE_BEST
         
