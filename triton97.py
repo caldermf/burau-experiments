@@ -3,12 +3,8 @@ import triton
 import triton.language as tl
 
 # --- Constants for F_7 ---
-# Generator g=5 is a primitive root for modulo 97. 
-# 3^1=3, 3^2=2, 3^3=6, 3^4=4, 3^5=5, 3^6=1.
-# But for N=6 (length of poly), we need a primitive 6th root of unity in F_7.
-# Fermat's Little Theorem: a^6 = 1 mod 7.
-# So literally *any* non-zero element is a 6th root.
-# We need a *primitive* one. 3 is a generator of F_7*, so it has order 6.
+# Generator g=5 is a primitive root for modulo 97
+# 5^1 = 5, 5^2 = 25, 5^3 = 28, 5^4 = 43, 5^5 = 21, 5^6 = 8, 5^7 = 40, 5^8 = 6, 5^9 = 30, ... 
 # Powers of 3: [1, 3, 2, 6, 4, 5]
 
 @triton.jit

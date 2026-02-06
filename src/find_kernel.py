@@ -19,6 +19,7 @@ import kernel_database
 try:
     from peyl.braid import GNF
     from peyl.jonesrep import JonesCellRep
+    from peyl import polymat
     import numpy as np
     PEYL_AVAILABLE = True
 except ImportError:
@@ -80,14 +81,24 @@ def verify_kernel_element(word_list, n=4, r=1, p=2):
             return False, "Evaluates to 0 (not a power of Delta)"
         if len(nonzero_degs) != 1:
             return False, f"Diagonal is not a single power of v: {nonzero_degs}"
-        deg = int(nonzero_degs[0])
-        coeff = int(diag_poly[deg])
-        if deg % 8 != 0:
-            return False, f"Diagonal degree {deg} is not 8k (expected v^{{8k}})"
+        coeff = int(diag_poly[nonzero_degs[0]])
         if coeff != 1:
-            return False, f"Diagonal coefficient {coeff} is not 1 (expected v^{deg})"
-        k = deg // 8
-        return True, f"Kernel element! Evaluates to v^{deg} * I = Delta^{2*k}"
+            return False, f"Diagonal coefficient {coeff} is not 1 (expected v^d)"
+        # Result is projectivised (min degree shifted to 0), so get true degree from full Matrix
+        mat = rep.evaluate(braid)
+        valuations = [x.valuation() for x in mat.data if not x.is_zero()]
+        if not valuations:
+            return False, "Evaluates to 0 (not a power of Delta)"
+        minval = min(valuations)
+        arr = polymat.from_matrix(mat, proj=True)
+        if p > 0:
+            arr = arr % p
+        d_idx = int(np.where(arr[0, 0, :] != 0)[0][0])
+        true_deg = minval + d_idx
+        if true_deg % 8 != 0:
+            return False, f"Diagonal degree {true_deg} is not 8k (expected v^{{8k}})"
+        k = true_deg // 8
+        return True, f"Kernel element! Evaluates to v^{true_deg} * I = Delta^{2*k}"
     
     # Check if it's a scalar multiple of the anti-diagonal (Delta^odd case)
     # Delta = [[0,0,-v^4],[0,-v^4,0],[-v^4,0,0]]; odd powers are -v^{8k+4} on antidiag
@@ -112,11 +123,8 @@ def verify_kernel_element(word_list, n=4, r=1, p=2):
             return False, "Evaluates to 0 (not a power of Delta)"
         if len(nonzero_degs) != 1:
             return False, f"Antidiagonal is not a single power of v: {nonzero_degs}"
-        deg = int(nonzero_degs[0])
-        coeff = int(antidiag_poly[deg])
+        coeff = int(antidiag_poly[nonzero_degs[0]])
         minus_one = (p - 1) % p
-        if deg % 8 != 4:
-            return False, f"Antidiagonal degree {deg} is not 8k+4 (expected -v^{{8k+4}})"
         if coeff != minus_one:
             return False, f"Antidiagonal coefficient {coeff} is not -1 mod p (expected -v^{deg})"
         k = (deg - 4) // 8
