@@ -4429,16 +4429,19 @@ def run_search():
             parent_meta = parent_meta[perm]
         
         # Launch 22 suffix kernels
+        # Reshape 2D data tensors to 1D for flat pointer access in kernel
+        parent_data_flat = parent_data.view(-1)
+        out_data_flat = out_data.view(-1)
         grid = (n_parents,)
         for s in range(N_SUFFIXES):
             kernel_braid_step[grid](
-                parent_data.data_ptr(),
-                parent_meta.data_ptr(),
-                out_data.data_ptr(),
-                out_meta.data_ptr(),
-                global_counter.data_ptr(),
-                bucket_counters.data_ptr(),
-                adj_tensor.data_ptr(),
+                parent_data_flat,
+                parent_meta,
+                out_data_flat,
+                out_meta,
+                global_counter,
+                bucket_counters,
+                adj_tensor,
                 n_parents,
                 OUTPUT_CAP,
                 BUCKET_CAP,

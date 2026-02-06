@@ -317,20 +317,23 @@ def test_kernel_one_step():
     bucket_counters = torch.zeros((128,), dtype=torch.int32, device=device)
     
     # Launch all 22 suffix kernels
+    parent_data_flat = parent_data.view(-1)
+    out_data_flat = out_data.view(-1)
     grid = (n_parents,)
     for s in range(N_SUFFIXES):
         kernel_braid_step[grid](
-            parent_data.data_ptr(),
-            parent_meta.data_ptr(),
-            out_data.data_ptr(),
-            out_meta.data_ptr(),
-            global_counter.data_ptr(),
-            bucket_counters.data_ptr(),
-            adj_tensor.data_ptr(),
+            parent_data_flat,
+            parent_meta,
+            out_data_flat,
+            out_meta,
+            global_counter,
+            bucket_counters,
+            adj_tensor,
             n_parents,
             output_cap,
             bucket_cap,
             s,
+            num_warps=1,
         )
     
     torch.cuda.synchronize()
