@@ -4467,6 +4467,11 @@ def run_search():
         return
     
     device = torch.device("cuda")
+    # Seed RNG so each run gets different shuffles (otherwise PyTorch/CUDA can be deterministic)
+    seed = int(time.time() * 1_000_000) % (2**32)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    print(f"RNG seed: {seed} (different each run for random search order)")
     gpu_name = torch.cuda.get_device_name()
     vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
     print(f"Device: {gpu_name} ({vram_gb:.1f} GB)")
