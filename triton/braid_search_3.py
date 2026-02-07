@@ -750,7 +750,8 @@ def build_seed_braids(n_stride):
 def save_projlen0_braids(zero_data_soa, zero_meta, zero_words, braid_length, save_dir="p3_projlen0_results"):
     """
     Save pre-extracted projlen-0 braids to disk.
-    Converts SoA back to AoS for compatibility with decode/verify scripts.
+    Treats pt files as a database: merges with existing, skips duplicates by braid word.
+    Dedupes by the Garside word (sequence of factors 0-21), not by matrix.
     """
     import os
     os.makedirs(save_dir, exist_ok=True)
@@ -763,13 +764,64 @@ def save_projlen0_braids(zero_data_soa, zero_meta, zero_words, braid_length, sav
     zero_data_aos = zero_data_soa.t().cpu()
     zero_meta = zero_meta.cpu()
 
+    def word_key(w):
+        """Hashable key for a braid: tuple of Garside factors."""
+        return tuple(w[:braid_length].tolist())
+
     save_path = os.path.join(save_dir, f"p3_projlen0_length{braid_length:03d}.pt")
 
     if os.path.exists(save_path):
         existing = torch.load(save_path, weights_only=True)
-        zero_data_aos = torch.cat([existing["data"], zero_data_aos], dim=0)
-        zero_meta = torch.cat([existing["meta"], zero_meta], dim=0)
-        zero_words = torch.cat([existing["words"], zero_words], dim=0)
+        ex_data = existing["data"]
+        ex_meta = existing["meta"]
+        ex_words = existing["words"]
+
+        # Build set of known braid words (dedupe existing if it had legacy duplicates)
+        seen_words = set()
+        keep_idx = []
+        for i in range(ex_words.shape[0]):
+            k = word_key(ex_words[i])
+            if k not in seen_words:
+                seen_words.add(k)
+                keep_idx.append(i)
+        ex_data = ex_data[keep_idx]
+        ex_meta = ex_meta[keep_idx]
+        ex_words = ex_words[keep_idx]
+
+        # Filter new braids: only add those whose word we haven't seen
+        new_keep = []
+        for i in range(zero_data_aos.shape[0]):
+            k = word_key(zero_words[i])
+            if k not in seen_words:
+                seen_words.add(k)
+                new_keep.append(i)
+
+        if not new_keep:
+            return 0
+
+        n_added = len(new_keep)
+        zero_data_aos = zero_data_aos[new_keep]
+        zero_meta = zero_meta[new_keep]
+        zero_words = zero_words[new_keep]
+
+        zero_data_aos = torch.cat([ex_data, zero_data_aos], dim=0)
+        zero_meta = torch.cat([ex_meta, zero_meta], dim=0)
+        zero_words = torch.cat([ex_words, zero_words], dim=0)
+    else:
+        # New file: dedupe within the batch
+        seen_words = set()
+        keep_idx = []
+        for i in range(zero_data_aos.shape[0]):
+            k = word_key(zero_words[i])
+            if k not in seen_words:
+                seen_words.add(k)
+                keep_idx.append(i)
+        if not keep_idx:
+            return 0
+        n_added = len(keep_idx)
+        zero_data_aos = zero_data_aos[keep_idx]
+        zero_meta = zero_meta[keep_idx]
+        zero_words = zero_words[keep_idx]
 
     torch.save({
         "data": zero_data_aos,
@@ -778,7 +830,7 @@ def save_projlen0_braids(zero_data_soa, zero_meta, zero_words, braid_length, sav
         "braid_length": braid_length,
     }, save_path)
 
-    return n_zeros
+    return n_added
 
 
 def run_search():
@@ -838,18 +890,13 @@ def run_search():
 
     total_projlen0 = 0
     if n_seed_zeros > 0:
-        os.makedirs("p3_projlen0_results", exist_ok=True)
         zero_indices = torch.where(seed_projlens == 0)[0]
         zi_cpu = zero_indices.cpu()
-        # Convert SoA back to AoS for saving
-        seed_data_aos = parent_data[:, zero_indices].t().cpu()
-        torch.save({
-            "data": seed_data_aos,
-            "meta": parent_meta[zero_indices].cpu(),
-            "words": parent_words[zi_cpu, :word_len],
-            "braid_length": 1,
-        }, "p3_projlen0_results/p3_projlen0_length001.pt")
-        total_projlen0 += n_seed_zeros
+        seed_data_soa = parent_data[:, zero_indices]
+        seed_meta = parent_meta[zero_indices]
+        seed_words = parent_words[zi_cpu, :word_len]
+        n_saved = save_projlen0_braids(seed_data_soa, seed_meta, seed_words, 1)
+        total_projlen0 += n_saved
 
     # --- Allocate output buffers (SoA) ---
     out_data = torch.zeros((36, out_stride), dtype=torch.int64, device=device)
@@ -942,9 +989,8 @@ def run_search():
             zero_data_soa = out_data[:, zero_indices_gpu]
             zero_meta_save = out_meta[zero_indices_gpu]
 
-            save_projlen0_braids(zero_data_soa, zero_meta_save, zero_words, braid_length)
-
-        total_projlen0 += n_zeros_this_step
+            n_saved = save_projlen0_braids(zero_data_soa, zero_meta_save, zero_words, braid_length)
+            total_projlen0 += n_saved
 
         # Build words for kept braids
         kept_parent_indices = out_parent_idx[keep_indices].cpu()
@@ -986,7 +1032,7 @@ def run_search():
 
     # --- Summary ---
     print("=" * 100)
-    print(f"Search complete. Total projlen-0 braids found: {total_projlen0}")
+    print(f"Search complete. Total new unique projlen-0 braids saved: {total_projlen0}")
     if total_projlen0 > 0:
         import os, glob
         files = sorted(glob.glob("p3_projlen0_results/p3_projlen0_length*.pt"))
