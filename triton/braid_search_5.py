@@ -93,12 +93,16 @@ def add_mod5(a0, a1, a2, b0, b1, b2):
     c1   = (a1 & b1) | (c0 & (a1 ^ b1))
     sum2 = a2 ^ b2 ^ c1
     c_out = (a2 & b2) | (c1 & (a2 ^ b2))
-    # End-around carry
+    # End-around carry (gives (a+b) mod 8)
     final_s0 = sum0 ^ c_out
     c_fix0   = sum0 & c_out
     final_s1 = sum1 ^ c_fix0
     c_fix1   = sum1 & c_fix0
     final_s2 = sum2 ^ c_fix1
+    # When true sum was 8 (e.g. 4+4), 3-bit wrap gives 1; but 8 mod 5 = 3, so fix: set s1
+    sum_all_zero = (sum0 | sum1 | sum2)
+    was_sum_8 = (~sum_all_zero) & c_out  # c_out and sum was 0 => raw sum was 8
+    final_s1 = final_s1 | was_sum_8
     # For mod 5: if result >= 5 (patterns 0b101, 0b110, 0b111), reduce mod 5
     # 5 = 0b101, 6 = 0b110, 7 = 0b111
     # Check for >= 5: (final_s0 & final_s2) | (final_s1 & final_s2)
