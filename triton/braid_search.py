@@ -546,11 +546,14 @@ def kernel_braid_step(
     o8_p2_lo, o8_p2_hi = shr128(o8_p2_lo, o8_p2_hi, s_norm)
 
     # --- FCFS bucket check (per-element) ---
-    bucket_slot = tl.atomic_add(Bucket_Counters_Ptr + projlen, 1, mask=valid)
+    # atomic_rmw requires mask type to match value type (int32)
+    valid_i32 = valid.to(tl.int32)
+    bucket_slot = tl.atomic_add(Bucket_Counters_Ptr + projlen, 1, mask=valid_i32)
     valid = valid & (bucket_slot < BUCKET_CAP_PARAM)
+    valid_i32 = valid.to(tl.int32)
 
     # --- Reserve global output slot ---
-    global_slot = tl.atomic_add(Global_Counter_Ptr, 1, mask=valid)
+    global_slot = tl.atomic_add(Global_Counter_Ptr, 1, mask=valid_i32)
     valid = valid & (global_slot < OUTPUT_CAP_PARAM)
 
     # --- Write output in SoA layout (scalarized: ptr+block index not inferred as block pointer in this Triton) ---
@@ -620,7 +623,7 @@ def kernel_braid_step(
 
     # --- Flag zero matrices (kernel elements!) ---
     is_zero_and_valid = is_zero_matrix & valid
-    tl.atomic_add(Bucket_Counters_Ptr + 127, 1000000, mask=is_zero_and_valid)
+    tl.atomic_add(Bucket_Counters_Ptr + 127, 1000000, mask=is_zero_and_valid.to(tl.int32))
 
 
 # ==============================================================================
