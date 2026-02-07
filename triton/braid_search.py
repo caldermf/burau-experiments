@@ -14,14 +14,31 @@ import triton
 import triton.language as tl
 import time
 import sys
+import argparse
+
+# ==============================================================================
+# COMMAND LINE ARGUMENTS
+# ==============================================================================
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="GPU Braid Search — Mod 7 Burau Representation")
+    parser.add_argument("-u", "--use-best", type=float, default=5.0,
+                        help="USE_BEST in millions (default: 5.0, i.e., 5_000_000)")
+    parser.add_argument("-b", "--bucket-cap", type=float, default=2.5,
+                        help="BUCKET_CAP in millions (default: 2.5, i.e., 2_500_000)")
+    parser.add_argument("-m", "--max-steps", type=int, default=127,
+                        help="MAX_STEPS (raw value, default: 127)")
+    return parser.parse_args()
 
 # ==============================================================================
 # CONFIGURATION
 # ==============================================================================
 
+args = parse_args()
+
 N_SUFFIXES   = 22
 N_BUCKETS    = 128          # One per possible projlen value (0..127)
-MAX_STEPS    = 127          # Run from length 1 (seeds) through length 127
+MAX_STEPS    = args.max_steps  # Run from length 1 (seeds) through length MAX_STEPS
 
 # --- GPU Presets ---
 # Uncomment the preset matching your GPU, or set manually.
@@ -37,9 +54,9 @@ MAX_STEPS    = 127          # Run from length 1 (seeds) through length 127
 #   BUCKET_CAP  = 3_500_000
 
 # Conservative default (works on ~16 GB):
-USE_BEST     = 5_000_000    # Parents to select for next step
-OUTPUT_CAP   = 40_000_000   # Max children per step (flat buffer, >= USE_BEST * 8)
-BUCKET_CAP   = 1_000_000    # Max children per projlen bucket (FCFS)
+USE_BEST     = int(args.use_best * 1_000_000)    # Parents to select for next step
+OUTPUT_CAP   = 8*USE_BEST   # Max children per step (flat buffer, >= USE_BEST * 8)
+BUCKET_CAP   = int(args.bucket_cap * 1_000_000)    # Max children per projlen bucket (FCFS)
 
 # ==============================================================================
 # SUFFIX DESCRIPTORS (compile-time constants for the Triton kernel)
