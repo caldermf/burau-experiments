@@ -1,0 +1,11 @@
+Device: NVIDIA H200 (139.8 GB)
+Random seed: 1737421723
+Config: USE_BEST=18,000,000, OUTPUT_CAP=144,000,000, BUCKET_CAP=9,000,000
+GPU memory per braid: 296 bytes
+Parent buffer:  5.0 GB
+Output buffer:  39.7 GB
+Word buffer:    ~0.59 GB CPU
+Running lengths 1 through 34
+Layout: SoA [36, N], fused kernel with 22 suffixes
+====================================================================================================
+Length  1: 22 seed braids, 0 with projlen 0

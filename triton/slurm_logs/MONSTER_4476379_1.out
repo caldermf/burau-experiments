@@ -1,0 +1,18 @@
+Device: NVIDIA H200 (139.8 GB)
+Random seed: 1607564355
+Config: USE_BEST=50,000,000, OUTPUT_CAP=210,000,000, BUCKET_CAP=20,000,000
+GPU memory per braid: 440 bytes
+Parent buffer:  20.5 GB
+Output buffer:  86.1 GB
+Word buffer:    ~6.01 GB CPU
+Running lengths 1 through 128
+====================================================================================================
+Length  1: 22 seed braids, 0 with projlen 0
+Length   2 | 14.18s | children=       164 | kept=       164 | projlen 4/4.9/6 | buckets: [4]:56 [5]:76 [6]:32
+Length   3 |  0.00s | children=       982 | kept=       982 | projlen 6/7.1/9 | buckets: [6]:270 [7]:364 [8]:288 [9]:60
+Length   4 |  0.02s | children=     5,528 | kept=     5,528 | projlen 8/9.4/12 | buckets: [8]:1256 [9]:1672 [10]:1784 [11]:700 [12]:116
+Length   5 |  0.02s | children=    30,478 | kept=    30,478 | projlen 9/11.7/15 | buckets: [9]:4 [10]:5798 [11]:7672 [12]:9864 [13]:5236 [14]:1716 [15]:188
+Length   6 |  0.00s | children=   166,796 | kept=   166,796 | projlen 11/13.9/18 | buckets: [11]:64 [12]:26772 [13]:35288 [14]:52292 [15]:33012 [16]:15680 [17]:3356 [18]:332
+Length   7 |  0.02s | children=   910,366 | kept=   910,366 | projlen 12/16.2/21 | buckets: [12]:52 [13]:644 [14]:123806 [15]:162640 [16]:271420 [17]:191940 [18]:116516 [19]:35764 ...
+Length   8 |  0.09s | children= 4,963,856 | kept= 4,963,856 | projlen 13/18.4/24 | buckets: [13]:96 [14]:872 [15]:5520 [16]:573104 [17]:750992 [18]:1389500 [19]:1065876 [20]:775952 ...
+Length   9 | 14.02s | children=27,056,134 | kept=27,056,134 | projlen 14/20.6/27 | buckets: [14]:144 [15]:1192 [16]:10928 [17]:39908 [18]:2657130 [19]:3473064 [20]:7041312 [21]:5743864 ...

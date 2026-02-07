@@ -1,0 +1,11 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) StdEnv
+Traceback (most recent call last):
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/triton/braid_search.py", line 4661, in <module>
+    run_search()
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/triton/braid_search.py", line 4621, in run_search
+    parent_data = out_data[keep_indices].clone()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.12 GiB. GPU 0 has a total capacity of 139.81 GiB of which 19.54 GiB is free. Including non-PyTorch memory, this process has 120.27 GiB memory in use. Of the allocated memory 119.56 GiB is allocated by PyTorch, and 108.61 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
