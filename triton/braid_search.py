@@ -547,7 +547,7 @@ def kernel_braid_step(
 
     # --- FCFS bucket check (per-element) ---
     # atomic_rmw: value must be same shape as mask (block) so "mask type matches value type"
-    one_block = tl.ones((BLOCK_SIZE,), dtype=tl.int32)
+    one_block = tl.full((BLOCK_SIZE,), 1, dtype=tl.int32)
     bucket_slot = tl.atomic_add(Bucket_Counters_Ptr + projlen, one_block, mask=valid)
     valid = valid & (bucket_slot < BUCKET_CAP_PARAM)
 
