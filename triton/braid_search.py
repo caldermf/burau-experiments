@@ -34,9 +34,9 @@ MAX_STEPS    = 127          # Run from length 1 (seeds) through length 127
 #   BUCKET_CAP  = 3_500_000
 
 # Conservative default (works on ~16 GB):
-USE_BEST     = 10_000_000    # Parents to select for next step
+USE_BEST     = 2_000_000    # Parents to select for next step
 OUTPUT_CAP   = 20_000_000   # Max children per step (flat buffer, >= USE_BEST * 8)
-BUCKET_CAP   = 5_000_000    # Max children per projlen bucket (FCFS)
+BUCKET_CAP   = 1_000_000    # Max children per projlen bucket (FCFS)
 
 # ==============================================================================
 # TRITON HELPERS
