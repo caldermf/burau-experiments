@@ -293,15 +293,16 @@ def test_seed_encoding():
     sys.path.insert(0, '/home/claude')
     from braid_search import build_seed_braids, get_raw_matrix_data_pruned_host
     
-    data, meta = build_seed_braids()
-    data = data.cpu()
+    data_soa, meta = build_seed_braids(22)
+    # SoA [54, 22] -> AoS [22, 54] for decoding
+    data = data_soa.cpu().t()
     meta = meta.cpu()
-    
+
     for s in range(22):
         poly_mat = suffix_to_poly_matrix(matrices[s])
         # Normalize to match GPU's normalized seeds
         poly_mat = normalize_poly_matrix(poly_mat, size=128)
-        
+
         # Decode the seed braid
         vals = data[s].tolist()
         # Handle negative int64 → unsigned
@@ -324,50 +325,55 @@ def test_kernel_one_step():
     
     import sys
     sys.path.insert(0, '/home/claude')
-    from braid_search import (build_seed_braids, build_adjacency_tensor, 
+    from braid_search import (build_seed_braids, build_adjacency_tensor,
                                kernel_braid_step, get_raw_matrix_data_pruned_host,
-                               N_SUFFIXES)
-    
+                               N_SUFFIXES, SUFFIX_KWARGS)
+
     if not torch.cuda.is_available():
         print("  SKIPPED: No CUDA device.")
         return
-    
+
     device = torch.device("cuda")
     matrices = get_raw_matrix_data_pruned()
-    
-    # Build seeds
-    parent_data, parent_meta = build_seed_braids()
-    adj_tensor = build_adjacency_tensor()
+
+    # Build seeds (SoA layout)
     n_parents = 22
-    
-    # Allocate output
+    parent_data, parent_meta = build_seed_braids(n_parents)
+    adj_tensor = build_adjacency_tensor()
+
+    # Allocate output (SoA layout)
     output_cap = 10000
     bucket_cap = 5000
-    out_data = torch.zeros((output_cap, 54), dtype=torch.int64, device=device)
+    BLOCK_SIZE = 256
+    out_data = torch.zeros((54, output_cap), dtype=torch.int64, device=device)
     out_meta = torch.zeros((output_cap,), dtype=torch.int32, device=device)
     out_parent_idx = torch.zeros((output_cap,), dtype=torch.int32, device=device)
     global_counter = torch.zeros((1,), dtype=torch.int32, device=device)
     bucket_counters = torch.zeros((128,), dtype=torch.int32, device=device)
-    
-    # Launch all 22 suffix kernels
-    parent_data_flat = parent_data.view(-1)
-    out_data_flat = out_data.view(-1)
-    grid = (n_parents,)
+
+    # Launch all 22 suffix kernels with block-parallel grid
+    n_stride_val = parent_data.shape[1]
+    out_stride_val = out_data.shape[1]
+    grid = ((n_parents + BLOCK_SIZE - 1) // BLOCK_SIZE,)
     for s in range(N_SUFFIXES):
+        kw = SUFFIX_KWARGS[s]
         kernel_braid_step[grid](
-            parent_data_flat,
+            parent_data,
             parent_meta,
-            out_data_flat,
+            out_data,
             out_meta,
             out_parent_idx,
             global_counter,
             bucket_counters,
             adj_tensor,
             n_parents,
+            n_stride_val,
+            out_stride_val,
             output_cap,
             bucket_cap,
-            s,
-            num_warps=1,
+            BLOCK_SIZE,
+            num_warps=4,
+            **kw,
         )
     
     torch.cuda.synchronize()
@@ -382,9 +388,10 @@ def test_kernel_one_step():
     errors = 0
     checked = 0
     
-    out_data_cpu = out_data[:n_children].cpu()
+    # Convert SoA [54, n] -> AoS [n, 54] for decoding
+    out_data_cpu = out_data[:, :n_children].t().cpu()
     out_meta_cpu = out_meta[:n_children].cpu()
-    parent_data_cpu = parent_data.cpu()
+    parent_data_cpu = parent_data.cpu().t()  # SoA [54, 22] -> AoS [22, 54]
     parent_meta_cpu = parent_meta.cpu()
     
     # Build the set of ALL valid expected result matrices, keyed by suffix_idx.
