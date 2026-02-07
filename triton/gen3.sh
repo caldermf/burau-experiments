@@ -25,7 +25,7 @@ PYTHON_PATH="/home/com36/.conda/envs/burau_gpu/bin/python"
 export PYTHONUNBUFFERED=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
-$PYTHON_PATH braid_search_3.py -u 18 -b 9 -m 33
+$PYTHON_PATH braid_search_3.py -u 12 -b 6 -m 33
 
 
 echo "JOB COMPLETED!"
