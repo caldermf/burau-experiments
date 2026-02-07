@@ -545,21 +545,17 @@ def kernel_braid_step(
     o8_p1_lo, o8_p1_hi = shr128(o8_p1_lo, o8_p1_hi, s_norm)
     o8_p2_lo, o8_p2_hi = shr128(o8_p2_lo, o8_p2_hi, s_norm)
 
-    # --- FCFS bucket check (per-element) ---
-    # atomic_rmw: value must be same shape as mask (block) so "mask type matches value type"
-    one_block = tl.full((BLOCK_SIZE,), 1, dtype=tl.int32)
-    bucket_slot = tl.atomic_add(Bucket_Counters_Ptr + projlen, one_block, mask=valid)
-    valid = valid & (bucket_slot < BUCKET_CAP_PARAM)
-
-    # --- Reserve global output slot ---
-    global_slot = tl.atomic_add(Global_Counter_Ptr, one_block, mask=valid)
-    valid = valid & (global_slot < OUTPUT_CAP_PARAM)
-
     # --- Write output in SoA layout (scalarized: ptr+block index not inferred as block pointer in this Triton) ---
-    global_slot_i64 = global_slot.to(tl.int64)
+    # Do atomics inside loop with scalar ptr/value/mask to avoid "mask type matches value type" and MLIR getIntOrFloatBitWidth assertion
+    one_i32 = tl.zeros((), dtype=tl.int32) + 1
     for k in range(BLOCK_SIZE):
-        slot_k = block_elem(global_slot_i64, k, BLOCK_SIZE)
         valid_k = block_elem(valid.to(tl.int32), k, BLOCK_SIZE) != 0
+        projlen_k = block_elem(projlen, k, BLOCK_SIZE)
+        bucket_slot_k = tl.atomic_add(Bucket_Counters_Ptr + projlen_k, one_i32, mask=valid_k)
+        valid_k = valid_k & (bucket_slot_k < BUCKET_CAP_PARAM)
+        global_slot_k = tl.atomic_add(Global_Counter_Ptr, one_i32, mask=valid_k)
+        valid_k = valid_k & (global_slot_k < OUTPUT_CAP_PARAM)
+        slot_k = global_slot_k.to(tl.int64)
         tl.store(Output_Ptr + 0  * OUT_STRIDE + slot_k, block_elem(o0_p0_lo, k, BLOCK_SIZE), mask=valid_k)
         tl.store(Output_Ptr + 1  * OUT_STRIDE + slot_k, block_elem(o0_p0_hi, k, BLOCK_SIZE), mask=valid_k)
         tl.store(Output_Ptr + 2  * OUT_STRIDE + slot_k, block_elem(o0_p1_lo, k, BLOCK_SIZE), mask=valid_k)
@@ -620,10 +616,9 @@ def kernel_braid_step(
         tl.store(Output_Meta_Ptr + slot_k, meta_k, mask=valid_k)
         tl.store(Output_Parent_Ptr + slot_k, block_elem(offs.to(tl.int32), k, BLOCK_SIZE), mask=valid_k)
 
-    # --- Flag zero matrices (kernel elements!) ---
-    is_zero_and_valid = is_zero_matrix & valid
-    add_zero_flag = tl.where(is_zero_and_valid, tl.full((BLOCK_SIZE,), 1000000, dtype=tl.int32), tl.zeros((BLOCK_SIZE,), dtype=tl.int32))
-    tl.atomic_add(Bucket_Counters_Ptr + 127, add_zero_flag, mask=is_zero_and_valid)
+        # --- Flag zero matrices (per-element to avoid block value in atomic) ---
+        is_zero_k = block_elem(is_zero_matrix.to(tl.int32), k, BLOCK_SIZE) != 0
+        tl.atomic_add(Bucket_Counters_Ptr + 127, tl.zeros((), dtype=tl.int32) + 1000000, mask=is_zero_k & valid_k)
 
 
 # ==============================================================================
