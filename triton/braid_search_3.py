@@ -747,7 +747,7 @@ def build_seed_braids(n_stride):
     return data_soa.cuda(), meta.cuda()
 
 
-def save_projlen0_braids(zero_data_soa, zero_meta, zero_words, braid_length, save_dir="projlen0_results"):
+def save_projlen0_braids(zero_data_soa, zero_meta, zero_words, braid_length, save_dir="p3_projlen0_results"):
     """
     Save pre-extracted projlen-0 braids to disk.
     Converts SoA back to AoS for compatibility with decode/verify scripts.
@@ -763,7 +763,7 @@ def save_projlen0_braids(zero_data_soa, zero_meta, zero_words, braid_length, sav
     zero_data_aos = zero_data_soa.t().cpu()
     zero_meta = zero_meta.cpu()
 
-    save_path = os.path.join(save_dir, f"projlen0_length{braid_length:03d}.pt")
+    save_path = os.path.join(save_dir, f"p3_projlen0_length{braid_length:03d}.pt")
 
     if os.path.exists(save_path):
         existing = torch.load(save_path, weights_only=True)
@@ -838,7 +838,7 @@ def run_search():
 
     total_projlen0 = 0
     if n_seed_zeros > 0:
-        os.makedirs("projlen0_results", exist_ok=True)
+        os.makedirs("p3_projlen0_results", exist_ok=True)
         zero_indices = torch.where(seed_projlens == 0)[0]
         zi_cpu = zero_indices.cpu()
         # Convert SoA back to AoS for saving
@@ -848,7 +848,7 @@ def run_search():
             "meta": parent_meta[zero_indices].cpu(),
             "words": parent_words[zi_cpu, :word_len],
             "braid_length": 1,
-        }, "projlen0_results/projlen0_length001.pt")
+        }, "p3_projlen0_results/p3_projlen0_length001.pt")
         total_projlen0 += n_seed_zeros
 
     # --- Allocate output buffers (SoA) ---
@@ -989,7 +989,7 @@ def run_search():
     print(f"Search complete. Total projlen-0 braids found: {total_projlen0}")
     if total_projlen0 > 0:
         import os, glob
-        files = sorted(glob.glob("projlen0_results/projlen0_length*.pt"))
+        files = sorted(glob.glob("p3_projlen0_results/p3_projlen0_length*.pt"))
         for f in files:
             info = torch.load(f, weights_only=True)
             n = info["data"].shape[0]
