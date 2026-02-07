@@ -222,19 +222,19 @@ def lsb64(x):
 # ==============================================================================
 
 @triton.jit
-def load_parent_poly(Parents_Ptr, PE: tl.constexpr, N_STRIDE, offs, mask):
+def load_parent_poly(Parents_Ptr, PE: tl.constexpr, N_STRIDE, idx):
     """Load 6 uint64 values for parent entry PE from SoA layout.
     SoA layout: field f of braid i at Parents_Ptr + f * N_STRIDE + i
     Parent entry PE (0-8) maps to fields PE*6 through PE*6+5.
+    idx is a scalar parent index.
     """
     base_field: tl.constexpr = PE * 6
-    ZERO = tl.zeros([], dtype=tl.int64)
-    p0_lo = tl.load(Parents_Ptr + (base_field + 0) * N_STRIDE + offs, mask=mask, other=ZERO)
-    p0_hi = tl.load(Parents_Ptr + (base_field + 1) * N_STRIDE + offs, mask=mask, other=ZERO)
-    p1_lo = tl.load(Parents_Ptr + (base_field + 2) * N_STRIDE + offs, mask=mask, other=ZERO)
-    p1_hi = tl.load(Parents_Ptr + (base_field + 3) * N_STRIDE + offs, mask=mask, other=ZERO)
-    p2_lo = tl.load(Parents_Ptr + (base_field + 4) * N_STRIDE + offs, mask=mask, other=ZERO)
-    p2_hi = tl.load(Parents_Ptr + (base_field + 5) * N_STRIDE + offs, mask=mask, other=ZERO)
+    p0_lo = tl.load(Parents_Ptr + (base_field + 0) * N_STRIDE + idx)
+    p0_hi = tl.load(Parents_Ptr + (base_field + 1) * N_STRIDE + idx)
+    p1_lo = tl.load(Parents_Ptr + (base_field + 2) * N_STRIDE + idx)
+    p1_hi = tl.load(Parents_Ptr + (base_field + 3) * N_STRIDE + idx)
+    p2_lo = tl.load(Parents_Ptr + (base_field + 4) * N_STRIDE + idx)
+    p2_hi = tl.load(Parents_Ptr + (base_field + 5) * N_STRIDE + idx)
     return p0_lo, p0_hi, p1_lo, p1_hi, p2_lo, p2_hi
 
 @triton.jit
@@ -260,47 +260,42 @@ def shift_and_neg(p0_lo, p0_hi, p1_lo, p1_hi, p2_lo, p2_hi,
 # ==============================================================================
 
 @triton.jit
-def compute_entry_1term(Parents_Ptr, N_STRIDE, offs, mask,
+def compute_entry_1term(Parents_Ptr, N_STRIDE, idx,
                         PE0: tl.constexpr, SHIFT0: tl.constexpr, NEG0: tl.constexpr):
     """Compute one output matrix entry with exactly 1 term."""
-    p0_lo, p0_hi, p1_lo, p1_hi, p2_lo, p2_hi = load_parent_poly(Parents_Ptr, PE0, N_STRIDE, offs, mask)
+    p0_lo, p0_hi, p1_lo, p1_hi, p2_lo, p2_hi = load_parent_poly(Parents_Ptr, PE0, N_STRIDE, idx)
     return shift_and_neg(p0_lo, p0_hi, p1_lo, p1_hi, p2_lo, p2_hi, SHIFT0, NEG0)
 
 @triton.jit
-def compute_entry_2terms(Parents_Ptr, N_STRIDE, offs, mask,
+def compute_entry_2terms(Parents_Ptr, N_STRIDE, idx,
                          PE0: tl.constexpr, SHIFT0: tl.constexpr, NEG0: tl.constexpr,
                          PE1: tl.constexpr, SHIFT1: tl.constexpr, NEG1: tl.constexpr):
     """Compute one output matrix entry with exactly 2 terms."""
-    a0_lo, a0_hi, a1_lo, a1_hi, a2_lo, a2_hi = load_parent_poly(Parents_Ptr, PE0, N_STRIDE, offs, mask)
+    a0_lo, a0_hi, a1_lo, a1_hi, a2_lo, a2_hi = load_parent_poly(Parents_Ptr, PE0, N_STRIDE, idx)
     a0_lo, a0_hi, a1_lo, a1_hi, a2_lo, a2_hi = shift_and_neg(a0_lo, a0_hi, a1_lo, a1_hi, a2_lo, a2_hi, SHIFT0, NEG0)
-    b0_lo, b0_hi, b1_lo, b1_hi, b2_lo, b2_hi = load_parent_poly(Parents_Ptr, PE1, N_STRIDE, offs, mask)
+    b0_lo, b0_hi, b1_lo, b1_hi, b2_lo, b2_hi = load_parent_poly(Parents_Ptr, PE1, N_STRIDE, idx)
     b0_lo, b0_hi, b1_lo, b1_hi, b2_lo, b2_hi = shift_and_neg(b0_lo, b0_hi, b1_lo, b1_hi, b2_lo, b2_hi, SHIFT1, NEG1)
     r0_lo, r1_lo, r2_lo = add_mod7(a0_lo, a1_lo, a2_lo, b0_lo, b1_lo, b2_lo)
     r0_hi, r1_hi, r2_hi = add_mod7(a0_hi, a1_hi, a2_hi, b0_hi, b1_hi, b2_hi)
     return r0_lo, r0_hi, r1_lo, r1_hi, r2_lo, r2_hi
 
 @triton.jit
-def compute_entry_3terms(Parents_Ptr, N_STRIDE, offs, mask,
+def compute_entry_3terms(Parents_Ptr, N_STRIDE, idx,
                          PE0: tl.constexpr, SHIFT0: tl.constexpr, NEG0: tl.constexpr,
                          PE1: tl.constexpr, SHIFT1: tl.constexpr, NEG1: tl.constexpr,
                          PE2: tl.constexpr, SHIFT2: tl.constexpr, NEG2: tl.constexpr):
     """Compute one output matrix entry with exactly 3 terms."""
-    a0_lo, a0_hi, a1_lo, a1_hi, a2_lo, a2_hi = load_parent_poly(Parents_Ptr, PE0, N_STRIDE, offs, mask)
+    a0_lo, a0_hi, a1_lo, a1_hi, a2_lo, a2_hi = load_parent_poly(Parents_Ptr, PE0, N_STRIDE, idx)
     a0_lo, a0_hi, a1_lo, a1_hi, a2_lo, a2_hi = shift_and_neg(a0_lo, a0_hi, a1_lo, a1_hi, a2_lo, a2_hi, SHIFT0, NEG0)
-    b0_lo, b0_hi, b1_lo, b1_hi, b2_lo, b2_hi = load_parent_poly(Parents_Ptr, PE1, N_STRIDE, offs, mask)
+    b0_lo, b0_hi, b1_lo, b1_hi, b2_lo, b2_hi = load_parent_poly(Parents_Ptr, PE1, N_STRIDE, idx)
     b0_lo, b0_hi, b1_lo, b1_hi, b2_lo, b2_hi = shift_and_neg(b0_lo, b0_hi, b1_lo, b1_hi, b2_lo, b2_hi, SHIFT1, NEG1)
     r0_lo, r1_lo, r2_lo = add_mod7(a0_lo, a1_lo, a2_lo, b0_lo, b1_lo, b2_lo)
     r0_hi, r1_hi, r2_hi = add_mod7(a0_hi, a1_hi, a2_hi, b0_hi, b1_hi, b2_hi)
-    c0_lo, c0_hi, c1_lo, c1_hi, c2_lo, c2_hi = load_parent_poly(Parents_Ptr, PE2, N_STRIDE, offs, mask)
+    c0_lo, c0_hi, c1_lo, c1_hi, c2_lo, c2_hi = load_parent_poly(Parents_Ptr, PE2, N_STRIDE, idx)
     c0_lo, c0_hi, c1_lo, c1_hi, c2_lo, c2_hi = shift_and_neg(c0_lo, c0_hi, c1_lo, c1_hi, c2_lo, c2_hi, SHIFT2, NEG2)
     r0_lo, r1_lo, r2_lo = add_mod7(r0_lo, r1_lo, r2_lo, c0_lo, c1_lo, c2_lo)
     r0_hi, r1_hi, r2_hi = add_mod7(r0_hi, r1_hi, r2_hi, c0_hi, c1_hi, c2_hi)
     return r0_lo, r0_hi, r1_lo, r1_hi, r2_lo, r2_hi
-
-@triton.jit
-def block_elem(block, k, BLOCK_SIZE: tl.constexpr):
-    """Extract k-th element from a block (JIT-safe; no [] indexing with loop var)."""
-    return tl.sum(tl.where(tl.arange(0, BLOCK_SIZE) == k, block, tl.zeros((BLOCK_SIZE,), dtype=block.dtype)))
 
 # ==============================================================================
 # MAIN FUSED BRAID STEP KERNEL
@@ -316,12 +311,11 @@ def kernel_braid_step(
     Global_Counter_Ptr,  # int32  [1]
     Bucket_Counters_Ptr, # int32  [N_BUCKETS]
     Adj_Ptr,             # int8   [22 * 22]
-    N_PARENTS,           # int32
+    N_PARENTS,                       # int32 (runtime, avoids recompile)
     N_STRIDE,            # int64 (stride between fields in SoA)
     OUT_STRIDE,          # int64 (stride for output SoA)
     OUTPUT_CAP_PARAM: tl.constexpr,
     BUCKET_CAP_PARAM: tl.constexpr,
-    BLOCK_SIZE: tl.constexpr,
     SUFFIX_IDX: tl.constexpr,
     # Descriptor values for this suffix's 9 output entries (each entry has up to 3 terms)
     # Entry 0
@@ -361,124 +355,121 @@ def kernel_braid_step(
     PE8_1: tl.constexpr, SH8_1: tl.constexpr, NG8_1: tl.constexpr,
     PE8_2: tl.constexpr, SH8_2: tl.constexpr, NG8_2: tl.constexpr,
 ):
-    pid = tl.program_id(0)
-    offs = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
-    mask = offs < N_PARENTS
+    parent_idx = tl.program_id(0)
+    if parent_idx >= N_PARENTS:
+        return
 
     # --- Adjacency check ---
-    ZERO_I32 = tl.zeros([], dtype=tl.int32)
-    last_suffix = tl.load(Parent_Meta_Ptr + offs, mask=mask, other=ZERO_I32) & 0xFF
-    adj_offset = last_suffix * 22 + SUFFIX_IDX
-    adj_val = tl.load(Adj_Ptr + adj_offset, mask=mask, other=tl.zeros([], dtype=tl.int8))
-    valid = mask & (adj_val != 0)
-
-    # Early exit if no valid elements in this block for this suffix
-    any_valid = tl.sum(valid.to(tl.int32), axis=0)
-    if any_valid == 0:
+    last_suffix = tl.load(Parent_Meta_Ptr + parent_idx) & 0xFF
+    adj_offset = last_suffix.to(tl.int32) * 22 + SUFFIX_IDX
+    adj_val = tl.load(Adj_Ptr + adj_offset)
+    if adj_val == 0:
         return
+
+    # Convert to int64 for pointer arithmetic
+    idx = parent_idx.to(tl.int64)
 
     # --- Compute 9 output entries using descriptors ---
     # Entry 0 (output[0][0])
     if NT0 == 1:
         o0_p0_lo, o0_p0_hi, o0_p1_lo, o0_p1_hi, o0_p2_lo, o0_p2_hi = compute_entry_1term(
-            Parents_Ptr, N_STRIDE, offs, valid, PE0_0, SH0_0, NG0_0)
+            Parents_Ptr, N_STRIDE, idx, PE0_0, SH0_0, NG0_0)
     elif NT0 == 2:
         o0_p0_lo, o0_p0_hi, o0_p1_lo, o0_p1_hi, o0_p2_lo, o0_p2_hi = compute_entry_2terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE0_0, SH0_0, NG0_0, PE0_1, SH0_1, NG0_1)
+            Parents_Ptr, N_STRIDE, idx, PE0_0, SH0_0, NG0_0, PE0_1, SH0_1, NG0_1)
     else:
         o0_p0_lo, o0_p0_hi, o0_p1_lo, o0_p1_hi, o0_p2_lo, o0_p2_hi = compute_entry_3terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE0_0, SH0_0, NG0_0, PE0_1, SH0_1, NG0_1, PE0_2, SH0_2, NG0_2)
+            Parents_Ptr, N_STRIDE, idx, PE0_0, SH0_0, NG0_0, PE0_1, SH0_1, NG0_1, PE0_2, SH0_2, NG0_2)
 
     # Entry 1 (output[0][1])
     if NT1 == 1:
         o1_p0_lo, o1_p0_hi, o1_p1_lo, o1_p1_hi, o1_p2_lo, o1_p2_hi = compute_entry_1term(
-            Parents_Ptr, N_STRIDE, offs, valid, PE1_0, SH1_0, NG1_0)
+            Parents_Ptr, N_STRIDE, idx, PE1_0, SH1_0, NG1_0)
     elif NT1 == 2:
         o1_p0_lo, o1_p0_hi, o1_p1_lo, o1_p1_hi, o1_p2_lo, o1_p2_hi = compute_entry_2terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE1_0, SH1_0, NG1_0, PE1_1, SH1_1, NG1_1)
+            Parents_Ptr, N_STRIDE, idx, PE1_0, SH1_0, NG1_0, PE1_1, SH1_1, NG1_1)
     else:
         o1_p0_lo, o1_p0_hi, o1_p1_lo, o1_p1_hi, o1_p2_lo, o1_p2_hi = compute_entry_3terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE1_0, SH1_0, NG1_0, PE1_1, SH1_1, NG1_1, PE1_2, SH1_2, NG1_2)
+            Parents_Ptr, N_STRIDE, idx, PE1_0, SH1_0, NG1_0, PE1_1, SH1_1, NG1_1, PE1_2, SH1_2, NG1_2)
 
     # Entry 2 (output[0][2])
     if NT2 == 1:
         o2_p0_lo, o2_p0_hi, o2_p1_lo, o2_p1_hi, o2_p2_lo, o2_p2_hi = compute_entry_1term(
-            Parents_Ptr, N_STRIDE, offs, valid, PE2_0, SH2_0, NG2_0)
+            Parents_Ptr, N_STRIDE, idx, PE2_0, SH2_0, NG2_0)
     elif NT2 == 2:
         o2_p0_lo, o2_p0_hi, o2_p1_lo, o2_p1_hi, o2_p2_lo, o2_p2_hi = compute_entry_2terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE2_0, SH2_0, NG2_0, PE2_1, SH2_1, NG2_1)
+            Parents_Ptr, N_STRIDE, idx, PE2_0, SH2_0, NG2_0, PE2_1, SH2_1, NG2_1)
     else:
         o2_p0_lo, o2_p0_hi, o2_p1_lo, o2_p1_hi, o2_p2_lo, o2_p2_hi = compute_entry_3terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE2_0, SH2_0, NG2_0, PE2_1, SH2_1, NG2_1, PE2_2, SH2_2, NG2_2)
+            Parents_Ptr, N_STRIDE, idx, PE2_0, SH2_0, NG2_0, PE2_1, SH2_1, NG2_1, PE2_2, SH2_2, NG2_2)
 
     # Entry 3 (output[1][0])
     if NT3 == 1:
         o3_p0_lo, o3_p0_hi, o3_p1_lo, o3_p1_hi, o3_p2_lo, o3_p2_hi = compute_entry_1term(
-            Parents_Ptr, N_STRIDE, offs, valid, PE3_0, SH3_0, NG3_0)
+            Parents_Ptr, N_STRIDE, idx, PE3_0, SH3_0, NG3_0)
     elif NT3 == 2:
         o3_p0_lo, o3_p0_hi, o3_p1_lo, o3_p1_hi, o3_p2_lo, o3_p2_hi = compute_entry_2terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE3_0, SH3_0, NG3_0, PE3_1, SH3_1, NG3_1)
+            Parents_Ptr, N_STRIDE, idx, PE3_0, SH3_0, NG3_0, PE3_1, SH3_1, NG3_1)
     else:
         o3_p0_lo, o3_p0_hi, o3_p1_lo, o3_p1_hi, o3_p2_lo, o3_p2_hi = compute_entry_3terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE3_0, SH3_0, NG3_0, PE3_1, SH3_1, NG3_1, PE3_2, SH3_2, NG3_2)
+            Parents_Ptr, N_STRIDE, idx, PE3_0, SH3_0, NG3_0, PE3_1, SH3_1, NG3_1, PE3_2, SH3_2, NG3_2)
 
     # Entry 4 (output[1][1])
     if NT4 == 1:
         o4_p0_lo, o4_p0_hi, o4_p1_lo, o4_p1_hi, o4_p2_lo, o4_p2_hi = compute_entry_1term(
-            Parents_Ptr, N_STRIDE, offs, valid, PE4_0, SH4_0, NG4_0)
+            Parents_Ptr, N_STRIDE, idx, PE4_0, SH4_0, NG4_0)
     elif NT4 == 2:
         o4_p0_lo, o4_p0_hi, o4_p1_lo, o4_p1_hi, o4_p2_lo, o4_p2_hi = compute_entry_2terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE4_0, SH4_0, NG4_0, PE4_1, SH4_1, NG4_1)
+            Parents_Ptr, N_STRIDE, idx, PE4_0, SH4_0, NG4_0, PE4_1, SH4_1, NG4_1)
     else:
         o4_p0_lo, o4_p0_hi, o4_p1_lo, o4_p1_hi, o4_p2_lo, o4_p2_hi = compute_entry_3terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE4_0, SH4_0, NG4_0, PE4_1, SH4_1, NG4_1, PE4_2, SH4_2, NG4_2)
+            Parents_Ptr, N_STRIDE, idx, PE4_0, SH4_0, NG4_0, PE4_1, SH4_1, NG4_1, PE4_2, SH4_2, NG4_2)
 
     # Entry 5 (output[1][2])
     if NT5 == 1:
         o5_p0_lo, o5_p0_hi, o5_p1_lo, o5_p1_hi, o5_p2_lo, o5_p2_hi = compute_entry_1term(
-            Parents_Ptr, N_STRIDE, offs, valid, PE5_0, SH5_0, NG5_0)
+            Parents_Ptr, N_STRIDE, idx, PE5_0, SH5_0, NG5_0)
     elif NT5 == 2:
         o5_p0_lo, o5_p0_hi, o5_p1_lo, o5_p1_hi, o5_p2_lo, o5_p2_hi = compute_entry_2terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE5_0, SH5_0, NG5_0, PE5_1, SH5_1, NG5_1)
+            Parents_Ptr, N_STRIDE, idx, PE5_0, SH5_0, NG5_0, PE5_1, SH5_1, NG5_1)
     else:
         o5_p0_lo, o5_p0_hi, o5_p1_lo, o5_p1_hi, o5_p2_lo, o5_p2_hi = compute_entry_3terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE5_0, SH5_0, NG5_0, PE5_1, SH5_1, NG5_1, PE5_2, SH5_2, NG5_2)
+            Parents_Ptr, N_STRIDE, idx, PE5_0, SH5_0, NG5_0, PE5_1, SH5_1, NG5_1, PE5_2, SH5_2, NG5_2)
 
     # Entry 6 (output[2][0])
     if NT6 == 1:
         o6_p0_lo, o6_p0_hi, o6_p1_lo, o6_p1_hi, o6_p2_lo, o6_p2_hi = compute_entry_1term(
-            Parents_Ptr, N_STRIDE, offs, valid, PE6_0, SH6_0, NG6_0)
+            Parents_Ptr, N_STRIDE, idx, PE6_0, SH6_0, NG6_0)
     elif NT6 == 2:
         o6_p0_lo, o6_p0_hi, o6_p1_lo, o6_p1_hi, o6_p2_lo, o6_p2_hi = compute_entry_2terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE6_0, SH6_0, NG6_0, PE6_1, SH6_1, NG6_1)
+            Parents_Ptr, N_STRIDE, idx, PE6_0, SH6_0, NG6_0, PE6_1, SH6_1, NG6_1)
     else:
         o6_p0_lo, o6_p0_hi, o6_p1_lo, o6_p1_hi, o6_p2_lo, o6_p2_hi = compute_entry_3terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE6_0, SH6_0, NG6_0, PE6_1, SH6_1, NG6_1, PE6_2, SH6_2, NG6_2)
+            Parents_Ptr, N_STRIDE, idx, PE6_0, SH6_0, NG6_0, PE6_1, SH6_1, NG6_1, PE6_2, SH6_2, NG6_2)
 
     # Entry 7 (output[2][1])
     if NT7 == 1:
         o7_p0_lo, o7_p0_hi, o7_p1_lo, o7_p1_hi, o7_p2_lo, o7_p2_hi = compute_entry_1term(
-            Parents_Ptr, N_STRIDE, offs, valid, PE7_0, SH7_0, NG7_0)
+            Parents_Ptr, N_STRIDE, idx, PE7_0, SH7_0, NG7_0)
     elif NT7 == 2:
         o7_p0_lo, o7_p0_hi, o7_p1_lo, o7_p1_hi, o7_p2_lo, o7_p2_hi = compute_entry_2terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE7_0, SH7_0, NG7_0, PE7_1, SH7_1, NG7_1)
+            Parents_Ptr, N_STRIDE, idx, PE7_0, SH7_0, NG7_0, PE7_1, SH7_1, NG7_1)
     else:
         o7_p0_lo, o7_p0_hi, o7_p1_lo, o7_p1_hi, o7_p2_lo, o7_p2_hi = compute_entry_3terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE7_0, SH7_0, NG7_0, PE7_1, SH7_1, NG7_1, PE7_2, SH7_2, NG7_2)
+            Parents_Ptr, N_STRIDE, idx, PE7_0, SH7_0, NG7_0, PE7_1, SH7_1, NG7_1, PE7_2, SH7_2, NG7_2)
 
     # Entry 8 (output[2][2])
     if NT8 == 1:
         o8_p0_lo, o8_p0_hi, o8_p1_lo, o8_p1_hi, o8_p2_lo, o8_p2_hi = compute_entry_1term(
-            Parents_Ptr, N_STRIDE, offs, valid, PE8_0, SH8_0, NG8_0)
+            Parents_Ptr, N_STRIDE, idx, PE8_0, SH8_0, NG8_0)
     elif NT8 == 2:
         o8_p0_lo, o8_p0_hi, o8_p1_lo, o8_p1_hi, o8_p2_lo, o8_p2_hi = compute_entry_2terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE8_0, SH8_0, NG8_0, PE8_1, SH8_1, NG8_1)
+            Parents_Ptr, N_STRIDE, idx, PE8_0, SH8_0, NG8_0, PE8_1, SH8_1, NG8_1)
     else:
         o8_p0_lo, o8_p0_hi, o8_p1_lo, o8_p1_hi, o8_p2_lo, o8_p2_hi = compute_entry_3terms(
-            Parents_Ptr, N_STRIDE, offs, valid, PE8_0, SH8_0, NG8_0, PE8_1, SH8_1, NG8_1, PE8_2, SH8_2, NG8_2)
+            Parents_Ptr, N_STRIDE, idx, PE8_0, SH8_0, NG8_0, PE8_1, SH8_1, NG8_1, PE8_2, SH8_2, NG8_2)
 
     # --- Compute ProjLen (max_degree - min_degree) ---
-    # Cast to uint64 for bitwise OR
     all_lo = o0_p0_lo.to(tl.uint64) | o0_p1_lo.to(tl.uint64) | o0_p2_lo.to(tl.uint64)
     all_hi = o0_p0_hi.to(tl.uint64) | o0_p1_hi.to(tl.uint64) | o0_p2_hi.to(tl.uint64)
     all_lo = all_lo | o1_p0_lo.to(tl.uint64) | o1_p1_lo.to(tl.uint64) | o1_p2_lo.to(tl.uint64)
@@ -513,10 +504,10 @@ def kernel_braid_step(
     has_lo = (all_lo != 0)
     min_deg = tl.where(has_lo, min_deg_lo, min_deg_hi + 64)
 
-    projlen = tl.where(is_zero_matrix, ZERO_I32, max_deg - min_deg)
+    projlen = tl.where(is_zero_matrix, tl.zeros([], dtype=tl.int32), max_deg - min_deg)
 
     # --- Normalize: right-shift all polynomials by min_deg ---
-    s_norm = tl.where(is_zero_matrix, ZERO_I32, min_deg)
+    s_norm = tl.where(is_zero_matrix, tl.zeros([], dtype=tl.int32), min_deg)
     o0_p0_lo, o0_p0_hi = shr128(o0_p0_lo, o0_p0_hi, s_norm)
     o0_p1_lo, o0_p1_hi = shr128(o0_p1_lo, o0_p1_hi, s_norm)
     o0_p2_lo, o0_p2_hi = shr128(o0_p2_lo, o0_p2_hi, s_norm)
@@ -545,80 +536,83 @@ def kernel_braid_step(
     o8_p1_lo, o8_p1_hi = shr128(o8_p1_lo, o8_p1_hi, s_norm)
     o8_p2_lo, o8_p2_hi = shr128(o8_p2_lo, o8_p2_hi, s_norm)
 
-    # --- Write output in SoA layout (scalarized: ptr+block index not inferred as block pointer in this Triton) ---
-    # Do atomics inside loop with scalar ptr/value/mask to avoid "mask type matches value type" and MLIR getIntOrFloatBitWidth assertion
-    one_i32 = tl.zeros((), dtype=tl.int32) + 1
-    for k in range(BLOCK_SIZE):
-        valid_k = block_elem(valid.to(tl.int32), k, BLOCK_SIZE) != 0
-        projlen_k = block_elem(projlen, k, BLOCK_SIZE)
-        bucket_slot_k = tl.atomic_add(Bucket_Counters_Ptr + projlen_k, one_i32, mask=valid_k)
-        valid_k = valid_k & (bucket_slot_k < BUCKET_CAP_PARAM)
-        global_slot_k = tl.atomic_add(Global_Counter_Ptr, one_i32, mask=valid_k)
-        valid_k = valid_k & (global_slot_k < OUTPUT_CAP_PARAM)
-        slot_k = global_slot_k.to(tl.int64)
-        tl.store(Output_Ptr + 0  * OUT_STRIDE + slot_k, block_elem(o0_p0_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 1  * OUT_STRIDE + slot_k, block_elem(o0_p0_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 2  * OUT_STRIDE + slot_k, block_elem(o0_p1_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 3  * OUT_STRIDE + slot_k, block_elem(o0_p1_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 4  * OUT_STRIDE + slot_k, block_elem(o0_p2_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 5  * OUT_STRIDE + slot_k, block_elem(o0_p2_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 6  * OUT_STRIDE + slot_k, block_elem(o1_p0_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 7  * OUT_STRIDE + slot_k, block_elem(o1_p0_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 8  * OUT_STRIDE + slot_k, block_elem(o1_p1_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 9  * OUT_STRIDE + slot_k, block_elem(o1_p1_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 10 * OUT_STRIDE + slot_k, block_elem(o1_p2_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 11 * OUT_STRIDE + slot_k, block_elem(o1_p2_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 12 * OUT_STRIDE + slot_k, block_elem(o2_p0_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 13 * OUT_STRIDE + slot_k, block_elem(o2_p0_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 14 * OUT_STRIDE + slot_k, block_elem(o2_p1_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 15 * OUT_STRIDE + slot_k, block_elem(o2_p1_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 16 * OUT_STRIDE + slot_k, block_elem(o2_p2_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 17 * OUT_STRIDE + slot_k, block_elem(o2_p2_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 18 * OUT_STRIDE + slot_k, block_elem(o3_p0_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 19 * OUT_STRIDE + slot_k, block_elem(o3_p0_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 20 * OUT_STRIDE + slot_k, block_elem(o3_p1_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 21 * OUT_STRIDE + slot_k, block_elem(o3_p1_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 22 * OUT_STRIDE + slot_k, block_elem(o3_p2_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 23 * OUT_STRIDE + slot_k, block_elem(o3_p2_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 24 * OUT_STRIDE + slot_k, block_elem(o4_p0_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 25 * OUT_STRIDE + slot_k, block_elem(o4_p0_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 26 * OUT_STRIDE + slot_k, block_elem(o4_p1_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 27 * OUT_STRIDE + slot_k, block_elem(o4_p1_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 28 * OUT_STRIDE + slot_k, block_elem(o4_p2_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 29 * OUT_STRIDE + slot_k, block_elem(o4_p2_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 30 * OUT_STRIDE + slot_k, block_elem(o5_p0_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 31 * OUT_STRIDE + slot_k, block_elem(o5_p0_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 32 * OUT_STRIDE + slot_k, block_elem(o5_p1_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 33 * OUT_STRIDE + slot_k, block_elem(o5_p1_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 34 * OUT_STRIDE + slot_k, block_elem(o5_p2_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 35 * OUT_STRIDE + slot_k, block_elem(o5_p2_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 36 * OUT_STRIDE + slot_k, block_elem(o6_p0_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 37 * OUT_STRIDE + slot_k, block_elem(o6_p0_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 38 * OUT_STRIDE + slot_k, block_elem(o6_p1_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 39 * OUT_STRIDE + slot_k, block_elem(o6_p1_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 40 * OUT_STRIDE + slot_k, block_elem(o6_p2_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 41 * OUT_STRIDE + slot_k, block_elem(o6_p2_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 42 * OUT_STRIDE + slot_k, block_elem(o7_p0_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 43 * OUT_STRIDE + slot_k, block_elem(o7_p0_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 44 * OUT_STRIDE + slot_k, block_elem(o7_p1_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 45 * OUT_STRIDE + slot_k, block_elem(o7_p1_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 46 * OUT_STRIDE + slot_k, block_elem(o7_p2_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 47 * OUT_STRIDE + slot_k, block_elem(o7_p2_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 48 * OUT_STRIDE + slot_k, block_elem(o8_p0_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 49 * OUT_STRIDE + slot_k, block_elem(o8_p0_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 50 * OUT_STRIDE + slot_k, block_elem(o8_p1_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 51 * OUT_STRIDE + slot_k, block_elem(o8_p1_hi, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 52 * OUT_STRIDE + slot_k, block_elem(o8_p2_lo, k, BLOCK_SIZE), mask=valid_k)
-        tl.store(Output_Ptr + 53 * OUT_STRIDE + slot_k, block_elem(o8_p2_hi, k, BLOCK_SIZE), mask=valid_k)
+    # --- FCFS bucket check ---
+    bucket_slot = tl.atomic_add(Bucket_Counters_Ptr + projlen, 1)
+    if bucket_slot >= BUCKET_CAP_PARAM:
+        return  # Bucket full, discard
 
-        # --- Write metadata and parent index for this element ---
-        meta_k = (block_elem(projlen, k, BLOCK_SIZE) << 8) | SUFFIX_IDX
-        tl.store(Output_Meta_Ptr + slot_k, meta_k, mask=valid_k)
-        tl.store(Output_Parent_Ptr + slot_k, block_elem(offs.to(tl.int32), k, BLOCK_SIZE), mask=valid_k)
+    # --- Reserve global output slot ---
+    global_slot = tl.atomic_add(Global_Counter_Ptr, 1)
+    if global_slot >= OUTPUT_CAP_PARAM:
+        return  # Buffer full
 
-        # --- Flag zero matrices (per-element to avoid block value in atomic) ---
-        is_zero_k = block_elem(is_zero_matrix.to(tl.int32), k, BLOCK_SIZE) != 0
-        tl.atomic_add(Bucket_Counters_Ptr + 127, tl.zeros((), dtype=tl.int32) + 1000000, mask=is_zero_k & valid_k)
+    # --- Write output in SoA layout ---
+    out_base = global_slot.to(tl.int64)
+    tl.store(Output_Ptr + 0  * OUT_STRIDE + out_base, o0_p0_lo.to(tl.int64))
+    tl.store(Output_Ptr + 1  * OUT_STRIDE + out_base, o0_p0_hi.to(tl.int64))
+    tl.store(Output_Ptr + 2  * OUT_STRIDE + out_base, o0_p1_lo.to(tl.int64))
+    tl.store(Output_Ptr + 3  * OUT_STRIDE + out_base, o0_p1_hi.to(tl.int64))
+    tl.store(Output_Ptr + 4  * OUT_STRIDE + out_base, o0_p2_lo.to(tl.int64))
+    tl.store(Output_Ptr + 5  * OUT_STRIDE + out_base, o0_p2_hi.to(tl.int64))
+    tl.store(Output_Ptr + 6  * OUT_STRIDE + out_base, o1_p0_lo.to(tl.int64))
+    tl.store(Output_Ptr + 7  * OUT_STRIDE + out_base, o1_p0_hi.to(tl.int64))
+    tl.store(Output_Ptr + 8  * OUT_STRIDE + out_base, o1_p1_lo.to(tl.int64))
+    tl.store(Output_Ptr + 9  * OUT_STRIDE + out_base, o1_p1_hi.to(tl.int64))
+    tl.store(Output_Ptr + 10 * OUT_STRIDE + out_base, o1_p2_lo.to(tl.int64))
+    tl.store(Output_Ptr + 11 * OUT_STRIDE + out_base, o1_p2_hi.to(tl.int64))
+    tl.store(Output_Ptr + 12 * OUT_STRIDE + out_base, o2_p0_lo.to(tl.int64))
+    tl.store(Output_Ptr + 13 * OUT_STRIDE + out_base, o2_p0_hi.to(tl.int64))
+    tl.store(Output_Ptr + 14 * OUT_STRIDE + out_base, o2_p1_lo.to(tl.int64))
+    tl.store(Output_Ptr + 15 * OUT_STRIDE + out_base, o2_p1_hi.to(tl.int64))
+    tl.store(Output_Ptr + 16 * OUT_STRIDE + out_base, o2_p2_lo.to(tl.int64))
+    tl.store(Output_Ptr + 17 * OUT_STRIDE + out_base, o2_p2_hi.to(tl.int64))
+    tl.store(Output_Ptr + 18 * OUT_STRIDE + out_base, o3_p0_lo.to(tl.int64))
+    tl.store(Output_Ptr + 19 * OUT_STRIDE + out_base, o3_p0_hi.to(tl.int64))
+    tl.store(Output_Ptr + 20 * OUT_STRIDE + out_base, o3_p1_lo.to(tl.int64))
+    tl.store(Output_Ptr + 21 * OUT_STRIDE + out_base, o3_p1_hi.to(tl.int64))
+    tl.store(Output_Ptr + 22 * OUT_STRIDE + out_base, o3_p2_lo.to(tl.int64))
+    tl.store(Output_Ptr + 23 * OUT_STRIDE + out_base, o3_p2_hi.to(tl.int64))
+    tl.store(Output_Ptr + 24 * OUT_STRIDE + out_base, o4_p0_lo.to(tl.int64))
+    tl.store(Output_Ptr + 25 * OUT_STRIDE + out_base, o4_p0_hi.to(tl.int64))
+    tl.store(Output_Ptr + 26 * OUT_STRIDE + out_base, o4_p1_lo.to(tl.int64))
+    tl.store(Output_Ptr + 27 * OUT_STRIDE + out_base, o4_p1_hi.to(tl.int64))
+    tl.store(Output_Ptr + 28 * OUT_STRIDE + out_base, o4_p2_lo.to(tl.int64))
+    tl.store(Output_Ptr + 29 * OUT_STRIDE + out_base, o4_p2_hi.to(tl.int64))
+    tl.store(Output_Ptr + 30 * OUT_STRIDE + out_base, o5_p0_lo.to(tl.int64))
+    tl.store(Output_Ptr + 31 * OUT_STRIDE + out_base, o5_p0_hi.to(tl.int64))
+    tl.store(Output_Ptr + 32 * OUT_STRIDE + out_base, o5_p1_lo.to(tl.int64))
+    tl.store(Output_Ptr + 33 * OUT_STRIDE + out_base, o5_p1_hi.to(tl.int64))
+    tl.store(Output_Ptr + 34 * OUT_STRIDE + out_base, o5_p2_lo.to(tl.int64))
+    tl.store(Output_Ptr + 35 * OUT_STRIDE + out_base, o5_p2_hi.to(tl.int64))
+    tl.store(Output_Ptr + 36 * OUT_STRIDE + out_base, o6_p0_lo.to(tl.int64))
+    tl.store(Output_Ptr + 37 * OUT_STRIDE + out_base, o6_p0_hi.to(tl.int64))
+    tl.store(Output_Ptr + 38 * OUT_STRIDE + out_base, o6_p1_lo.to(tl.int64))
+    tl.store(Output_Ptr + 39 * OUT_STRIDE + out_base, o6_p1_hi.to(tl.int64))
+    tl.store(Output_Ptr + 40 * OUT_STRIDE + out_base, o6_p2_lo.to(tl.int64))
+    tl.store(Output_Ptr + 41 * OUT_STRIDE + out_base, o6_p2_hi.to(tl.int64))
+    tl.store(Output_Ptr + 42 * OUT_STRIDE + out_base, o7_p0_lo.to(tl.int64))
+    tl.store(Output_Ptr + 43 * OUT_STRIDE + out_base, o7_p0_hi.to(tl.int64))
+    tl.store(Output_Ptr + 44 * OUT_STRIDE + out_base, o7_p1_lo.to(tl.int64))
+    tl.store(Output_Ptr + 45 * OUT_STRIDE + out_base, o7_p1_hi.to(tl.int64))
+    tl.store(Output_Ptr + 46 * OUT_STRIDE + out_base, o7_p2_lo.to(tl.int64))
+    tl.store(Output_Ptr + 47 * OUT_STRIDE + out_base, o7_p2_hi.to(tl.int64))
+    tl.store(Output_Ptr + 48 * OUT_STRIDE + out_base, o8_p0_lo.to(tl.int64))
+    tl.store(Output_Ptr + 49 * OUT_STRIDE + out_base, o8_p0_hi.to(tl.int64))
+    tl.store(Output_Ptr + 50 * OUT_STRIDE + out_base, o8_p1_lo.to(tl.int64))
+    tl.store(Output_Ptr + 51 * OUT_STRIDE + out_base, o8_p1_hi.to(tl.int64))
+    tl.store(Output_Ptr + 52 * OUT_STRIDE + out_base, o8_p2_lo.to(tl.int64))
+    tl.store(Output_Ptr + 53 * OUT_STRIDE + out_base, o8_p2_hi.to(tl.int64))
+
+    # --- Write metadata: projlen << 8 | suffix_idx ---
+    meta = (projlen << 8) | SUFFIX_IDX
+    tl.store(Output_Meta_Ptr + out_base, meta)
+
+    # --- Write parent index for word reconstruction ---
+    tl.store(Output_Parent_Ptr + out_base, parent_idx)
+
+    # --- Flag zero matrices (kernel elements!) ---
+    if is_zero_matrix:
+        tl.atomic_add(Bucket_Counters_Ptr + 127, 1000000)
 
 
 # ==============================================================================
@@ -882,8 +876,6 @@ def run_search():
     global_counter = torch.zeros((1,), dtype=torch.int32, device=device)
     bucket_counters = torch.zeros((N_BUCKETS,), dtype=torch.int32, device=device)
 
-    BLOCK_SIZE = 256
-
     # --- Main loop ---
     for step in range(MAX_STEPS):
         braid_length = step + 2
@@ -901,7 +893,7 @@ def run_search():
             parent_words = parent_words[perm.cpu()]
 
         # Launch 22 suffix kernels in random order
-        grid = ((n_parents + BLOCK_SIZE - 1) // BLOCK_SIZE,)
+        grid = (n_parents,)
         # SoA stride = second dimension of the [54, N] buffer
         n_stride_val = parent_data.shape[1]
         out_stride_val = out_data.shape[1]
@@ -923,8 +915,7 @@ def run_search():
                 out_stride_val,
                 OUTPUT_CAP,
                 BUCKET_CAP,
-                BLOCK_SIZE,
-                num_warps=4,
+                num_warps=1,
                 **kw,
             )
 

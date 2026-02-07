@@ -344,7 +344,6 @@ def test_kernel_one_step():
     # Allocate output (SoA layout)
     output_cap = 10000
     bucket_cap = 5000
-    BLOCK_SIZE = 256
     out_data = torch.zeros((54, output_cap), dtype=torch.int64, device=device)
     out_meta = torch.zeros((output_cap,), dtype=torch.int32, device=device)
     out_parent_idx = torch.zeros((output_cap,), dtype=torch.int32, device=device)
@@ -354,7 +353,7 @@ def test_kernel_one_step():
     # Launch all 22 suffix kernels with block-parallel grid
     n_stride_val = parent_data.shape[1]
     out_stride_val = out_data.shape[1]
-    grid = ((n_parents + BLOCK_SIZE - 1) // BLOCK_SIZE,)
+    grid = (n_parents,)
     for s in range(N_SUFFIXES):
         kw = SUFFIX_KWARGS[s]
         kernel_braid_step[grid](
@@ -371,8 +370,7 @@ def test_kernel_one_step():
             out_stride_val,
             output_cap,
             bucket_cap,
-            BLOCK_SIZE,
-            num_warps=4,
+            num_warps=1,
             **kw,
         )
     
