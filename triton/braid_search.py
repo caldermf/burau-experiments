@@ -4541,11 +4541,14 @@ def run_search():
             parent_meta = parent_meta[perm]
             parent_words = parent_words[perm.cpu()]
         
-        # Launch 22 suffix kernels
+        # Launch 22 suffix kernels in random order so that when
+        # OUTPUT_CAP or BUCKET_CAP is hit, different suffixes are
+        # cut off each run (critical for search diversity).
         parent_data_flat = parent_data.view(-1)
         out_data_flat = out_data.view(-1)
         grid = (n_parents,)
-        for s in range(N_SUFFIXES):
+        suffix_order = torch.randperm(N_SUFFIXES).tolist()
+        for s in suffix_order:
             kernel_braid_step[grid](
                 parent_data_flat,
                 parent_meta,
