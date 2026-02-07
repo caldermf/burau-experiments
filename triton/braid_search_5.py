@@ -85,6 +85,18 @@ DESC_NTERMS = (1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 3, 2, 1, 3,
 # ==============================================================================
 
 @triton.jit
+def reduce_mod5(s0, s1, s2):
+    """Map any coefficient in 5,6,7 to 0,1,2 (mod 5 reduction). Leaves 0-4 unchanged."""
+    is_five_or_more = (s0 & s2) | (s1 & s2)
+    is_101 = s0 & (~s1) & s2
+    is_110 = (~s0) & s1 & s2
+    is_111 = s0 & s1 & s2
+    s0_out = tl.where(is_five_or_more, (is_110 & is_five_or_more), s0)
+    s1_out = tl.where(is_five_or_more, (is_111 & is_five_or_more), s1)
+    s2_out = tl.where(is_five_or_more, tl.zeros([], dtype=tl.uint64), s2)
+    return s0_out, s1_out, s2_out
+
+@triton.jit
 def add_mod5(a0, a1, a2, b0, b1, b2):
     """Bit-sliced mod-5 addition on uint64 registers (using 3 bits to represent 0-4)."""
     sum0 = a0 ^ b0
@@ -106,103 +118,8 @@ def add_mod5(a0, a1, a2, b0, b1, b2):
     # For mod 5: if result >= 5 (patterns 0b101, 0b110, 0b111), reduce mod 5
     # 5 = 0b101, 6 = 0b110, 7 = 0b111
     # Check for >= 5: (final_s0 & final_s2) | (final_s1 & final_s2)
-    # This catches: 101, 110, 111
-    is_five_or_more = (final_s0 & final_s2) | (final_s1 & final_s2)
-    # If >= 5, subtract 5: subtract 0b101
-    # We need to subtract 5 = 0b101, which means: subtract 1 from bit 0, 0 from bit 1, 1 from bit 2
-    # Actually, subtracting 5 is the same as adding -5 mod 5 = 0, so we just set to the mod 5 result
-    # For mod 5 reduction: if we have 5,6,7, we subtract 5 to get 0,1,2
-    # 5 (101) -> 0 (000): subtract 101
-    # 6 (110) -> 1 (001): subtract 101  
-    # 7 (111) -> 2 (010): subtract 101
-    # So we subtract 0b101 when is_five_or_more
-    # Subtracting 101 means: s0' = s0 ^ 1, s1' = s1, s2' = s2 ^ 1 (with borrow handling)
-    # Actually, let's use: if >= 5, subtract 5 by doing: result = result - 5
-    # result - 101: we need to handle borrow
-    # Simpler: if result is 5,6,7, map to 0,1,2
-    # 5 (101) -> 0 (000)
-    # 6 (110) -> 1 (001)  
-    # 7 (111) -> 2 (010)
-    # So: if is_five_or_more, we do: s0' = s0 ^ (s2 & ~s1), s1' = s1 ^ (s2 & s1), s2' = 0
-    # Actually, let's compute: result - 5 = result - 101
-    # This is complex with borrow. Let's use a lookup approach or direct mapping:
-    # Pattern 101 -> 000, 110 -> 001, 111 -> 010
-    # So: if (s0,s1,s2) = (1,0,1), set to (0,0,0)
-    #     if (s0,s1,s2) = (1,1,0), set to (0,0,1)
-    #     if (s0,s1,s2) = (1,1,1), set to (0,1,0)
-    # So: s0' = s0 & ~is_five_or_more (since all >=5 have s0=1, we clear it)
-    #     s1' = s1 ^ (is_five_or_more & s1 & s2) (for 111->010, we need s1=1)
-    #     s2' = 0 (all >=5 have s2=1, we clear it, except we need s2=0 for the result)
-    # Actually, let's be more precise:
-    # 101: s0=1,s1=0,s2=1 -> s0=0,s1=0,s2=0
-    # 110: s0=1,s1=1,s2=0 -> s0=0,s1=0,s2=1  
-    # 111: s0=1,s1=1,s2=1 -> s0=0,s1=1,s2=0
-    # So: s0' = 0 (always clear for >=5)
-    #     s1' = s1 & s2 (for 111 case)
-    #     s2' = ~s1 & s2 (for 110 case, but that's 0, so we need s2' = s1 & ~s2? No)
-    # Let's map: 101->000, 110->001, 111->010
-    # 101: clear all -> 000
-    # 110: s0=0, s1=0, s2=1 -> but we need s2'=1, so s2' = ~s1 (when s0=1,s1=1,s2=0)
-    # 111: s0=0, s1=1, s2=0 -> s1' = 1, s2' = 0
-    # So: s0' = 0
-    #     s1' = s1 & s2 (for 111)
-    #     s2' = s1 & ~s2 (for 110, but that's 0, so we need s2' = ~s1 when s2=0? No)
-    # Actually: 110 has s2=0, so s2' should be 1. But s2' = 1 means we set bit 2, which is the high bit
-    # Wait, I'm confusing the bit positions. Let me clarify:
-    # 3-bit number: bit0 (LSB), bit1, bit2 (MSB)
-    # 5 = 101 = bit0=1, bit1=0, bit2=1
-    # 6 = 110 = bit0=0, bit1=1, bit2=1  
-    # 7 = 111 = bit0=1, bit1=1, bit2=1
-    # After mod 5:
-    # 0 = 000 = bit0=0, bit1=0, bit2=0
-    # 1 = 001 = bit0=1, bit1=0, bit2=0
-    # 2 = 010 = bit0=0, bit1=1, bit2=0
-    # So: 101->000: clear all
-    #     110->001: bit0=1, bit1=0, bit2=0
-    #     111->010: bit0=0, bit1=1, bit2=0
-    # So: s0' = 0 for 101,110; s0' = 0 for 111
-    #     s1' = 0 for 101,110; s1' = 1 for 111
-    #     s2' = 0 for all
-    # So: s0' = 0 (always for >=5)
-    #     s1' = s1 & s2 (only true for 111)
-    #     s2' = 0 (always for >=5)
-    # But wait, 110 needs s0'=1. So:
-    # s0' = ~s1 & s2 (for 110: s1=1,s2=1 -> 0, but we need 1, so this is wrong)
-    # Let's recalculate: 110 has s0=0,s1=1,s2=1, we want s0'=1,s1'=0,s2'=0
-    # So s0' = ~s0 & s1 & s2? For 110: ~0 & 1 & 1 = 1, good
-    # For 101: s0=1,s1=0,s2=1, we want s0'=0, so ~1 & 0 & 1 = 0, good
-    # For 111: s0=1,s1=1,s2=1, we want s0'=0, so ~1 & 1 & 1 = 0, good
-    # So: s0' = ~s0 & s1 & s2 (for 110 case to get 1)
-    # But wait, for 101 we want s0'=0, and ~1 & 0 & 1 = 0, good
-    # For 111 we want s0'=0, and ~1 & 1 & 1 = 0, good
-    # But we also need to handle the case where it's not >=5
-    # So: s0' = (is_five_or_more ? (~s0 & s1 & s2) : s0)
-    #     s1' = (is_five_or_more ? (s1 & s2) : s1)  
-    #     s2' = 0 (always for >=5, or keep original if not >=5)
-    # Actually, let's simplify: if >=5, we subtract 5
-    # result - 5 = result - 101
-    # We can do this by: result = result + (~5 + 1) = result + (010 + 1) = result + 011
-    # But that's adding, not subtracting. Let's use direct subtraction with borrow.
-    # Actually, the simplest: use conditional assignment based on the pattern
-    mask = ~is_five_or_more
-    # For >=5 cases, map to 0,1,2
-    # 101->000: s0'=0, s1'=0, s2'=0
-    # 110->001: s0'=1, s1'=0, s2'=0  
-    # 111->010: s0'=0, s1'=1, s2'=0
-    # Pattern detection:
-    is_101 = final_s0 & (~final_s1) & final_s2
-    is_110 = (~final_s0) & final_s1 & final_s2
-    is_111 = final_s0 & final_s1 & final_s2
-    # Map:
-    # 101->000: clear all
-    # 110->001: set s0, clear s1, clear s2
-    # 111->010: clear s0, set s1, clear s2
-    s0_adj = (is_110) & is_five_or_more  # 110 -> 001, so set s0
-    s1_adj = (is_111) & is_five_or_more  # 111 -> 010, so set s1
-    s2_adj = tl.zeros([], dtype=tl.uint64)  # Always clear s2 for >=5
-    final_s0 = tl.where(is_five_or_more, s0_adj, final_s0)
-    final_s1 = tl.where(is_five_or_more, s1_adj, final_s1)
-    final_s2 = tl.where(is_five_or_more, s2_adj, final_s2)
+    # This catches: 101, 110, 111. Reduce 5,6,7 -> 0,1,2 via reduce_mod5.
+    final_s0, final_s1, final_s2 = reduce_mod5(final_s0, final_s1, final_s2)
     return final_s0, final_s1, final_s2
 
 @triton.jit
@@ -413,6 +330,9 @@ def shift_and_neg(p0_lo, p0_hi, p1_lo, p1_hi, p2_lo, p2_hi,
     p1_hi_u = p1_hi.to(tl.uint64)
     p2_lo_u = p2_lo.to(tl.uint64)
     p2_hi_u = p2_hi.to(tl.uint64)
+    # Reduce any 5,6,7 to 0,1,2 so all coefficients are in 0-4 before arithmetic
+    p0_lo_u, p1_lo_u, p2_lo_u = reduce_mod5(p0_lo_u, p1_lo_u, p2_lo_u)
+    p0_hi_u, p1_hi_u, p2_hi_u = reduce_mod5(p0_hi_u, p1_hi_u, p2_hi_u)
     p0_lo_u, p0_hi_u = shl128(p0_lo_u, p0_hi_u, SHIFT)
     p1_lo_u, p1_hi_u = shl128(p1_lo_u, p1_hi_u, SHIFT)
     p2_lo_u, p2_hi_u = shl128(p2_lo_u, p2_hi_u, SHIFT)
