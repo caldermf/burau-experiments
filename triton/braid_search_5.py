@@ -871,8 +871,7 @@ def build_seed_braids(n_stride):
 
                     if coeff == 1:
                         data_aos[s, base + 0 * 2 + word] |= bit_val
-                    else:  # coeff == -1 -> 6 = 0b110
-                        data_aos[s, base + 1 * 2 + word] |= bit_val
+                    else:  # coeff == -1; mod 5: -1 = 4 = 0b100 (bit2 only)
                         data_aos[s, base + 2 * 2 + word] |= bit_val
 
         # Compute projlen for seed
