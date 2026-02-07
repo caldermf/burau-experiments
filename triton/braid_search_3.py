@@ -1033,13 +1033,16 @@ def run_search():
     # --- Summary ---
     print("=" * 100)
     print(f"Search complete. Total new unique projlen-0 braids saved: {total_projlen0}")
-    if total_projlen0 > 0:
-        import os, glob
-        files = sorted(glob.glob("p3_projlen0_results/p3_projlen0_length*.pt"))
-        for f in files:
-            info = torch.load(f, weights_only=True)
-            n = info["data"].shape[0]
-            print(f"  {os.path.basename(f)}: {n} braids")
+    import os, glob
+    files = sorted(glob.glob("p3_projlen0_results/p3_projlen0_length*.pt"))
+    total_in_db = 0
+    for f in files:
+        info = torch.load(f, weights_only=True)
+        n = info["data"].shape[0]
+        total_in_db += n
+        print(f"  {os.path.basename(f)}: {n} braids")
+    if files:
+        print(f"Total projlen-0 braids across all lengths: {total_in_db:,}")
     print("Done.")
 
 
