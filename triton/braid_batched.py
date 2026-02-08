@@ -126,9 +126,9 @@ def run_batched_search():
     seed_data_gpu, seed_meta_gpu = build_seed_braids(22)
     n_parents = 22
 
-    # CPU parent buffers
-    cpu_data = torch.zeros((54, TOTAL_USE_BEST), dtype=torch.int64, pin_memory=True)
-    cpu_meta = torch.zeros((TOTAL_USE_BEST,), dtype=torch.int32, pin_memory=True)
+    # CPU parent buffers (no pin_memory — avoids page-locking on shared nodes)
+    cpu_data = torch.zeros((54, TOTAL_USE_BEST), dtype=torch.int64)
+    cpu_meta = torch.zeros((TOTAL_USE_BEST,), dtype=torch.int32)
     cpu_data[:, :n_parents] = seed_data_gpu.cpu()
     cpu_meta[:n_parents] = seed_meta_gpu.cpu()
 
@@ -164,37 +164,41 @@ def run_batched_search():
 
     del seed_data_gpu, seed_meta_gpu
 
+    # --- Pre-allocate CPU accumulator (reused across steps) ---
+    acc_data = torch.zeros((54, TOTAL_ACC_CAP), dtype=torch.int64)
+    acc_meta = torch.zeros((TOTAL_ACC_CAP,), dtype=torch.int32)
+    acc_parent_idx = torch.zeros((TOTAL_ACC_CAP,), dtype=torch.int32)
+
     # --- Main loop ---
     for step in range(MAX_STEPS):
         braid_length = step + 2
         t0 = time.time()
 
-        # Shuffle parents on CPU
+        # Virtual shuffle: generate permutation indices instead of physically
+        # moving data. Avoids a full-size .clone() temporary.
         if n_parents > 1:
             perm = torch.randperm(n_parents)
-            cpu_data[:, :n_parents] = cpu_data[:, perm].clone()
-            cpu_meta[:n_parents] = cpu_meta[perm].clone()
-            parent_words = parent_words[perm]
+        else:
+            perm = torch.arange(1)
 
         # Number of batches for this step (may be fewer if n_parents < TOTAL_USE_BEST)
         n_batches_this_step = math.ceil(n_parents / GPU_BATCH_SIZE)
         total_acc_cap = n_batches_this_step * GPU_OUTPUT_CAP
-
-        # Allocate CPU accumulation buffers
-        acc_data = torch.zeros((54, total_acc_cap), dtype=torch.int64, pin_memory=True)
-        acc_meta = torch.zeros((total_acc_cap,), dtype=torch.int32, pin_memory=True)
-        acc_parent_idx = torch.zeros((total_acc_cap,), dtype=torch.int32, pin_memory=True)
         acc_count = 0
 
         n_zeros_this_step = 0
 
         for b in range(n_batches_this_step):
             batch_start = b * GPU_BATCH_SIZE
-            batch_n = min(GPU_BATCH_SIZE, n_parents - batch_start)
+            batch_end = min(batch_start + GPU_BATCH_SIZE, n_parents)
+            batch_n = batch_end - batch_start
+
+            # Use permutation to select which parents go in this batch
+            batch_indices = perm[batch_start:batch_end]
 
             # Copy batch parents to GPU
-            gpu_parent_data[:, :batch_n] = cpu_data[:, batch_start:batch_start + batch_n].to(device, non_blocking=True)
-            gpu_parent_meta[:batch_n] = cpu_meta[batch_start:batch_start + batch_n].to(device, non_blocking=True)
+            gpu_parent_data[:, :batch_n] = cpu_data[:, batch_indices].to(device, non_blocking=True)
+            gpu_parent_meta[:batch_n] = cpu_meta[batch_indices].to(device, non_blocking=True)
 
             # Reset counters
             global_counter.zero_()
@@ -241,9 +245,9 @@ def run_batched_search():
             if n_zeros_batch > 0:
                 zero_indices_gpu = torch.where(zero_mask_gpu)[0]
 
-                zero_parent_indices = gpu_out_parent_idx[zero_indices_gpu].cpu()
-                # Remap to global parent index
-                zero_parent_indices_global = zero_parent_indices.long() + batch_start
+                zero_parent_indices_local = gpu_out_parent_idx[zero_indices_gpu].cpu()
+                # Remap: batch-local idx -> perm index -> global parent index
+                zero_parent_indices_global = batch_indices[zero_parent_indices_local.long()]
 
                 zero_suffixes = (gpu_out_meta[zero_indices_gpu].cpu() & 0xFF).to(torch.uint8)
                 zero_words = torch.zeros((n_zeros_batch, braid_length), dtype=torch.uint8)
@@ -266,9 +270,9 @@ def run_batched_search():
             if n_copy > 0:
                 acc_data[:, acc_count:acc_count + n_copy] = gpu_out_data[:, :n_copy].cpu()
                 acc_meta[acc_count:acc_count + n_copy] = gpu_out_meta[:n_copy].cpu()
-                # Remap parent_idx: batch-local -> global
+                # Remap parent_idx: batch-local -> global via permutation
                 batch_pidx = gpu_out_parent_idx[:n_copy].cpu()
-                acc_parent_idx[acc_count:acc_count + n_copy] = batch_pidx + batch_start
+                acc_parent_idx[acc_count:acc_count + n_copy] = batch_indices[batch_pidx.long()]
                 acc_count += n_copy
 
         total_projlen0 += n_zeros_this_step
@@ -297,15 +301,13 @@ def run_batched_search():
         kept_words[:, :word_len] = parent_words[kept_parent_indices, :word_len]
         kept_words[:, word_len] = kept_suffixes
 
-        # Update CPU parent buffers
+        # Update CPU parent buffers — copy kept children into parent arrays
+        # Use contiguous writes to avoid large gather temporaries
         cpu_data[:, :n_keep] = acc_data[:, keep_indices]
         cpu_meta[:n_keep] = acc_meta[keep_indices]
         parent_words = kept_words
         n_parents = n_keep
         word_len = braid_length
-
-        # Free accumulator
-        del acc_data, acc_meta, acc_parent_idx
 
         t1 = time.time()
         dt = t1 - t0
