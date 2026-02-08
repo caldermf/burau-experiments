@@ -22,11 +22,11 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description="GPU Braid Search — Mod 7 Burau Representation")
-    parser.add_argument("-u", "--use-best", type=float, default=5.0,
+    parser.add_argument("-u", "--use-best", type=float, default=7,
                         help="USE_BEST in millions (default: 5.0, i.e., 5_000_000)")
-    parser.add_argument("-b", "--bucket-cap", type=float, default=2.5,
+    parser.add_argument("-b", "--bucket-cap", type=float, default=12,
                         help="BUCKET_CAP in millions (default: 2.5, i.e., 2_500_000)")
-    parser.add_argument("-m", "--max-steps", type=int, default=127,
+    parser.add_argument("-m", "--max-steps", type=int, default=170,
                         help="MAX_STEPS (raw value, default: 127)")
     return parser.parse_args()
 
