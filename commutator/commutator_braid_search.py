@@ -59,6 +59,68 @@ def is_trivial_identity_batch(matrices: torch.Tensor, center: int) -> torch.Tens
     return (matrices == identity.unsqueeze(0)).reshape(N, -1).all(dim=1)
 
 
+def build_perm_compose_table(n=4) -> torch.Tensor:
+    """Build lookup table: compose[a, b] = index of perm(a) ∘ perm(b)."""
+    num = math.factorial(n)
+    table = torch.zeros(num, num, dtype=torch.long)
+    for a in range(num):
+        pa = index_to_perm(a, n)
+        for b in range(num):
+            pb = index_to_perm(b, n)
+            pc = tuple(pa[pb[i]] for i in range(n))
+            table[a, b] = perm_to_index(pc, n)
+    return table
+
+
+def centralizer_perm_set(gen_idx: int, n: int = 4) -> set:
+    """
+    Get the set of permutation indices forming the centralizer's
+    permutation subgroup ⟨s_j : j ∈ J⟩ where J = centralizer_generators(gen_idx).
+    """
+    J = centralizer_generators(gen_idx, n)
+    subgroup = {0}  # identity
+    queue = [0]
+    while queue:
+        current = queue.pop()
+        perm_c = list(index_to_perm(current, n))
+        for j in J:
+            perm_new = perm_c.copy()
+            perm_new[j], perm_new[j + 1] = perm_new[j + 1], perm_new[j]
+            idx = perm_to_index(tuple(perm_new), n)
+            if idx not in subgroup:
+                subgroup.add(idx)
+                queue.append(idx)
+    return subgroup
+
+
+def compute_braid_perms(
+    words: torch.Tensor,
+    lengths: torch.Tensor,
+    compose_table: torch.Tensor,
+) -> torch.Tensor:
+    """
+    Compute the permutation index of each braid from its Garside word.
+
+    words: (N, max_length) tensor of factor indices
+    lengths: (N,) tensor of actual lengths
+    compose_table: (24, 24) lookup table on the same device
+    Returns: (N,) tensor of permutation indices
+    """
+    N = words.shape[0]
+    max_len = words.shape[1]
+    perms = torch.zeros(N, dtype=torch.long, device=words.device)  # identity
+
+    for pos in range(max_len):
+        mask = pos < lengths.long()
+        if not mask.any():
+            break
+        factors = words[:, pos].long()
+        new_perms = compose_table[perms, factors]
+        perms = torch.where(mask, new_perms, perms)
+
+    return perms
+
+
 def is_scalar_antidiag_batch(matrices: torch.Tensor) -> torch.Tensor:
     """
     Check if matrices are scalar multiples of the anti-diagonal matrix
@@ -643,8 +705,33 @@ class CommutatorBraidSearch:
             simple_burau, twisted_burau, self.D, self.device
         )
 
+        # Permutation tools for filtering trivial commutators
+        self.compose_table = build_perm_compose_table(n=4).to(self.device)
+        self.centralizer_perms = centralizer_perm_set(config.generator_index, n=4)
+
         self.buckets: dict[int, tuple[torch.Tensor, torch.Tensor, torch.Tensor]] = {}
         self.kernel_braids: list[torch.Tensor] = []
+
+    def _filter_kernel_candidates(self, words, lengths):
+        """
+        Filter kernel candidates: only keep braids g where π(g) is NOT in
+        the centralizer's permutation subgroup. If π(g) ∈ centralizer perms,
+        then g almost certainly commutes with σ_i (trivial commutator).
+
+        Returns (nontrivial_words, num_trivial, num_nontrivial).
+        """
+        if len(words) == 0:
+            return words, 0, 0
+        perms = compute_braid_perms(words, lengths, self.compose_table)
+        # Vectorized membership check
+        centralizer_tensor = torch.tensor(
+            sorted(self.centralizer_perms), dtype=torch.long, device=words.device
+        )
+        in_centralizer = (perms.unsqueeze(1) == centralizer_tensor.unsqueeze(0)).any(dim=1)
+        nontrivial = ~in_centralizer
+        num_trivial = in_centralizer.sum().item()
+        num_nontrivial = nontrivial.sum().item()
+        return words[nontrivial], num_trivial, num_nontrivial
 
     def initialize(self):
         """
@@ -697,13 +784,20 @@ class CommutatorBraidSearch:
 
         init_lengths = torch.ones(num_first, dtype=STORAGE_DTYPE_LENGTH, device=self.device)
 
-        # Check for kernel elements BEFORE filtering (genuine kernel elements
-        # also have C_g = scalar·I, so we must report them first)
+        # Check for kernel elements BEFORE pruning from expansion pool
         kernel_mask = is_scalar_identity_batch(C_init) | is_scalar_antidiag_batch(C_init)
         num_kernel = kernel_mask.sum().item()
         if num_kernel > 0:
-            print(f"  🎉 FOUND {num_kernel} KERNEL ELEMENT CANDIDATES in initial factors!")
-            self.kernel_braids.append(init_words[kernel_mask].cpu())
+            # Filter by permutation: π(g) ∉ centralizer ⟹ g doesn't commute with σ_i
+            # ⟹ commutator is nontrivial ⟹ genuine kernel element
+            nontrivial_words, num_trivial_k, num_nontrivial_k = \
+                self._filter_kernel_candidates(
+                    init_words[kernel_mask], init_lengths[kernel_mask])
+            if num_trivial_k > 0:
+                print(f"  Filtered {num_trivial_k} trivial commutators (π(g) in centralizer)")
+            if num_nontrivial_k > 0:
+                print(f"  🎉 FOUND {num_nontrivial_k} KERNEL ELEMENTS in initial factors!")
+                self.kernel_braids.append(nontrivial_words.cpu())
 
         # Filter out identity matrices before bucketing — they are dead ends
         # for expansion: if C_g = I, then C_{g·b} = T_b · I · M_b = T_b · M_b
@@ -875,6 +969,7 @@ class CommutatorBraidSearch:
         t_matmul_total = 0.0
         t_sample_total = 0.0
         num_trivial_total = 0
+        num_trivial_comm_total = 0
         projlen_counts: dict[int, int] = {}
 
         for chunk_idx in range(num_chunks):
@@ -898,15 +993,19 @@ class CommutatorBraidSearch:
 
             # Check for kernel elements BEFORE pruning identity matrices,
             # since genuine kernel elements also have C_g = scalar·I
-            # 1. Scalar multiples of identity (even Delta powers)
-            kernel_mask = is_scalar_identity_batch(chunk_matrices)
-            # 2. Also check for anti-diagonal pattern (odd Delta powers)
-            antidiag_mask = is_scalar_antidiag_batch(chunk_matrices)
-            kernel_mask = kernel_mask | antidiag_mask
+            kernel_mask = is_scalar_identity_batch(chunk_matrices) | \
+                          is_scalar_antidiag_batch(chunk_matrices)
             num_kernel = kernel_mask.sum().item()
             if num_kernel > 0:
-                print(f"\n  🎉 FOUND {num_kernel} KERNEL ELEMENT CANDIDATES! 🎉")
-                self.kernel_braids.append(chunk_words[kernel_mask].cpu())
+                # Filter by permutation: only keep candidates where π(g)
+                # is NOT in the centralizer subgroup (those are genuine)
+                nontrivial_words, num_trivial_k, num_nontrivial_k = \
+                    self._filter_kernel_candidates(
+                        chunk_words[kernel_mask], chunk_lengths[kernel_mask])
+                num_trivial_comm_total += num_trivial_k
+                if num_nontrivial_k > 0:
+                    print(f"\n  🎉 FOUND {num_nontrivial_k} KERNEL ELEMENTS! 🎉")
+                    self.kernel_braids.append(nontrivial_words.cpu())
 
             # Prune identity matrices from expansion pool (dead ends):
             # If C_g = I, then C_{g·b} = T_b · M_b (reproduces level-1).
@@ -941,7 +1040,9 @@ class CommutatorBraidSearch:
             torch.cuda.empty_cache()
 
         if num_trivial_total > 0:
-            print(f"  Filtered {num_trivial_total} trivial commutators (g centralizes σ_{self.config.generator_index})")
+            print(f"  Pruned {num_trivial_total} identity matrices from expansion (dead ends)")
+        if num_trivial_comm_total > 0:
+            print(f"  Filtered {num_trivial_comm_total} trivial commutators (π(g) in centralizer)")
         print(f"  Projlen distribution:")
         for pl in sorted(projlen_counts.keys())[:10]:
             print(f"    projlen={pl}: {projlen_counts[pl]} braids")
