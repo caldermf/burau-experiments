@@ -40,6 +40,25 @@ from braid_search import (
 )
 
 
+def is_trivial_identity_batch(matrices: torch.Tensor, center: int) -> torch.Tensor:
+    """
+    Check if matrices are exactly the 3x3 identity at degree 0.
+
+    These correspond to trivial commutators (g commutes with σ_i).
+    They are dead ends for the search: if C_g = I, then
+    C_{g·b} = T_b · I · M_b = T_b · M_b (same as level-1 commutator for b).
+    """
+    N, _, _, D = matrices.shape
+    device = matrices.device
+
+    identity = torch.zeros(3, 3, D, dtype=matrices.dtype, device=device)
+    identity[0, 0, center] = 1
+    identity[1, 1, center] = 1
+    identity[2, 2, center] = 1
+
+    return (matrices == identity.unsqueeze(0)).reshape(N, -1).all(dim=1)
+
+
 def is_scalar_antidiag_batch(matrices: torch.Tensor) -> torch.Tensor:
     """
     Check if matrices are scalar multiples of the anti-diagonal matrix
@@ -678,10 +697,21 @@ class CommutatorBraidSearch:
 
         init_lengths = torch.ones(num_first, dtype=STORAGE_DTYPE_LENGTH, device=self.device)
 
+        # Filter out trivial identity matrices (g commutes with σ_i).
+        # These are dead ends: C_{g·b} = T_b · I · M_b reproduces level-1.
+        trivial_mask = is_trivial_identity_batch(C_init, self.center)
+        num_trivial = trivial_mask.sum().item()
+        if num_trivial > 0:
+            print(f"  Filtered {num_trivial} trivial commutators (g centralizes σ_{self.config.generator_index})")
+            keep = ~trivial_mask
+            C_init = C_init[keep]
+            init_words = init_words[keep]
+            init_lengths = init_lengths[keep]
+
         # Compute initial projlens and bucket
         init_projlens = compute_projlen_batch(C_init)
 
-        # Check for immediate kernel elements
+        # Check for immediate kernel elements (nontrivial only)
         kernel_mask = is_scalar_identity_batch(C_init) | is_scalar_antidiag_batch(C_init)
         num_kernel = kernel_mask.sum().item()
         if num_kernel > 0:
@@ -840,6 +870,7 @@ class CommutatorBraidSearch:
 
         t_matmul_total = 0.0
         t_sample_total = 0.0
+        num_trivial_total = 0
         projlen_counts: dict[int, int] = {}
 
         for chunk_idx in range(num_chunks):
@@ -861,9 +892,19 @@ class CommutatorBraidSearch:
             chunk_matrices = self.recenter_matrices(chunk_matrices)
             t_matmul_total += time.time() - t0
 
+            # Filter out trivial identity matrices (dead ends for search)
+            trivial_mask = is_trivial_identity_batch(chunk_matrices, self.center)
+            num_trivial = trivial_mask.sum().item()
+            if num_trivial > 0:
+                num_trivial_total += num_trivial
+                keep = ~trivial_mask
+                chunk_matrices = chunk_matrices[keep]
+                chunk_words = chunk_words[keep]
+                chunk_lengths = chunk_lengths[keep]
+
             chunk_projlens = compute_projlen_batch(chunk_matrices)
 
-            # Check for kernel elements:
+            # Check for kernel elements (nontrivial only, trivials already removed):
             # 1. Scalar multiples of identity (even Delta powers)
             kernel_mask = is_scalar_identity_batch(chunk_matrices)
             # 2. Also check for anti-diagonal pattern (odd Delta powers)
@@ -894,6 +935,8 @@ class CommutatorBraidSearch:
         if self.device.type == 'cuda':
             torch.cuda.empty_cache()
 
+        if num_trivial_total > 0:
+            print(f"  Filtered {num_trivial_total} trivial commutators (g centralizes σ_{self.config.generator_index})")
         print(f"  Projlen distribution:")
         for pl in sorted(projlen_counts.keys())[:10]:
             print(f"    projlen={pl}: {projlen_counts[pl]} braids")
