@@ -26,7 +26,7 @@ import math
 import itertools
 from typing import Optional
 
-from commutator_braid_search import (
+from braid_search import (
     STORAGE_DTYPE_MATRIX, STORAGE_DTYPE_WORD, STORAGE_DTYPE_LENGTH,
     COMPUTE_DTYPE_INT,
     compute_projlen_batch, is_scalar_identity_batch,
