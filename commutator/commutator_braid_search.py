@@ -17,6 +17,10 @@ So we track ONE matrix per braid (the commutator matrix C_g),
 with two matmuls per expansion step (left by T_b, right by M_b).
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 import torch
 import torch.nn.functional as F
 from dataclasses import dataclass, field
