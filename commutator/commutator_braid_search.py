@@ -216,7 +216,7 @@ def poly_mul_mod(a: torch.Tensor, b: torch.Tensor, p: int) -> torch.Tensor:
     a_f = a.float().unsqueeze(0).unsqueeze(0)  # (1, 1, La)
     b_f = b.float().flip(-1).unsqueeze(0).unsqueeze(0)  # (1, 1, Lb) flipped for conv
     pad = b.shape[0] - 1
-    result = F.conv1d(a_f, b_f, padding=pad).squeeze()
+    result = F.conv1d(a_f, b_f, padding=pad).squeeze(0).squeeze(0)
     return torch.round(result).long() % p
 
 
