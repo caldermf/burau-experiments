@@ -697,12 +697,23 @@ class CommutatorBraidSearch:
 
         init_lengths = torch.ones(num_first, dtype=STORAGE_DTYPE_LENGTH, device=self.device)
 
-        # Filter out trivial identity matrices (g commutes with σ_i).
-        # These are dead ends: C_{g·b} = T_b · I · M_b reproduces level-1.
+        # Check for kernel elements BEFORE filtering (genuine kernel elements
+        # also have C_g = scalar·I, so we must report them first)
+        kernel_mask = is_scalar_identity_batch(C_init) | is_scalar_antidiag_batch(C_init)
+        num_kernel = kernel_mask.sum().item()
+        if num_kernel > 0:
+            print(f"  🎉 FOUND {num_kernel} KERNEL ELEMENT CANDIDATES in initial factors!")
+            self.kernel_braids.append(init_words[kernel_mask].cpu())
+
+        # Filter out identity matrices before bucketing — they are dead ends
+        # for expansion: if C_g = I, then C_{g·b} = T_b · I · M_b = T_b · M_b
+        # (reproduces the level-1 commutator for b alone).
+        # This applies to both trivial commutators (g centralizes σ_i) and
+        # genuine kernel elements (Burau(commutator) = I but braid is nontrivial).
         trivial_mask = is_trivial_identity_batch(C_init, self.center)
         num_trivial = trivial_mask.sum().item()
         if num_trivial > 0:
-            print(f"  Filtered {num_trivial} trivial commutators (g centralizes σ_{self.config.generator_index})")
+            print(f"  Pruned {num_trivial} identity matrices from expansion pool (dead ends)")
             keep = ~trivial_mask
             C_init = C_init[keep]
             init_words = init_words[keep]
@@ -710,13 +721,6 @@ class CommutatorBraidSearch:
 
         # Compute initial projlens and bucket
         init_projlens = compute_projlen_batch(C_init)
-
-        # Check for immediate kernel elements (nontrivial only)
-        kernel_mask = is_scalar_identity_batch(C_init) | is_scalar_antidiag_batch(C_init)
-        num_kernel = kernel_mask.sum().item()
-        if num_kernel > 0:
-            print(f"  🎉 FOUND {num_kernel} KERNEL ELEMENTS in initial factors!")
-            self.kernel_braids.append(init_words[kernel_mask].cpu())
 
         # Store in buckets
         gpu_buckets = GPUBuckets(self.config.bucket_size, self.device)
@@ -892,7 +896,20 @@ class CommutatorBraidSearch:
             chunk_matrices = self.recenter_matrices(chunk_matrices)
             t_matmul_total += time.time() - t0
 
-            # Filter out trivial identity matrices (dead ends for search)
+            # Check for kernel elements BEFORE pruning identity matrices,
+            # since genuine kernel elements also have C_g = scalar·I
+            # 1. Scalar multiples of identity (even Delta powers)
+            kernel_mask = is_scalar_identity_batch(chunk_matrices)
+            # 2. Also check for anti-diagonal pattern (odd Delta powers)
+            antidiag_mask = is_scalar_antidiag_batch(chunk_matrices)
+            kernel_mask = kernel_mask | antidiag_mask
+            num_kernel = kernel_mask.sum().item()
+            if num_kernel > 0:
+                print(f"\n  🎉 FOUND {num_kernel} KERNEL ELEMENT CANDIDATES! 🎉")
+                self.kernel_braids.append(chunk_words[kernel_mask].cpu())
+
+            # Prune identity matrices from expansion pool (dead ends):
+            # If C_g = I, then C_{g·b} = T_b · M_b (reproduces level-1).
             trivial_mask = is_trivial_identity_batch(chunk_matrices, self.center)
             num_trivial = trivial_mask.sum().item()
             if num_trivial > 0:
@@ -903,18 +920,6 @@ class CommutatorBraidSearch:
                 chunk_lengths = chunk_lengths[keep]
 
             chunk_projlens = compute_projlen_batch(chunk_matrices)
-
-            # Check for kernel elements (nontrivial only, trivials already removed):
-            # 1. Scalar multiples of identity (even Delta powers)
-            kernel_mask = is_scalar_identity_batch(chunk_matrices)
-            # 2. Also check for anti-diagonal pattern (odd Delta powers)
-            antidiag_mask = is_scalar_antidiag_batch(chunk_matrices)
-            kernel_mask = kernel_mask | antidiag_mask
-            num_kernel = kernel_mask.sum().item()
-            if num_kernel > 0:
-                print(f"\n  🎉 FOUND {num_kernel} KERNEL ELEMENTS! 🎉")
-                self.kernel_braids.append(chunk_words[kernel_mask].cpu())
-
             unique_pls, counts = torch.unique(chunk_projlens, return_counts=True)
             for pl, c in zip(unique_pls.tolist(), counts.tolist()):
                 projlen_counts[pl] = projlen_counts.get(pl, 0) + c
