@@ -59,8 +59,8 @@ def verify_commutator_kernel(word_list, gen_idx, n=4, r=1, p=2):
         sigma = GNF(n=n, power=0, factors=sigma_factors[gen_idx])
         
         # Compute [σ_i, g^{-1}] = σ_i * g^{-1} * σ_i^{-1} * g
-        g_inv = g.inverse()
-        sigma_inv = sigma.inverse()
+        g_inv = g.inv()
+        sigma_inv = sigma.inv()
         commutator = sigma * g_inv * sigma_inv * g
         
         # Evaluate Burau representation
@@ -252,7 +252,7 @@ def find_commutator_kernel(
                     g = GNF(n=4, power=0, factors=tuple(word_list))
                     sigma_factors = {1: (6,), 2: (2,), 3: (1,)}
                     sigma = GNF(n=4, power=0, factors=sigma_factors[gen_idx])
-                    comm = sigma * g.inverse() * sigma.inverse() * g
+                    comm = sigma * g.inv() * sigma.inv() * g
                     print(f"    [σ_{gen_idx}, g^{{-1}}] Artin word: {comm.magma_artin_word()}")
             elif i < 20:
                 print(f"  Candidate {i}: {word_list[:8]}{'...' if len(word_list) > 8 else ''} - {msg}")
