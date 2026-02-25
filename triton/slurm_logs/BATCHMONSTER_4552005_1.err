@@ -1,0 +1,21 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) StdEnv
+Traceback (most recent call last):
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/triton/braid_batched.py", line 341, in <module>
+    run_batched_search()
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/triton/braid_batched.py", line 215, in run_batched_search
+    kernel_braid_step[grid](
+  File "/home/com36/.conda/envs/burau_gpu/lib/python3.11/site-packages/triton/runtime/jit.py", line 345, in <lambda>
+    return lambda *args, **kwargs: self.run(grid=grid, warmup=False, *args, **kwargs)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/com36/.conda/envs/burau_gpu/lib/python3.11/site-packages/triton/runtime/jit.py", line 691, in run
+    kernel.run(grid_0, grid_1, grid_2, stream, kernel.function, kernel.packed_metadata, launch_metadata,
+    ^^^^^^^^^^
+  File "/home/com36/.conda/envs/burau_gpu/lib/python3.11/site-packages/triton/compiler/compiler.py", line 381, in __getattribute__
+    self._init_handles()
+  File "/home/com36/.conda/envs/burau_gpu/lib/python3.11/site-packages/triton/compiler/compiler.py", line 376, in _init_handles
+    self.module, self.function, self.n_regs, self.n_spills = driver.active.utils.load_binary(
+                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Triton Error [CUDA]: an illegal memory access was encountered

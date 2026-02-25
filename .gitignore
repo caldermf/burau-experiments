@@ -6,3 +6,11 @@ __pycache__/
 **/checkpoints/
 beta/precomputed_tables/
 beta/src/precomputed_tables/*.pt
+
+# local env
+/braidmod/.venv/
+# training outputs
+/braidmod/artifacts/
+# large local datasets
+/braidmod/data/burau_gnf_L20_p5_D96_N100000.json
+/braidmod/data/*.json.tmp
