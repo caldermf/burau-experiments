@@ -125,8 +125,15 @@ def clone_tensor(x, backend):
 
 
 def select_rows(x, indices, backend):
+    if isinstance(indices, slice):
+        return x[indices]
     if len(indices) == 0:
         return x[:0]
+    if len(indices) > 1:
+        start = indices[0]
+        stop = indices[-1] + 1
+        if stop - start == len(indices) and np.array_equal(indices, np.arange(start, stop)):
+            return x[start:stop]
     if backend.is_torch:
         idx = backend.lib.tensor(indices, dtype=backend.lib.int64, device=backend.device)
         return x[idx]
@@ -242,9 +249,8 @@ def apply_simple_batch(states, simple_word, letter_rules, p, state_width, backen
             contribution = pad_shift_component(current, source_coord, shift, backend)
             updated = updated + coeff * contribution
 
-        next_current = clone_tensor(current, backend)
-        next_current[:, rule["index"], :] = updated
-        current = backend.mod(next_current, p)
+        current[:, rule["index"], :] = updated
+        current = backend.mod(current, p)
 
     normalized, spread_np, alive_np = normalize_states(current, state_width, backend)
     return normalized, spread_np, alive_np
@@ -418,7 +424,7 @@ def main():
                     total = group.node_ids.size
                     for start_idx in range(0, total, args.transition_batch_size):
                         end_idx = min(start_idx + args.transition_batch_size, total)
-                        chunk_states = select_rows(group.states, np.arange(start_idx, end_idx), backend)
+                        chunk_states = select_rows(group.states, slice(start_idx, end_idx), backend)
                         chunk_parent_ids = group.node_ids[start_idx:end_idx]
 
                         normalized, spread_np, alive_np = apply_simple_batch(
