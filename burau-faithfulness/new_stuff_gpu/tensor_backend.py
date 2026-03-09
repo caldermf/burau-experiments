@@ -69,7 +69,7 @@ class TensorBackend:
 
     def gather_last_axis(self, arr, indices):
         if self.is_torch:
-            expanded = indices.unsqueeze(1).expand(-1, arr.shape[1], -1)
+            expanded = indices.to(self.lib.int64).unsqueeze(1).expand(-1, arr.shape[1], -1)
             return self.lib.gather(arr, 2, expanded)
         expanded = indices[:, None, :]
         return np.take_along_axis(arr, expanded, axis=2)
