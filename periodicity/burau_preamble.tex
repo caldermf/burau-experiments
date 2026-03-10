@@ -1,0 +1,252 @@
+\usepackage{amsmath,amssymb,amsthm,amscd,amsfonts}
+%\usepackage{epsfig,pinlabel,paralist}
+\usepackage[hmargin=1.25in, vmargin=1in]{geometry}
+\usepackage[font=small,format=plain,labelfont=bf,up,textfont=it,up]{caption}
+\usepackage{subcaption}
+%\usepackage{stmaryrd}
+\usepackage{verbatim}
+%\usepackage{type1cm}
+\usepackage{url}
+\usepackage{calc}
+%\usepackage[all,cmtip]{xy}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{pstricks}
+%\usepackage{relsize}
+\usepackage{float}
+\usepackage{overpic}
+\usepackage[shortlabels]{enumitem}
+%\usepackage[affil-it]{authblk}
+%\usepackage{showlabels}
+
+% Commutative diagrams
+\usepackage{tikz, tikz-cd}
+
+% LaTeX symbols in a verbatim-like environment
+\usepackage{listings}
+
+%C-style comments; e.g. \/* This is a test */
+\long\def\/*#1*/{}
+
+\setlength{\parindent}{0in}
+\setlength{\parskip}{1.8ex}
+
+\newcommand{\urlwofont}[1]{\urlstyle{same}\url{#1}}
+
+\newcommand\CaptionSpace{\hspace{0.2in}}
+
+\newcommand{\nc}{\newcommand}
+\nc{\nt}{\newtheorem}
+\nc{\dmo}{\DeclareMathOperator}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{maintheorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem*{unnumberedlemma}{Lemma}
+\newtheorem{sublemma}[theorem]{Sublemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{maincorollary}[maintheorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{claim}{Claim}
+\newtheorem*{goal}{Goal}
+\newtheorem*{construction}{Construction}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{calculation}{Calculation}
+\newtheorem{step}{Step}
+\newtheorem{case}{Case}
+\newtheorem{subcase}{Subcase}
+\newtheorem{rmk}{Remark}
+\renewcommand{\themaintheorem}{\Alph{maintheorem}}
+\newcommand\BeginClaims{\setcounter{claim}{0}}
+\newcommand\BeginCalculations{\setcounter{calculation}{0}}
+\newcommand\BeginCases{\setcounter{case}{0}}
+\newcommand\BeginSubcases{\setcounter{subcase}{0}}
+\newcommand\BeginSteps{\setcounter{step}{0}}
+
+\theoremstyle{definition}
+\newtheorem*{defn}{Definition}
+\newtheorem*{notation}{Notation}
+\newtheorem*{outline}{Outline and conventions}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{remarks}{Remarks}
+\newtheorem{example}[theorem]{Example}
+\newtheorem*{warning}{Warning}
+\newtheorem*{assumption}{Assumption}
+
+% Sets of Functions
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\Diff}{Diff}
+\DeclareMathOperator{\Homeo}{Homeo}
+\DeclareMathOperator{\Ker}{ker}
+
+% Favorite Groups
+\DeclareMathOperator{\Mod}{Mod}
+\newcommand\Torelli{\mathcal{I}}
+\dmo{\SMod}{SMod}
+\dmo{\PMod}{PMod}
+\dmo{\SHomeo}{SHomeo}
+\dmo{\SI}{\mathcal{SI}}
+\dmo{\SSp}{SSp}
+\dmo{\PSp}{PSp}
+\DeclareMathOperator{\IA}{IA}
+\DeclareMathOperator{\Sp}{Sp}
+%\DeclareMathOperator{\GL}{GL}
+%\DeclareMathOperator{\SL}{SL}
+\DeclareMathOperator{\PSL}{PSL}
+\DeclareMathOperator{\U}{U}
+\DeclareMathOperator{\SU}{SU}
+
+% Important Spaces
+\newcommand\Sphere[1]{\ensuremath{\mathbf{S}^{#1}}}
+\newcommand\Ball[1]{\ensuremath{\mathbf{B}^{#1}}}
+
+% Number Systems
+\newcommand\R{\ensuremath{\mathbb{R}}}
+\newcommand\C{\ensuremath{\mathbb{C}}}
+\newcommand\Z{\ensuremath{\mathbb{Z}}}
+\newcommand\Q{\ensuremath{\mathbb{Q}}}
+\newcommand\N{\ensuremath{\mathbb{N}}}
+
+% (Co-)Homology
+\renewcommand{\H}{\textrm{H}}
+
+
+% Figures
+\newcommand\Figure[3]{
+\begin{figure}[t]
+\centering
+\centerline{\psfig{file=#2,scale=60}}
+\caption{#3}
+\label{#1}
+\end{figure}}
+
+% Document specific macros go here
+
+\nc{\p}[1]{\noindent {\bf #1.}}
+\nc{\margin}[1]{\marginpar{\scriptsize #1}}
+
+% Andy's macros
+
+\nc{\PartialIBases}{\mathfrak{IB}}
+\nc{\PartialIBasesEx}{\widehat{\mathfrak{IB}}}
+\nc{\PartialBases}{\mathfrak{B}}
+\nc{\Building}{\mathfrak{T}}
+\nc{\height}{\ensuremath{\text{ht}}}
+\nc{\Poset}{\mathfrak{P}}
+\nc{\Field}{\mathbb{F}}
+\nc{\Link}{\ensuremath{\text{Link}}}
+\nc{\Star}{\ensuremath{\text{Star}}}
+%\nc{\Aut}{\ensuremath{\text{Aut}}}
+
+\nc{\SymTorelli}{\ensuremath{\mathcal{SI}}}
+\nc{\BTorelli}{\ensuremath{\mathcal{BI}}}
+\dmo{\Braid}{\ensuremath{B}}
+\dmo{\PureBraid}{\ensuremath{PB}}
+\nc{\Hyper}{\ensuremath{\iota}}
+
+\nc{\BigFreeProd}{\mathop{\mbox{\Huge{$\ast$}}}}
+
+\nc{\Quotient}{\ensuremath{\mathcal{Q}}}
+\nc{\QuotientEx}{\ensuremath{\widehat{\mathcal{Q}}}}
+
+\nc{\Presentation}[2]{\ensuremath{\text{$\langle #1$ $|$ $#2 \rangle$}}}
+\nc{\SpGen}{\ensuremath{S_{\text{Sp}}}}
+\nc{\SpRel}{\ensuremath{R_{\text{Sp}}}}
+\nc{\QGen}{\ensuremath{S_{\mathcal{Q}}}}
+\nc{\QRel}{\ensuremath{R_{\mathcal{Q}}}}
+\nc{\PBs}{\ensuremath{T}}
+\nc{\Qs}{\ensuremath{\overline{s}}}
+
+% Dan and Tara's Macros
+\dmo{\PB}{PB}
+\nc{\BIredg}{\mathcal{BI}_{2g+1}^{\text{red}}}
+\nc{\BI}{\mathcal{BI}}
+\dmo{\D}{D}
+\dmo{\Stab}{Stab}
+\dmo{\Surger}{Surger}
+\nc{\I}{\mathcal{I}}
+\renewcommand{\C}{\mathcal{C}}
+
+\nc{\spanmap}{span}
+
+
+\nc{\genbygen}[2]{\premonoid{#1}{#2}}
+\nc{\premonoid}[2]{#1 \circledcirc #2}
+\nc{\monoid}[2]{#1 \odot #2}
+
+%custom commands
+\nc{\G}{\Gamma}
+\nc{\raag}{A_\Gamma}
+\nc{\racg}{W_\G}
+\nc{\raagdelt}{A_\Delta}
+\dmo{\Aut}{Aut}
+\dmo{\Out}{Out}
+\nc{\Autraag}{\Aut(\raag)}
+\nc{\Outraag}{\Out(\raag)}
+\nc{\diag}{D_\G}
+\nc{\Autraagdelt}{\Aut(A_\Delta)}
+\nc{\glk}{\GL(k,\mathbb{Z})}
+\nc{\GLn}{\GL(n,\mathbb{Z})}
+\nc{\GLnt}{\GL(n,\mathbb{Z} / 2)}
+\nc{\glkdelt}{\GL(k |\Delta| ,\mathbb{Z})}
+\nc{\gldelt}{\GL(|\Delta| ,\mathbb{Z})}
+\nc{\zkdelt}{\mathbb{Z}^{k|\Delta|}}
+\nc{\join}{\mathcal{J}}
+\nc{\pc}{\mathrm{PC}}
+\dmo{\lk}{lk}
+\dmo{\st}{st}
+\dmo{\Inn}{Inn}
+
+\nc{\pia}{\Pi \mathrm{A}}
+\nc{\piaG}{\pia_\G}
+\nc{\ppia}{\mathrm{P \Pi A}}
+\nc{\ppiaG}{\mathrm{P \Pi A}_\G}
+\nc{\epia}{\mathrm{E \Pi A}}
+\nc{\epiaG}{\mathrm{E \Pi A}_\G}
+\nc{\ptor}{\mathcal{PI}}
+\nc{\ptorG}{\mathcal{PI}_\G}
+\nc{\CGi}{C_\G(\iota)}
+\nc{\pbc}{\mathfrak{B}^\pi}
+\dmo{\Cay}{Cay}
+\dmo{\rev}{rev}
+\nc{\Autfn}{\Aut(F_n)}
+\dmo{\supp}{supp}
+\dmo{\rk}{\mathrm{rk}}
+\dmo{\PCT}{\mathrm{PCT}(\raag)}
+\dmo{\PCTo}{\overline{\mathrm{PCT}}(\raag)}
+
+\dmo{\HOutn}{\mathrm{HOut}(F_n)}
+\dmo{\STn}{\mathcal{ST}(n)}
+\dmo{\HMn}{\mathrm{HM}_n(\Z)}
+
+\newcommand{\T}{\mathbb{T}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Sa}{\mathbb{S}}
+\newcommand{\calI}{\mathcal{I}}
+\newcommand{\calQ}{\mathcal{Q}}
+\newcommand{\MG}{\mathcal{G}}
+
+\newcommand{\Isom}{\text{Isom}}
+\newcommand{\calT}{\mathcal{T}}
+\newcommand{\GL}{\text{GL}}
+\newcommand{\SL}{\text{SL}}
+\newcommand{\MT}{\mathcal{A}}
+\newcommand{\sF}{\mathcal{F}}
+\newcommand{\SO}{\text{SO}}
+\newcommand{\cl}{\text{cl}}
+
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\abs}[1]{\left\vert#1\right\vert}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\overl}[1]{\overline{#1}}
+
+\renewcommand{\mod}[1]{\ (\text{mod } #1)}
+\DeclareMathOperator{\Norm}{Norm}
+\DeclareMathOperator{\minnorm}{min}
+\DeclareMathOperator{\mult}{mult}

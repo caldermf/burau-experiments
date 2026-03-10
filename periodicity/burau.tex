@@ -1,0 +1,30 @@
+\documentclass[11 pt,final]{article}
+%\documentclass[11pt]{amsart}
+\input{burau_preamble}
+
+\title{Observed periodicity related to the four-strand Burau representation}
+\author{Neil J. Fullarton and Richard Shadrach}
+
+\begin{document}
+ \maketitle
+ \begin{abstract}
+  A long-standing open problem is to determine for which values of $n$ the Burau representation $\Psi_n$ of the braid group $B_n$ is faithful. Following work of Moody, Long--Paton, and Bigelow, the remaining open case is $n=4$. One criterion states that $\Psi_n$ is unfaithful if and only if there exists a pair of arcs in the $n$-punctured disk $D_n$ such that a certain associated polynomial is zero. In this paper, we use a computer search to show that there is no such arc-pair in $D_4$ with 2000 or fewer intersections, thus certifying the faithfulness of $\Psi_4$ up to this point. We also investigate the structure of the set of arc-pair polynomials, observing a striking periodicity that holds between those that are, in some sense, `closest' to zero. This is the first instance known to the authors of a deeper analysis of this polynomial set.
+ \end{abstract}
+
+ \section{Introduction}
+  \input{Introduction}
+ \section{The Burau representation}
+  \input{BurauRepresentation}
+ \section{Chasing arcs on train tracks}
+  \input{ChasingArcs}
+ \section{Implementation}
+  \input{Implementation}
+ \section{Analysis}
+  \input{Analysis}
+  
+ \newpage
+
+\bibliographystyle{plain}
+\bibliography{burau}
+
+\end{document}
