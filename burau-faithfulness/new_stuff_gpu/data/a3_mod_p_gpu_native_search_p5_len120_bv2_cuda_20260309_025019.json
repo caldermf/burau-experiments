@@ -1,0 +1,21 @@
+{
+  "parameters": {
+    "p": 5,
+    "max_g_length": 120,
+    "backend": "torch",
+    "device": "cuda",
+    "cap_1": 8000,
+    "cap_2": 8000,
+    "total_cap_1": 1000000,
+    "total_cap_2": 1000000,
+    "first_steps": 24,
+    "base_vertex": 2,
+    "seed": 0,
+    "expansion_chunk_size": 262144,
+    "use_best": 0
+  },
+  "num_garside_simples": 14,
+  "num_hits": 0,
+  "runtime_seconds": 22.047499656677246,
+  "hits": []
+}

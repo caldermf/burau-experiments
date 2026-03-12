@@ -1,0 +1,55 @@
+[2026-03-09T02:44:36-04:00] a3_mod_p_gpu_native_search matched benchmark
+cwd: /nfs/roberts/project/pi_com36/com36/burau-experiments/burau-faithfulness/new_stuff_gpu
+hostname: a1128u05n01.mghpcc.ycrc.yale.edu
+python: /home/com36/.conda/envs/burau_gpu/bin/python
+command: python a3_mod_p_gpu_native_search.py --backend torch --device cuda --p 5 --max-g-length 60 --cap-1 500 --cap-2 500 --total-cap-1 50000 --total-cap-2 50000 --first-steps 12 --output data/a3_mod_p_gpu_native_search_p5_len60_cuda_20260309_024407.json
+
+[nvidia-smi]
+Mon Mar  9 02:44:36 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.195.03             Driver Version: 570.195.03     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA RTX 5000 Ada Gene...    On  |   00000000:AB:00.0 Off |                  Off |
+| 30%   39C    P0             59W /  250W |       2MiB /  32760MiB |     21%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+
+[torch cuda info]
+sys.executable: /home/com36/.conda/envs/burau_gpu/bin/python
+torch.__version__: 2.5.1
+torch.version.cuda: 12.1
+torch.cuda.is_available(): True
+torch.cuda.device_count(): 1
+device[0].name: NVIDIA RTX 5000 Ada Generation
+device[0].total_memory: 33804779520
+
+[run output]
+Backend: torch on cuda
+Built 14 Garside simples for A3.
+Starting GPU-native search over Z/5Z with base vertex 1.
+Step 2: analyzing 4 braids across spreads 1..1
+Traceback (most recent call last):
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/burau-faithfulness/new_stuff_gpu/a3_mod_p_gpu_native_search.py", line 537, in <module>
+    main()
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/burau-faithfulness/new_stuff_gpu/a3_mod_p_gpu_native_search.py", line 441, in main
+    expanded_states = apply_simple_actions(parent_states, chunk_suffix_idx, simple_actions, args.p, backend)
+  File "/nfs/roberts/project/pi_com36/com36/burau-experiments/burau-faithfulness/new_stuff_gpu/a3_mod_p_gpu_native_search.py", line 264, in apply_simple_actions
+    out[:, :, :width] += lib.einsum("boi,biw->bow", coeff0, parent)
+  File "/home/com36/.conda/envs/burau_gpu/lib/python3.10/site-packages/torch/functional.py", line 402, in einsum
+    return _VF.einsum(equation, operands)  # type: ignore[attr-defined]
+RuntimeError: "baddbmm_cuda" not implemented for 'Int'
+real 1.78
+user 1.16
+sys 0.39
