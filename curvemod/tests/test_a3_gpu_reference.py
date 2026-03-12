@@ -2,12 +2,25 @@ from __future__ import annotations
 
 import unittest
 
-import torch
+try:
+    import torch
 
-import setup_a3 as ct
-from a3_gpu_burau import apply_operator, compile_simple_operators, normalize_states
-from a3_gpu_search import SearchConfig, run_search
-from a3_gpu_tables import build_a3_table_data
+    import setup_a3 as ct
+    from a3_gpu_burau import apply_operator, compile_simple_operators, normalize_states
+    from a3_gpu_search import SearchConfig, run_search
+    from a3_gpu_tables import build_a3_table_data
+
+    TORCH_AVAILABLE = True
+except ModuleNotFoundError:
+    torch = None
+    ct = None
+    apply_operator = None
+    compile_simple_operators = None
+    normalize_states = None
+    SearchConfig = None
+    run_search = None
+    build_a3_table_data = None
+    TORCH_AVAILABLE = False
 
 
 def make_fp(pol, modulus: int):
@@ -83,6 +96,7 @@ def reference_spread_counts(modulus: int, max_depth: int):
     return depth_counts
 
 
+@unittest.skipUnless(TORCH_AVAILABLE, "torch is not installed")
 class A3GpuReferenceTests(unittest.TestCase):
     def test_simple_operators_match_cpu_on_e1(self):
         modulus = 5
