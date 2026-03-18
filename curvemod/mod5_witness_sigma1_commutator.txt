@@ -1,0 +1,111 @@
+Verified on 2026-03-10 using the oriented Burau representation defined in setup_a3.py.
+
+Conventions:
+- s1 = sigma_1
+- s2 = sigma_2
+- s3 = sigma_3
+- [w, s1] = w s1 w^-1 s1^-1
+
+Result:
+- The witness word w is not itself a scalar multiple of the identity mod 5.
+- The commutator [w, s1] maps to the identity matrix mod 5.
+- The witness does satisfy rho_5(w)(e1) = q^12 e1, so its e1-image has spread 0.
+
+Witness w, grouped by dual-simple blocks:
+
+(s2 s3^-1 s2^-1)
+(s2^-1 s1 s2 s3^-1 s2^-1 s1^-1)
+(s2^-1 s1^-1)
+(s2^-1 s1^-1)
+(s3^-1 s2^-1)
+(s2^-1 s1 s2 s3^-1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s2 s3^-1 s2^-1 s1^-1)
+(s2^-1 s1 s2 s3^-1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s1^-1)
+(s2^-1)
+(s1 s2^-1 s1^-1)
+(s2 s3^-1 s2^-1)
+(s2 s3^-1 s2^-1)
+(s2^-1 s1 s2 s3^-1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s2 s3^-1 s2^-1)
+(s2 s3^-1 s2^-1)
+(s1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s1^-1 s3^-1)
+(s2 s3^-1 s2^-1)
+(s2^-1)
+(s1 s2^-1 s1^-1)
+(s1^-1)
+(s2 s3^-1 s2^-1)
+(s2 s3^-1 s2^-1)
+(s1 s2^-1 s1^-1)
+(s1^-1 s3^-1)
+(s2^-1 s1 s2 s3^-1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s2 s3^-1 s2^-1)
+(s2^-1)
+(s3^-1)
+(s1 s2 s3^-1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s2 s3^-1 s2^-1)
+(s2^-1 s1 s2 s3^-1 s2^-1 s1^-1)
+(s1^-1 s3^-1)
+(s2 s3^-1 s2^-1)
+(s1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s1^-1)
+(s2 s3^-1 s2^-1)
+(s1 s2 s3^-1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s1^-1 s3^-1)
+(s2 s3^-1 s2^-1)
+(s2 s3^-1 s2^-1)
+(s2 s3^-1 s2^-1)
+(s1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s2 s3^-1 s2^-1)
+(s2^-1 s1 s2 s3^-1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s2 s3^-1 s2^-1)
+(s1 s2 s3^-1 s2^-1 s1^-1)
+(s1^-1)
+(s2 s3^-1 s2^-1)
+(s2^-1 s1 s2 s3^-1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+(s3^-1 s2^-1)
+(s2^-1 s1 s2 s3^-1 s2^-1 s1^-1)
+(s3^-1 s1 s2^-1 s1^-1)
+(s2 s3^-1 s2^-1 s1^-1)
+(s2 s3^-1 s2^-1 s1^-1)
+(s2^-1 s1 s2 s3^-1 s2^-1 s1^-1)
+(s1 s2^-1 s1^-1)
+
+Flat Artin word for w:
+
+s2 s3^-1 s2^-1 s2^-1 s1 s2 s3^-1 s2^-1 s1^-1 s2^-1 s1^-1 s2^-1 s1^-1 s3^-1 s2^-1 s2^-1 s1 s2 s3^-1
+s2^-1 s1^-1 s1 s2^-1 s1^-1 s2 s3^-1 s2^-1 s1^-1 s2^-1 s1 s2 s3^-1 s2^-1 s1^-1 s1 s2^-1 s1^-1 s1^-1
+s2^-1 s1 s2^-1 s1^-1 s2 s3^-1 s2^-1 s2 s3^-1 s2^-1 s2^-1 s1 s2 s3^-1 s2^-1 s1^-1 s1 s2^-1 s1^-1 s2
+s3^-1 s2^-1 s2 s3^-1 s2^-1 s1 s2^-1 s1^-1 s1 s2^-1 s1^-1 s1 s2^-1 s1^-1 s1^-1 s3^-1 s2 s3^-1 s2^-1
+s2^-1 s1 s2^-1 s1^-1 s1^-1 s2 s3^-1 s2^-1 s2 s3^-1 s2^-1 s1 s2^-1 s1^-1 s1^-1 s3^-1 s2^-1 s1 s2
+s3^-1 s2^-1 s1^-1 s1 s2^-1 s1^-1 s2 s3^-1 s2^-1 s2^-1 s3^-1 s1 s2 s3^-1 s2^-1 s1^-1 s1 s2^-1 s1^-1
+s2 s3^-1 s2^-1 s2^-1 s1 s2 s3^-1 s2^-1 s1^-1 s1^-1 s3^-1 s2 s3^-1 s2^-1 s1 s2^-1 s1^-1 s1 s2^-1
+s1^-1 s1^-1 s2 s3^-1 s2^-1 s1 s2 s3^-1 s2^-1 s1^-1 s1 s2^-1 s1^-1 s1^-1 s3^-1 s2 s3^-1 s2^-1 s2
+s3^-1 s2^-1 s2 s3^-1 s2^-1 s1 s2^-1 s1^-1 s1 s2^-1 s1^-1 s2 s3^-1 s2^-1 s2^-1 s1 s2 s3^-1 s2^-1
+s1^-1 s1 s2^-1 s1^-1 s1 s2^-1 s1^-1 s2 s3^-1 s2^-1 s1 s2 s3^-1 s2^-1 s1^-1 s1^-1 s2 s3^-1 s2^-1
+s2^-1 s1 s2 s3^-1 s2^-1 s1^-1 s1 s2^-1 s1^-1 s3^-1 s2^-1 s2^-1 s1 s2 s3^-1 s2^-1 s1^-1 s3^-1 s1
+s2^-1 s1^-1 s2 s3^-1 s2^-1 s1^-1 s2 s3^-1 s2^-1 s1^-1 s2^-1 s1 s2 s3^-1 s2^-1 s1^-1 s1 s2^-1 s1^-1
+
+Commutator:
+
+[w, s1] = w s1 w^-1 s1^-1
+
+Independent Burau check mod 5:
+
+- rho_5(w)(e1) = q^12 e1
+- rho_5(w) is not scalar
+- rho_5([w, s1]) = I_3

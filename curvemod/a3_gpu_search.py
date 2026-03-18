@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import torch
 
+from a3_exact_check import commutator_is_identity
 from a3_gpu_burau import (
-    CompiledOperator,
-    apply_operator,
+    CompiledOperatorTable,
+    apply_operator_ids,
     compile_simple_operators,
     make_initial_state,
     normalize_states,
+    stack_compiled_operators,
 )
 from a3_gpu_tables import A3TableData, build_a3_table_data
 
@@ -24,8 +26,13 @@ class SearchConfig:
     first_steps: int = 12
     modulus: int = 7
     max_g_length: int = 1000
+    base_point: int = 1
     device: str = "auto"
     seed: int = 0
+    max_witnesses: Optional[int] = 1
+    print_witness_limit: int = 20
+    witness_callback: Optional[Callable[[int, List[List[int]], int], None]] = None
+    exact_commutator_generator: Optional[int] = None
 
 
 @dataclass
@@ -48,6 +55,11 @@ class SearchResult:
     device: str
     found: bool
     spread_counts_by_depth: Dict[int, Dict[int, int]]
+    witnesses: List[List[List[int]]]
+    witness_depths: List[int]
+    total_hits: int
+    accepted_hits: int
+    rejected_hits: int
 
 
 def _resolve_device(device_name: str) -> torch.device:
@@ -123,31 +135,38 @@ def _reconstruct_path(
         out.append(simple_words[last_simple])
         current_index = int(history_parent_indices[current_depth][current_index].item())
         current_depth -= 1
+    out.reverse()
     return out
 
 
 def _build_initial_buckets(
     config: SearchConfig,
     tables: A3TableData,
-    operators: List[CompiledOperator],
+    operator_table: CompiledOperatorTable,
     width: int,
     device: torch.device,
     generator: torch.Generator,
 ) -> Dict[int, Bucket]:
-    e1 = make_initial_state(width=width, device=device)
+    if not tables.start_simple_ids:
+        return {}
+
+    e1 = make_initial_state(width=width, device=device, base_point=config.base_point)
+    start_simple_ids = torch.tensor(tables.start_simple_ids, dtype=torch.long, device=device)
+    start_states = apply_operator_ids(e1, operator_table, start_simple_ids, config.modulus).squeeze(1)
+    start_states, start_spreads = normalize_states(start_states, config.modulus)
+
     buckets: dict[int, list[Bucket]] = {}
-    for simple_id in tables.start_simple_ids:
-        state = apply_operator(e1, operators[simple_id], config.modulus)
-        state, spread = normalize_states(state, config.modulus)
-        spread_value = int(spread[0].item())
-        if spread_value != 1:
+    for spread_value in torch.unique(start_spreads):
+        spread_int = int(spread_value.item())
+        if spread_int != 1:
             continue
+        mask = start_spreads == spread_value
         entry = Bucket(
-            states=state,
-            last_simple_ids=torch.tensor([simple_id], dtype=torch.long, device=device),
-            parent_indices=torch.tensor([-1], dtype=torch.long, device=device),
+            states=start_states[mask],
+            last_simple_ids=start_simple_ids[mask],
+            parent_indices=torch.full((int(mask.sum().item()),), -1, dtype=torch.long, device=device),
         )
-        buckets.setdefault(spread_value, []).append(entry)
+        buckets.setdefault(spread_int, []).append(entry)
 
     capped: Dict[int, Bucket] = {}
     for spread, parts in buckets.items():
@@ -170,16 +189,29 @@ def _selected_prev_spreads(buckets: Dict[int, Bucket], total_cap: int) -> List[i
     return selected
 
 
+def _witness_key(witness: List[List[int]]) -> tuple[tuple[int, ...], ...]:
+    return tuple(tuple(block) for block in witness)
+
+
 def run_search(config: SearchConfig) -> SearchResult:
     if config.modulus <= 0:
         raise ValueError("The GPU rewrite currently supports only the Fp case, so modulus must be positive.")
+    if config.base_point < 1 or config.base_point > 3:
+        raise ValueError("base_point must be one of 1, 2, 3.")
+    if config.max_witnesses is not None and config.max_witnesses < 0:
+        raise ValueError("max_witnesses must be non-negative or None.")
+    if config.print_witness_limit < 0:
+        raise ValueError("print_witness_limit must be non-negative.")
+    if config.exact_commutator_generator is not None and config.exact_commutator_generator not in (1, 2, 3):
+        raise ValueError("exact_commutator_generator must be one of 1, 2, 3, or None.")
 
     device = _resolve_device(config.device)
     generator = torch.Generator(device=device.type)
     generator.manual_seed(config.seed)
 
-    tables = build_a3_table_data(modulus=config.modulus, device=device)
+    tables = build_a3_table_data(modulus=config.modulus, device=device, base_point=config.base_point)
     operators = compile_simple_operators(tables.simple_words, device=device)
+    operator_table = stack_compiled_operators(operators, device=device)
 
     global_min_shift = min(operator.min_shift for operator in operators)
     global_max_shift = max(operator.max_shift for operator in operators)
@@ -209,12 +241,14 @@ def run_search(config: SearchConfig) -> SearchResult:
         config.total_cap_2,
         "FIRST_STEPS",
         config.first_steps,
+        "base_point",
+        config.base_point,
         "device",
         device,
     )
     print(f"We have {len(tables.dual_words)} atoms and {len(tables.simple_words)} dual simples")
 
-    current_buckets = _build_initial_buckets(config, tables, operators, width, device, generator)
+    current_buckets = _build_initial_buckets(config, tables, operator_table, width, device, generator)
     _register_depth(1, current_buckets, history_last_simple_ids, history_parent_indices)
     spread_counts_by_depth: Dict[int, Dict[int, int]] = {
         1: {spread: bucket.size for spread, bucket in sorted(current_buckets.items())}
@@ -223,6 +257,13 @@ def run_search(config: SearchConfig) -> SearchResult:
 
     witness: Optional[List[List[int]]] = None
     witness_depth: Optional[int] = None
+    witnesses: List[List[List[int]]] = []
+    witness_depths: List[int] = []
+    seen_witnesses: set[tuple[tuple[int, ...], ...]] = set()
+    total_hits = 0
+    accepted_hits = 0
+    rejected_hits = 0
+    stop_after_hit = False
 
     with torch.no_grad():
         for cur in range(2, config.max_g_length + 1):
@@ -253,69 +294,110 @@ def run_search(config: SearchConfig) -> SearchResult:
                     mask = bucket.last_simple_ids == simple_id
                     group_states = bucket.states[mask]
                     group_parents = bucket.record_indices[mask]
-                    successors = tables.allowed_successors[simple_id]
-                    if not successors:
+                    successor_count = int(tables.allowed_count[simple_id].item())
+                    if successor_count == 0:
+                        continue
+                    successor_ids = tables.allowed_suffix_padded[simple_id, :successor_count]
+                    candidate_states = apply_operator_ids(group_states, operator_table, successor_ids, config.modulus)
+                    num_successors, group_size = candidate_states.shape[:2]
+                    candidate_states = candidate_states.view(num_successors * group_size, *candidate_states.shape[2:])
+                    candidate_states, spreads = normalize_states(candidate_states, config.modulus)
+                    candidate_states = candidate_states.view(num_successors, group_size, *candidate_states.shape[1:])
+                    spreads = spreads.view(num_successors, group_size)
+
+                    valid = spreads >= 0
+                    if cur == 2:
+                        valid &= spreads != 0
+
+                    if not valid.any():
                         continue
 
-                    for next_simple_id in successors:
-                        candidate_states = apply_operator(group_states, operators[next_simple_id], config.modulus)
-                        candidate_states, spreads = normalize_states(candidate_states, config.modulus)
+                    drops_mask = valid & (spreads < prev_spread)
+                    total_drops += int(drops_mask.sum().item())
 
-                        valid = spreads >= 0
-                        if cur == 2:
-                            valid &= spreads != 0
-
-                        if not valid.any():
-                            continue
-
-                        drops_mask = valid & (spreads < prev_spread)
-                        total_drops += int(drops_mask.sum().item())
-
-                        hit_mask = valid & (spreads == 0)
-                        if hit_mask.any():
-                            hit_index = int(torch.nonzero(hit_mask, as_tuple=False)[0, 0].item())
-                            parent_record = int(group_parents[hit_index].item())
-                            witness = [tables.simple_words[next_simple_id]] + _reconstruct_path(
+                    hit_mask = valid & (spreads == 0)
+                    if hit_mask.any():
+                        hit_positions = torch.nonzero(hit_mask, as_tuple=False)
+                        total_hits += int(hit_positions.shape[0])
+                        for hit_successor_index, hit_state_index in hit_positions.tolist():
+                            next_simple_id = int(successor_ids[hit_successor_index].item())
+                            parent_record = int(group_parents[hit_state_index].item())
+                            candidate_witness = _reconstruct_path(
                                 tables.simple_words,
                                 history_last_simple_ids,
                                 history_parent_indices,
                                 cur - 1,
                                 parent_record,
-                            )
-                            witness_depth = cur
-                            print("Found one for p=", config.modulus, witness)
+                            ) + [tables.simple_words[next_simple_id]]
+                            candidate_key = _witness_key(candidate_witness)
+                            if candidate_key in seen_witnesses:
+                                continue
+                            seen_witnesses.add(candidate_key)
+                            if config.exact_commutator_generator is not None:
+                                if not commutator_is_identity(
+                                    candidate_witness,
+                                    modulus=config.modulus,
+                                    generator=config.exact_commutator_generator,
+                                ):
+                                    rejected_hits += 1
+                                    continue
+                            accepted_hits += 1
+                            witnesses.append(candidate_witness)
+                            witness_depths.append(cur)
+                            if config.witness_callback is not None:
+                                config.witness_callback(cur, candidate_witness, len(witnesses))
+                            if witness is None:
+                                witness = candidate_witness
+                                witness_depth = cur
+                            if len(witnesses) <= config.print_witness_limit:
+                                print(
+                                    f"Found witness #{len(witnesses)} for p={config.modulus} at depth {cur}:",
+                                    candidate_witness,
+                                )
+                            elif len(witnesses) == config.print_witness_limit + 1:
+                                print(
+                                    f"Reached witness print limit ({config.print_witness_limit}); suppressing further witness dumps."
+                                )
+                            if config.max_witnesses is not None and len(witnesses) >= config.max_witnesses:
+                                stop_after_hit = True
+                                break
+                        if stop_after_hit:
                             break
 
-                        valid &= spreads <= (config.max_g_length - cur + 1)
-                        if not valid.any():
-                            continue
+                    valid &= spreads <= (config.max_g_length - cur + 1)
+                    valid &= spreads != 0
+                    if not valid.any():
+                        continue
 
-                        kept_states = candidate_states[valid]
-                        kept_spreads = spreads[valid]
-                        kept_parents = group_parents[valid]
-                        kept_simple_ids = torch.full(
-                            (kept_states.shape[0],),
-                            next_simple_id,
-                            dtype=torch.long,
-                            device=device,
+                    flat_valid = valid.reshape(-1)
+                    flat_states = candidate_states.reshape(num_successors * group_size, *candidate_states.shape[2:])
+                    flat_spreads = spreads.reshape(-1)
+                    flat_parents = (
+                        group_parents.unsqueeze(0).expand(num_successors, -1).reshape(-1)
+                    )
+                    flat_simple_ids = successor_ids.unsqueeze(1).expand(-1, group_size).reshape(-1)
+
+                    kept_states = flat_states[flat_valid]
+                    kept_spreads = flat_spreads[flat_valid]
+                    kept_parents = flat_parents[flat_valid]
+                    kept_simple_ids = flat_simple_ids[flat_valid]
+
+                    for spread_value in torch.unique(kept_spreads):
+                        spread_int = int(spread_value.item())
+                        spread_mask = kept_spreads == spread_value
+                        part = Bucket(
+                            states=kept_states[spread_mask],
+                            last_simple_ids=kept_simple_ids[spread_mask],
+                            parent_indices=kept_parents[spread_mask],
                         )
+                        next_candidates.setdefault(spread_int, []).append(part)
 
-                        for spread_value in torch.unique(kept_spreads):
-                            spread_int = int(spread_value.item())
-                            spread_mask = kept_spreads == spread_value
-                            part = Bucket(
-                                states=kept_states[spread_mask],
-                                last_simple_ids=kept_simple_ids[spread_mask],
-                                parent_indices=kept_parents[spread_mask],
-                            )
-                            next_candidates.setdefault(spread_int, []).append(part)
-
-                    if witness is not None:
+                    if stop_after_hit:
                         break
-                if witness is not None:
+                if stop_after_hit:
                     break
 
-            if witness is not None:
+            if stop_after_hit:
                 break
 
             next_buckets: Dict[int, Bucket] = {}
@@ -356,4 +438,9 @@ def run_search(config: SearchConfig) -> SearchResult:
         device=str(device),
         found=witness is not None,
         spread_counts_by_depth=spread_counts_by_depth,
+        witnesses=witnesses,
+        witness_depths=witness_depths,
+        total_hits=total_hits,
+        accepted_hits=accepted_hits,
+        rejected_hits=rejected_hits,
     )

@@ -1,0 +1,774 @@
+[2026-03-09T02:50:19-04:00] a3_mod_p_bucket_search matched benchmark
+cwd: /nfs/roberts/project/pi_com36/com36/burau-experiments/burau-faithfulness/new_stuff_gpu
+hostname: a1128u05n01.mghpcc.ycrc.yale.edu
+python: /home/com36/.conda/envs/burau_gpu/bin/python
+command: python a3_mod_p_bucket_search.py --backend torch --device cuda --p 5 --max-g-length 60 --cap-1 500 --cap-2 500 --total-cap-1 50000 --total-cap-2 50000 --first-steps 12 --output data/a3_mod_p_bucket_search_p5_len60_cuda_20260309_025019.json
+
+[nvidia-smi]
+Mon Mar  9 02:50:19 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.195.03             Driver Version: 570.195.03     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA RTX 5000 Ada Gene...    On  |   00000000:AB:00.0 Off |                  Off |
+| 30%   39C    P8             16W /  250W |       2MiB /  32760MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+
+[torch cuda info]
+sys.executable: /home/com36/.conda/envs/burau_gpu/bin/python
+torch.__version__: 2.5.1
+torch.version.cuda: 12.1
+torch.cuda.is_available(): True
+torch.cuda.device_count(): 1
+device[0].name: NVIDIA RTX 5000 Ada Generation
+device[0].total_memory: 33804779520
+
+[run output]
+Backend: torch on cuda
+Built 14 Garside simples for A3.
+Starting search over Z/5Z with base vertex 1.
+Step 2: analyzing 2 braids in spread 1
+Finished step 2: min spread 2, max spread 2, drops 0, hits this step 0, runtime 0.07s
+Step 3: analyzing 8 braids in spread 2
+Finished step 3: min spread 3, max spread 3, drops 0, hits this step 0, runtime 0.02s
+Step 4: analyzing 36 braids in spread 3
+Finished step 4: min spread 4, max spread 4, drops 0, hits this step 0, runtime 0.03s
+Step 5: analyzing 170 braids in spread 4
+Finished step 5: min spread 5, max spread 5, drops 0, hits this step 0, runtime 0.04s
+Step 6: analyzing 500 braids in spread 5
+Finished step 6: min spread 5, max spread 6, drops 0, hits this step 0, runtime 0.04s
+Step 7: analyzing 2 braids in spread 5
+Step 7: analyzing 500 braids in spread 6
+Finished step 7: min spread 5, max spread 7, drops 0, hits this step 0, runtime 0.05s
+Step 8: analyzing 2 braids in spread 5
+Step 8: analyzing 13 braids in spread 6
+Step 8: analyzing 500 braids in spread 7
+Finished step 8: min spread 6, max spread 8, drops 0, hits this step 0, runtime 0.06s
+Step 9: analyzing 14 braids in spread 6
+Step 9: analyzing 64 braids in spread 7
+Step 9: analyzing 500 braids in spread 8
+Finished step 9: min spread 6, max spread 9, drops 0, hits this step 0, runtime 0.10s
+Step 10: analyzing 4 braids in spread 6
+Step 10: analyzing 79 braids in spread 7
+Step 10: analyzing 316 braids in spread 8
+Step 10: analyzing 500 braids in spread 9
+Finished step 10: min spread 6, max spread 10, drops 0, hits this step 0, runtime 0.14s
+Step 11: analyzing 2 braids in spread 6
+Step 11: analyzing 36 braids in spread 7
+Step 11: analyzing 415 braids in spread 8
+Step 11: analyzing 500 braids in spread 9
+Step 11: analyzing 500 braids in spread 10
+Finished step 11: min spread 6, max spread 11, drops 0, hits this step 0, runtime 0.17s
+Step 12: analyzing 1 braids in spread 6
+Step 12: analyzing 20 braids in spread 7
+Step 12: analyzing 241 braids in spread 8
+Step 12: analyzing 500 braids in spread 9
+Step 12: analyzing 500 braids in spread 10
+Step 12: analyzing 500 braids in spread 11
+Finished step 12: min spread 6, max spread 12, drops 0, hits this step 0, runtime 0.19s
+Step 13: analyzing 1 braids in spread 6
+Step 13: analyzing 9 braids in spread 7
+Step 13: analyzing 172 braids in spread 8
+Step 13: analyzing 500 braids in spread 9
+Step 13: analyzing 500 braids in spread 10
+Step 13: analyzing 500 braids in spread 11
+Step 13: analyzing 500 braids in spread 12
+Finished step 13: min spread 6, max spread 13, drops 0, hits this step 0, runtime 0.23s
+Step 14: analyzing 1 braids in spread 6
+Step 14: analyzing 7 braids in spread 7
+Step 14: analyzing 96 braids in spread 8
+Step 14: analyzing 500 braids in spread 9
+Step 14: analyzing 500 braids in spread 10
+Step 14: analyzing 500 braids in spread 11
+Step 14: analyzing 500 braids in spread 12
+Step 14: analyzing 500 braids in spread 13
+Finished step 14: min spread 6, max spread 14, drops 0, hits this step 0, runtime 0.27s
+Step 15: analyzing 1 braids in spread 6
+Step 15: analyzing 7 braids in spread 7
+Step 15: analyzing 60 braids in spread 8
+Step 15: analyzing 492 braids in spread 9
+Step 15: analyzing 500 braids in spread 10
+Step 15: analyzing 500 braids in spread 11
+Step 15: analyzing 500 braids in spread 12
+Step 15: analyzing 500 braids in spread 13
+Step 15: analyzing 500 braids in spread 14
+Finished step 15: min spread 6, max spread 15, drops 0, hits this step 0, runtime 0.30s
+Step 16: analyzing 1 braids in spread 6
+Step 16: analyzing 7 braids in spread 7
+Step 16: analyzing 62 braids in spread 8
+Step 16: analyzing 332 braids in spread 9
+Step 16: analyzing 500 braids in spread 10
+Step 16: analyzing 500 braids in spread 11
+Step 16: analyzing 500 braids in spread 12
+Step 16: analyzing 500 braids in spread 13
+Step 16: analyzing 500 braids in spread 14
+Step 16: analyzing 500 braids in spread 15
+Finished step 16: min spread 6, max spread 16, drops 0, hits this step 0, runtime 0.35s
+Step 17: analyzing 1 braids in spread 6
+Step 17: analyzing 7 braids in spread 7
+Step 17: analyzing 60 braids in spread 8
+Step 17: analyzing 353 braids in spread 9
+Step 17: analyzing 500 braids in spread 10
+Step 17: analyzing 500 braids in spread 11
+Step 17: analyzing 500 braids in spread 12
+Step 17: analyzing 500 braids in spread 13
+Step 17: analyzing 500 braids in spread 14
+Step 17: analyzing 500 braids in spread 15
+Step 17: analyzing 500 braids in spread 16
+Finished step 17: min spread 6, max spread 17, drops 1, hits this step 0, runtime 0.39s
+Step 18: analyzing 1 braids in spread 6
+Step 18: analyzing 7 braids in spread 7
+Step 18: analyzing 54 braids in spread 8
+Step 18: analyzing 358 braids in spread 9
+Step 18: analyzing 500 braids in spread 10
+Step 18: analyzing 500 braids in spread 11
+Step 18: analyzing 500 braids in spread 12
+Step 18: analyzing 500 braids in spread 13
+Step 18: analyzing 500 braids in spread 14
+Step 18: analyzing 500 braids in spread 15
+Step 18: analyzing 500 braids in spread 16
+Step 18: analyzing 500 braids in spread 17
+Finished step 18: min spread 7, max spread 18, drops 1, hits this step 0, runtime 0.43s
+Step 19: analyzing 10 braids in spread 7
+Step 19: analyzing 43 braids in spread 8
+Step 19: analyzing 334 braids in spread 9
+Step 19: analyzing 500 braids in spread 10
+Step 19: analyzing 500 braids in spread 11
+Step 19: analyzing 500 braids in spread 12
+Step 19: analyzing 500 braids in spread 13
+Step 19: analyzing 500 braids in spread 14
+Step 19: analyzing 500 braids in spread 15
+Step 19: analyzing 500 braids in spread 16
+Step 19: analyzing 500 braids in spread 17
+Step 19: analyzing 500 braids in spread 18
+Finished step 19: min spread 7, max spread 19, drops 1, hits this step 0, runtime 0.46s
+Step 20: analyzing 4 braids in spread 7
+Step 20: analyzing 66 braids in spread 8
+Step 20: analyzing 264 braids in spread 9
+Step 20: analyzing 500 braids in spread 10
+Step 20: analyzing 500 braids in spread 11
+Step 20: analyzing 500 braids in spread 12
+Step 20: analyzing 500 braids in spread 13
+Step 20: analyzing 500 braids in spread 14
+Step 20: analyzing 500 braids in spread 15
+Step 20: analyzing 500 braids in spread 16
+Step 20: analyzing 500 braids in spread 17
+Step 20: analyzing 500 braids in spread 18
+Step 20: analyzing 500 braids in spread 19
+Finished step 20: min spread 6, max spread 20, drops 1, hits this step 0, runtime 0.51s
+Step 21: analyzing 1 braids in spread 6
+Step 21: analyzing 7 braids in spread 7
+Step 21: analyzing 40 braids in spread 8
+Step 21: analyzing 393 braids in spread 9
+Step 21: analyzing 500 braids in spread 10
+Step 21: analyzing 500 braids in spread 11
+Step 21: analyzing 500 braids in spread 12
+Step 21: analyzing 500 braids in spread 13
+Step 21: analyzing 500 braids in spread 14
+Step 21: analyzing 500 braids in spread 15
+Step 21: analyzing 500 braids in spread 16
+Step 21: analyzing 500 braids in spread 17
+Step 21: analyzing 500 braids in spread 18
+Step 21: analyzing 500 braids in spread 19
+Step 21: analyzing 500 braids in spread 20
+Finished step 21: min spread 5, max spread 21, drops 2, hits this step 0, runtime 0.56s
+Step 22: analyzing 1 braids in spread 5
+Step 22: analyzing 3 braids in spread 6
+Step 22: analyzing 13 braids in spread 7
+Step 22: analyzing 54 braids in spread 8
+Step 22: analyzing 290 braids in spread 9
+Step 22: analyzing 500 braids in spread 10
+Step 22: analyzing 500 braids in spread 11
+Step 22: analyzing 500 braids in spread 12
+Step 22: analyzing 500 braids in spread 13
+Step 22: analyzing 500 braids in spread 14
+Step 22: analyzing 500 braids in spread 15
+Step 22: analyzing 500 braids in spread 16
+Step 22: analyzing 500 braids in spread 17
+Step 22: analyzing 500 braids in spread 18
+Step 22: analyzing 500 braids in spread 19
+Step 22: analyzing 500 braids in spread 20
+Step 22: analyzing 500 braids in spread 21
+Finished step 22: min spread 5, max spread 22, drops 0, hits this step 0, runtime 0.62s
+Step 23: analyzing 2 braids in spread 5
+Step 23: analyzing 8 braids in spread 6
+Step 23: analyzing 22 braids in spread 7
+Step 23: analyzing 91 braids in spread 8
+Step 23: analyzing 345 braids in spread 9
+Step 23: analyzing 500 braids in spread 10
+Step 23: analyzing 500 braids in spread 11
+Step 23: analyzing 500 braids in spread 12
+Step 23: analyzing 500 braids in spread 13
+Step 23: analyzing 500 braids in spread 14
+Step 23: analyzing 500 braids in spread 15
+Step 23: analyzing 500 braids in spread 16
+Step 23: analyzing 500 braids in spread 17
+Step 23: analyzing 500 braids in spread 18
+Step 23: analyzing 500 braids in spread 19
+Step 23: analyzing 500 braids in spread 20
+Step 23: analyzing 500 braids in spread 21
+Step 23: analyzing 500 braids in spread 22
+Finished step 23: min spread 5, max spread 23, drops 0, hits this step 0, runtime 0.69s
+Step 24: analyzing 2 braids in spread 5
+Step 24: analyzing 17 braids in spread 6
+Step 24: analyzing 43 braids in spread 7
+Step 24: analyzing 138 braids in spread 8
+Step 24: analyzing 500 braids in spread 9
+Step 24: analyzing 500 braids in spread 10
+Step 24: analyzing 500 braids in spread 11
+Step 24: analyzing 500 braids in spread 12
+Step 24: analyzing 500 braids in spread 13
+Step 24: analyzing 500 braids in spread 14
+Step 24: analyzing 500 braids in spread 15
+Step 24: analyzing 500 braids in spread 16
+Step 24: analyzing 500 braids in spread 17
+Step 24: analyzing 500 braids in spread 18
+Step 24: analyzing 500 braids in spread 19
+Step 24: analyzing 500 braids in spread 20
+Step 24: analyzing 500 braids in spread 21
+Step 24: analyzing 500 braids in spread 22
+Step 24: analyzing 500 braids in spread 23
+Finished step 24: min spread 5, max spread 24, drops 1, hits this step 0, runtime 0.75s
+Step 25: analyzing 2 braids in spread 5
+Step 25: analyzing 17 braids in spread 6
+Step 25: analyzing 97 braids in spread 7
+Step 25: analyzing 229 braids in spread 8
+Step 25: analyzing 500 braids in spread 9
+Step 25: analyzing 500 braids in spread 10
+Step 25: analyzing 500 braids in spread 11
+Step 25: analyzing 500 braids in spread 12
+Step 25: analyzing 500 braids in spread 13
+Step 25: analyzing 500 braids in spread 14
+Step 25: analyzing 500 braids in spread 15
+Step 25: analyzing 500 braids in spread 16
+Step 25: analyzing 500 braids in spread 17
+Step 25: analyzing 500 braids in spread 18
+Step 25: analyzing 500 braids in spread 19
+Step 25: analyzing 500 braids in spread 20
+Step 25: analyzing 500 braids in spread 21
+Step 25: analyzing 500 braids in spread 22
+Step 25: analyzing 500 braids in spread 23
+Step 25: analyzing 500 braids in spread 24
+Finished step 25: min spread 5, max spread 25, drops 2, hits this step 0, runtime 0.79s
+Step 26: analyzing 1 braids in spread 5
+Step 26: analyzing 19 braids in spread 6
+Step 26: analyzing 104 braids in spread 7
+Step 26: analyzing 500 braids in spread 8
+Step 26: analyzing 500 braids in spread 9
+Step 26: analyzing 500 braids in spread 10
+Step 26: analyzing 500 braids in spread 11
+Step 26: analyzing 500 braids in spread 12
+Step 26: analyzing 500 braids in spread 13
+Step 26: analyzing 500 braids in spread 14
+Step 26: analyzing 500 braids in spread 15
+Step 26: analyzing 500 braids in spread 16
+Step 26: analyzing 500 braids in spread 17
+Step 26: analyzing 500 braids in spread 18
+Step 26: analyzing 500 braids in spread 19
+Step 26: analyzing 500 braids in spread 20
+Step 26: analyzing 500 braids in spread 21
+Step 26: analyzing 500 braids in spread 22
+Step 26: analyzing 500 braids in spread 23
+Step 26: analyzing 500 braids in spread 24
+Step 26: analyzing 500 braids in spread 25
+Finished step 26: min spread 6, max spread 26, drops 0, hits this step 0, runtime 0.83s
+Step 27: analyzing 14 braids in spread 6
+Step 27: analyzing 115 braids in spread 7
+Step 27: analyzing 500 braids in spread 8
+Step 27: analyzing 500 braids in spread 9
+Step 27: analyzing 500 braids in spread 10
+Step 27: analyzing 500 braids in spread 11
+Step 27: analyzing 500 braids in spread 12
+Step 27: analyzing 500 braids in spread 13
+Step 27: analyzing 500 braids in spread 14
+Step 27: analyzing 500 braids in spread 15
+Step 27: analyzing 500 braids in spread 16
+Step 27: analyzing 500 braids in spread 17
+Step 27: analyzing 500 braids in spread 18
+Step 27: analyzing 500 braids in spread 19
+Step 27: analyzing 500 braids in spread 20
+Step 27: analyzing 500 braids in spread 21
+Step 27: analyzing 500 braids in spread 22
+Step 27: analyzing 500 braids in spread 23
+Step 27: analyzing 500 braids in spread 24
+Step 27: analyzing 500 braids in spread 25
+Step 27: analyzing 500 braids in spread 26
+Finished step 27: min spread 6, max spread 27, drops 0, hits this step 0, runtime 0.87s
+Step 28: analyzing 6 braids in spread 6
+Step 28: analyzing 107 braids in spread 7
+Step 28: analyzing 500 braids in spread 8
+Step 28: analyzing 500 braids in spread 9
+Step 28: analyzing 500 braids in spread 10
+Step 28: analyzing 500 braids in spread 11
+Step 28: analyzing 500 braids in spread 12
+Step 28: analyzing 500 braids in spread 13
+Step 28: analyzing 500 braids in spread 14
+Step 28: analyzing 500 braids in spread 15
+Step 28: analyzing 500 braids in spread 16
+Step 28: analyzing 500 braids in spread 17
+Step 28: analyzing 500 braids in spread 18
+Step 28: analyzing 500 braids in spread 19
+Step 28: analyzing 500 braids in spread 20
+Step 28: analyzing 500 braids in spread 21
+Step 28: analyzing 500 braids in spread 22
+Step 28: analyzing 500 braids in spread 23
+Step 28: analyzing 500 braids in spread 24
+Step 28: analyzing 500 braids in spread 25
+Step 28: analyzing 500 braids in spread 26
+Step 28: analyzing 500 braids in spread 27
+Finished step 28: min spread 6, max spread 28, drops 0, hits this step 0, runtime 0.89s
+Step 29: analyzing 4 braids in spread 6
+Step 29: analyzing 72 braids in spread 7
+Step 29: analyzing 500 braids in spread 8
+Step 29: analyzing 500 braids in spread 9
+Step 29: analyzing 500 braids in spread 10
+Step 29: analyzing 500 braids in spread 11
+Step 29: analyzing 500 braids in spread 12
+Step 29: analyzing 500 braids in spread 13
+Step 29: analyzing 500 braids in spread 14
+Step 29: analyzing 500 braids in spread 15
+Step 29: analyzing 500 braids in spread 16
+Step 29: analyzing 500 braids in spread 17
+Step 29: analyzing 500 braids in spread 18
+Step 29: analyzing 500 braids in spread 19
+Step 29: analyzing 500 braids in spread 20
+Step 29: analyzing 500 braids in spread 21
+Step 29: analyzing 500 braids in spread 22
+Step 29: analyzing 500 braids in spread 23
+Step 29: analyzing 500 braids in spread 24
+Step 29: analyzing 500 braids in spread 25
+Step 29: analyzing 500 braids in spread 26
+Step 29: analyzing 500 braids in spread 27
+Step 29: analyzing 500 braids in spread 28
+Finished step 29: min spread 6, max spread 29, drops 0, hits this step 0, runtime 0.94s
+Step 30: analyzing 5 braids in spread 6
+Step 30: analyzing 51 braids in spread 7
+Step 30: analyzing 470 braids in spread 8
+Step 30: analyzing 500 braids in spread 9
+Step 30: analyzing 500 braids in spread 10
+Step 30: analyzing 500 braids in spread 11
+Step 30: analyzing 500 braids in spread 12
+Step 30: analyzing 500 braids in spread 13
+Step 30: analyzing 500 braids in spread 14
+Step 30: analyzing 500 braids in spread 15
+Step 30: analyzing 500 braids in spread 16
+Step 30: analyzing 500 braids in spread 17
+Step 30: analyzing 500 braids in spread 18
+Step 30: analyzing 500 braids in spread 19
+Step 30: analyzing 500 braids in spread 20
+Step 30: analyzing 500 braids in spread 21
+Step 30: analyzing 500 braids in spread 22
+Step 30: analyzing 500 braids in spread 23
+Step 30: analyzing 500 braids in spread 24
+Step 30: analyzing 500 braids in spread 25
+Step 30: analyzing 500 braids in spread 26
+Step 30: analyzing 500 braids in spread 27
+Step 30: analyzing 500 braids in spread 28
+Step 30: analyzing 500 braids in spread 29
+Finished step 30: min spread 6, max spread 30, drops 0, hits this step 0, runtime 0.99s
+Step 31: analyzing 6 braids in spread 6
+Step 31: analyzing 51 braids in spread 7
+Step 31: analyzing 371 braids in spread 8
+Step 31: analyzing 500 braids in spread 9
+Step 31: analyzing 500 braids in spread 10
+Step 31: analyzing 500 braids in spread 11
+Step 31: analyzing 500 braids in spread 12
+Step 31: analyzing 500 braids in spread 13
+Step 31: analyzing 500 braids in spread 14
+Step 31: analyzing 500 braids in spread 15
+Step 31: analyzing 500 braids in spread 16
+Step 31: analyzing 500 braids in spread 17
+Step 31: analyzing 500 braids in spread 18
+Step 31: analyzing 500 braids in spread 19
+Step 31: analyzing 500 braids in spread 20
+Step 31: analyzing 500 braids in spread 21
+Step 31: analyzing 500 braids in spread 22
+Step 31: analyzing 500 braids in spread 23
+Step 31: analyzing 500 braids in spread 24
+Step 31: analyzing 500 braids in spread 25
+Step 31: analyzing 500 braids in spread 26
+Step 31: analyzing 500 braids in spread 27
+Step 31: analyzing 500 braids in spread 28
+Step 31: analyzing 500 braids in spread 29
+Step 31: analyzing 500 braids in spread 30
+Finished step 31: min spread 5, max spread 30, drops 1, hits this step 0, runtime 1.04s
+Step 32: analyzing 1 braids in spread 5
+Step 32: analyzing 8 braids in spread 6
+Step 32: analyzing 56 braids in spread 7
+Step 32: analyzing 348 braids in spread 8
+Step 32: analyzing 500 braids in spread 9
+Step 32: analyzing 500 braids in spread 10
+Step 32: analyzing 500 braids in spread 11
+Step 32: analyzing 500 braids in spread 12
+Step 32: analyzing 500 braids in spread 13
+Step 32: analyzing 500 braids in spread 14
+Step 32: analyzing 500 braids in spread 15
+Step 32: analyzing 500 braids in spread 16
+Step 32: analyzing 500 braids in spread 17
+Step 32: analyzing 500 braids in spread 18
+Step 32: analyzing 500 braids in spread 19
+Step 32: analyzing 500 braids in spread 20
+Step 32: analyzing 500 braids in spread 21
+Step 32: analyzing 500 braids in spread 22
+Step 32: analyzing 500 braids in spread 23
+Step 32: analyzing 500 braids in spread 24
+Step 32: analyzing 500 braids in spread 25
+Step 32: analyzing 500 braids in spread 26
+Step 32: analyzing 500 braids in spread 27
+Step 32: analyzing 500 braids in spread 28
+Step 32: analyzing 500 braids in spread 29
+Step 32: analyzing 500 braids in spread 30
+Finished step 32: min spread 5, max spread 29, drops 3, hits this step 0, runtime 1.02s
+Step 33: analyzing 1 braids in spread 5
+Step 33: analyzing 16 braids in spread 6
+Step 33: analyzing 71 braids in spread 7
+Step 33: analyzing 366 braids in spread 8
+Step 33: analyzing 500 braids in spread 9
+Step 33: analyzing 500 braids in spread 10
+Step 33: analyzing 500 braids in spread 11
+Step 33: analyzing 500 braids in spread 12
+Step 33: analyzing 500 braids in spread 13
+Step 33: analyzing 500 braids in spread 14
+Step 33: analyzing 500 braids in spread 15
+Step 33: analyzing 500 braids in spread 16
+Step 33: analyzing 500 braids in spread 17
+Step 33: analyzing 500 braids in spread 18
+Step 33: analyzing 500 braids in spread 19
+Step 33: analyzing 500 braids in spread 20
+Step 33: analyzing 500 braids in spread 21
+Step 33: analyzing 500 braids in spread 22
+Step 33: analyzing 500 braids in spread 23
+Step 33: analyzing 500 braids in spread 24
+Step 33: analyzing 500 braids in spread 25
+Step 33: analyzing 500 braids in spread 26
+Step 33: analyzing 500 braids in spread 27
+Step 33: analyzing 500 braids in spread 28
+Step 33: analyzing 500 braids in spread 29
+Finished step 33: min spread 5, max spread 28, drops 4, hits this step 0, runtime 0.98s
+Step 34: analyzing 1 braids in spread 5
+Step 34: analyzing 15 braids in spread 6
+Step 34: analyzing 121 braids in spread 7
+Step 34: analyzing 463 braids in spread 8
+Step 34: analyzing 500 braids in spread 9
+Step 34: analyzing 500 braids in spread 10
+Step 34: analyzing 500 braids in spread 11
+Step 34: analyzing 500 braids in spread 12
+Step 34: analyzing 500 braids in spread 13
+Step 34: analyzing 500 braids in spread 14
+Step 34: analyzing 500 braids in spread 15
+Step 34: analyzing 500 braids in spread 16
+Step 34: analyzing 500 braids in spread 17
+Step 34: analyzing 500 braids in spread 18
+Step 34: analyzing 500 braids in spread 19
+Step 34: analyzing 500 braids in spread 20
+Step 34: analyzing 500 braids in spread 21
+Step 34: analyzing 500 braids in spread 22
+Step 34: analyzing 500 braids in spread 23
+Step 34: analyzing 500 braids in spread 24
+Step 34: analyzing 500 braids in spread 25
+Step 34: analyzing 500 braids in spread 26
+Step 34: analyzing 500 braids in spread 27
+Step 34: analyzing 500 braids in spread 28
+Finished step 34: min spread 5, max spread 27, drops 2, hits this step 0, runtime 0.95s
+Step 35: analyzing 1 braids in spread 5
+Step 35: analyzing 11 braids in spread 6
+Step 35: analyzing 110 braids in spread 7
+Step 35: analyzing 500 braids in spread 8
+Step 35: analyzing 500 braids in spread 9
+Step 35: analyzing 500 braids in spread 10
+Step 35: analyzing 500 braids in spread 11
+Step 35: analyzing 500 braids in spread 12
+Step 35: analyzing 500 braids in spread 13
+Step 35: analyzing 500 braids in spread 14
+Step 35: analyzing 500 braids in spread 15
+Step 35: analyzing 500 braids in spread 16
+Step 35: analyzing 500 braids in spread 17
+Step 35: analyzing 500 braids in spread 18
+Step 35: analyzing 500 braids in spread 19
+Step 35: analyzing 500 braids in spread 20
+Step 35: analyzing 500 braids in spread 21
+Step 35: analyzing 500 braids in spread 22
+Step 35: analyzing 500 braids in spread 23
+Step 35: analyzing 500 braids in spread 24
+Step 35: analyzing 500 braids in spread 25
+Step 35: analyzing 500 braids in spread 26
+Step 35: analyzing 500 braids in spread 27
+Finished step 35: min spread 6, max spread 26, drops 0, hits this step 0, runtime 0.89s
+Step 36: analyzing 8 braids in spread 6
+Step 36: analyzing 81 braids in spread 7
+Step 36: analyzing 500 braids in spread 8
+Step 36: analyzing 500 braids in spread 9
+Step 36: analyzing 500 braids in spread 10
+Step 36: analyzing 500 braids in spread 11
+Step 36: analyzing 500 braids in spread 12
+Step 36: analyzing 500 braids in spread 13
+Step 36: analyzing 500 braids in spread 14
+Step 36: analyzing 500 braids in spread 15
+Step 36: analyzing 500 braids in spread 16
+Step 36: analyzing 500 braids in spread 17
+Step 36: analyzing 500 braids in spread 18
+Step 36: analyzing 500 braids in spread 19
+Step 36: analyzing 500 braids in spread 20
+Step 36: analyzing 500 braids in spread 21
+Step 36: analyzing 500 braids in spread 22
+Step 36: analyzing 500 braids in spread 23
+Step 36: analyzing 500 braids in spread 24
+Step 36: analyzing 500 braids in spread 25
+Step 36: analyzing 500 braids in spread 26
+Finished step 36: min spread 6, max spread 25, drops 0, hits this step 0, runtime 0.84s
+Step 37: analyzing 1 braids in spread 6
+Step 37: analyzing 56 braids in spread 7
+Step 37: analyzing 498 braids in spread 8
+Step 37: analyzing 500 braids in spread 9
+Step 37: analyzing 500 braids in spread 10
+Step 37: analyzing 500 braids in spread 11
+Step 37: analyzing 500 braids in spread 12
+Step 37: analyzing 500 braids in spread 13
+Step 37: analyzing 500 braids in spread 14
+Step 37: analyzing 500 braids in spread 15
+Step 37: analyzing 500 braids in spread 16
+Step 37: analyzing 500 braids in spread 17
+Step 37: analyzing 500 braids in spread 18
+Step 37: analyzing 500 braids in spread 19
+Step 37: analyzing 500 braids in spread 20
+Step 37: analyzing 500 braids in spread 21
+Step 37: analyzing 500 braids in spread 22
+Step 37: analyzing 500 braids in spread 23
+Step 37: analyzing 500 braids in spread 24
+Step 37: analyzing 500 braids in spread 25
+Finished step 37: min spread 6, max spread 24, drops 0, hits this step 0, runtime 0.79s
+Step 38: analyzing 1 braids in spread 6
+Step 38: analyzing 21 braids in spread 7
+Step 38: analyzing 373 braids in spread 8
+Step 38: analyzing 500 braids in spread 9
+Step 38: analyzing 500 braids in spread 10
+Step 38: analyzing 500 braids in spread 11
+Step 38: analyzing 500 braids in spread 12
+Step 38: analyzing 500 braids in spread 13
+Step 38: analyzing 500 braids in spread 14
+Step 38: analyzing 500 braids in spread 15
+Step 38: analyzing 500 braids in spread 16
+Step 38: analyzing 500 braids in spread 17
+Step 38: analyzing 500 braids in spread 18
+Step 38: analyzing 500 braids in spread 19
+Step 38: analyzing 500 braids in spread 20
+Step 38: analyzing 500 braids in spread 21
+Step 38: analyzing 500 braids in spread 22
+Step 38: analyzing 500 braids in spread 23
+Step 38: analyzing 500 braids in spread 24
+Finished step 38: min spread 6, max spread 23, drops 0, hits this step 0, runtime 0.75s
+Step 39: analyzing 1 braids in spread 6
+Step 39: analyzing 20 braids in spread 7
+Step 39: analyzing 204 braids in spread 8
+Step 39: analyzing 500 braids in spread 9
+Step 39: analyzing 500 braids in spread 10
+Step 39: analyzing 500 braids in spread 11
+Step 39: analyzing 500 braids in spread 12
+Step 39: analyzing 500 braids in spread 13
+Step 39: analyzing 500 braids in spread 14
+Step 39: analyzing 500 braids in spread 15
+Step 39: analyzing 500 braids in spread 16
+Step 39: analyzing 500 braids in spread 17
+Step 39: analyzing 500 braids in spread 18
+Step 39: analyzing 500 braids in spread 19
+Step 39: analyzing 500 braids in spread 20
+Step 39: analyzing 500 braids in spread 21
+Step 39: analyzing 500 braids in spread 22
+Step 39: analyzing 500 braids in spread 23
+Finished step 39: min spread 6, max spread 22, drops 2, hits this step 0, runtime 0.70s
+Step 40: analyzing 2 braids in spread 6
+Step 40: analyzing 19 braids in spread 7
+Step 40: analyzing 195 braids in spread 8
+Step 40: analyzing 500 braids in spread 9
+Step 40: analyzing 500 braids in spread 10
+Step 40: analyzing 500 braids in spread 11
+Step 40: analyzing 500 braids in spread 12
+Step 40: analyzing 500 braids in spread 13
+Step 40: analyzing 500 braids in spread 14
+Step 40: analyzing 500 braids in spread 15
+Step 40: analyzing 500 braids in spread 16
+Step 40: analyzing 500 braids in spread 17
+Step 40: analyzing 500 braids in spread 18
+Step 40: analyzing 500 braids in spread 19
+Step 40: analyzing 500 braids in spread 20
+Step 40: analyzing 500 braids in spread 21
+Step 40: analyzing 500 braids in spread 22
+Finished step 40: min spread 6, max spread 21, drops 3, hits this step 0, runtime 0.67s
+Step 41: analyzing 2 braids in spread 6
+Step 41: analyzing 27 braids in spread 7
+Step 41: analyzing 176 braids in spread 8
+Step 41: analyzing 500 braids in spread 9
+Step 41: analyzing 500 braids in spread 10
+Step 41: analyzing 500 braids in spread 11
+Step 41: analyzing 500 braids in spread 12
+Step 41: analyzing 500 braids in spread 13
+Step 41: analyzing 500 braids in spread 14
+Step 41: analyzing 500 braids in spread 15
+Step 41: analyzing 500 braids in spread 16
+Step 41: analyzing 500 braids in spread 17
+Step 41: analyzing 500 braids in spread 18
+Step 41: analyzing 500 braids in spread 19
+Step 41: analyzing 500 braids in spread 20
+Step 41: analyzing 500 braids in spread 21
+Finished step 41: min spread 6, max spread 20, drops 2, hits this step 0, runtime 0.62s
+Step 42: analyzing 2 braids in spread 6
+Step 42: analyzing 19 braids in spread 7
+Step 42: analyzing 219 braids in spread 8
+Step 42: analyzing 500 braids in spread 9
+Step 42: analyzing 500 braids in spread 10
+Step 42: analyzing 500 braids in spread 11
+Step 42: analyzing 500 braids in spread 12
+Step 42: analyzing 500 braids in spread 13
+Step 42: analyzing 500 braids in spread 14
+Step 42: analyzing 500 braids in spread 15
+Step 42: analyzing 500 braids in spread 16
+Step 42: analyzing 500 braids in spread 17
+Step 42: analyzing 500 braids in spread 18
+Step 42: analyzing 500 braids in spread 19
+Step 42: analyzing 500 braids in spread 20
+Finished step 42: min spread 6, max spread 19, drops 0, hits this step 0, runtime 0.57s
+Step 43: analyzing 1 braids in spread 6
+Step 43: analyzing 23 braids in spread 7
+Step 43: analyzing 148 braids in spread 8
+Step 43: analyzing 500 braids in spread 9
+Step 43: analyzing 500 braids in spread 10
+Step 43: analyzing 500 braids in spread 11
+Step 43: analyzing 500 braids in spread 12
+Step 43: analyzing 500 braids in spread 13
+Step 43: analyzing 500 braids in spread 14
+Step 43: analyzing 500 braids in spread 15
+Step 43: analyzing 500 braids in spread 16
+Step 43: analyzing 500 braids in spread 17
+Step 43: analyzing 500 braids in spread 18
+Step 43: analyzing 500 braids in spread 19
+Finished step 43: min spread 6, max spread 18, drops 0, hits this step 0, runtime 0.53s
+Step 44: analyzing 1 braids in spread 6
+Step 44: analyzing 12 braids in spread 7
+Step 44: analyzing 185 braids in spread 8
+Step 44: analyzing 500 braids in spread 9
+Step 44: analyzing 500 braids in spread 10
+Step 44: analyzing 500 braids in spread 11
+Step 44: analyzing 500 braids in spread 12
+Step 44: analyzing 500 braids in spread 13
+Step 44: analyzing 500 braids in spread 14
+Step 44: analyzing 500 braids in spread 15
+Step 44: analyzing 500 braids in spread 16
+Step 44: analyzing 500 braids in spread 17
+Step 44: analyzing 500 braids in spread 18
+Finished step 44: min spread 6, max spread 17, drops 0, hits this step 0, runtime 0.48s
+Step 45: analyzing 1 braids in spread 6
+Step 45: analyzing 12 braids in spread 7
+Step 45: analyzing 118 braids in spread 8
+Step 45: analyzing 500 braids in spread 9
+Step 45: analyzing 500 braids in spread 10
+Step 45: analyzing 500 braids in spread 11
+Step 45: analyzing 500 braids in spread 12
+Step 45: analyzing 500 braids in spread 13
+Step 45: analyzing 500 braids in spread 14
+Step 45: analyzing 500 braids in spread 15
+Step 45: analyzing 500 braids in spread 16
+Step 45: analyzing 500 braids in spread 17
+Finished step 45: min spread 7, max spread 16, drops 2, hits this step 0, runtime 0.45s
+Step 46: analyzing 13 braids in spread 7
+Step 46: analyzing 117 braids in spread 8
+Step 46: analyzing 500 braids in spread 9
+Step 46: analyzing 500 braids in spread 10
+Step 46: analyzing 500 braids in spread 11
+Step 46: analyzing 500 braids in spread 12
+Step 46: analyzing 500 braids in spread 13
+Step 46: analyzing 500 braids in spread 14
+Step 46: analyzing 500 braids in spread 15
+Step 46: analyzing 500 braids in spread 16
+Finished step 46: min spread 6, max spread 15, drops 4, hits this step 0, runtime 0.40s
+Step 47: analyzing 1 braids in spread 6
+Step 47: analyzing 8 braids in spread 7
+Step 47: analyzing 115 braids in spread 8
+Step 47: analyzing 500 braids in spread 9
+Step 47: analyzing 500 braids in spread 10
+Step 47: analyzing 500 braids in spread 11
+Step 47: analyzing 500 braids in spread 12
+Step 47: analyzing 500 braids in spread 13
+Step 47: analyzing 500 braids in spread 14
+Step 47: analyzing 500 braids in spread 15
+Finished step 47: min spread 5, max spread 14, drops 5, hits this step 0, runtime 0.35s
+Step 48: analyzing 1 braids in spread 5
+Step 48: analyzing 3 braids in spread 6
+Step 48: analyzing 11 braids in spread 7
+Step 48: analyzing 88 braids in spread 8
+Step 48: analyzing 500 braids in spread 9
+Step 48: analyzing 500 braids in spread 10
+Step 48: analyzing 500 braids in spread 11
+Step 48: analyzing 500 braids in spread 12
+Step 48: analyzing 500 braids in spread 13
+Step 48: analyzing 500 braids in spread 14
+Finished step 48: min spread 5, max spread 13, drops 3, hits this step 0, runtime 0.32s
+Step 49: analyzing 1 braids in spread 5
+Step 49: analyzing 10 braids in spread 6
+Step 49: analyzing 19 braids in spread 7
+Step 49: analyzing 88 braids in spread 8
+Step 49: analyzing 500 braids in spread 9
+Step 49: analyzing 500 braids in spread 10
+Step 49: analyzing 500 braids in spread 11
+Step 49: analyzing 500 braids in spread 12
+Step 49: analyzing 500 braids in spread 13
+Finished step 49: min spread 5, max spread 12, drops 2, hits this step 0, runtime 0.29s
+Step 50: analyzing 1 braids in spread 5
+Step 50: analyzing 10 braids in spread 6
+Step 50: analyzing 57 braids in spread 7
+Step 50: analyzing 118 braids in spread 8
+Step 50: analyzing 500 braids in spread 9
+Step 50: analyzing 500 braids in spread 10
+Step 50: analyzing 500 braids in spread 11
+Step 50: analyzing 500 braids in spread 12
+Finished step 50: min spread 5, max spread 11, drops 2, hits this step 0, runtime 0.27s
+Step 51: analyzing 1 braids in spread 5
+Step 51: analyzing 11 braids in spread 6
+Step 51: analyzing 65 braids in spread 7
+Step 51: analyzing 304 braids in spread 8
+Step 51: analyzing 500 braids in spread 9
+Step 51: analyzing 500 braids in spread 10
+Step 51: analyzing 500 braids in spread 11
+Finished step 51: min spread 5, max spread 10, drops 1, hits this step 0, runtime 0.24s
+Step 52: analyzing 1 braids in spread 5
+Step 52: analyzing 11 braids in spread 6
+Step 52: analyzing 76 braids in spread 7
+Step 52: analyzing 376 braids in spread 8
+Step 52: analyzing 500 braids in spread 9
+Step 52: analyzing 500 braids in spread 10
+Finished step 52: min spread 5, max spread 9, drops 1, hits this step 0, runtime 0.19s
+Step 53: analyzing 1 braids in spread 5
+Step 53: analyzing 9 braids in spread 6
+Step 53: analyzing 79 braids in spread 7
+Step 53: analyzing 463 braids in spread 8
+Step 53: analyzing 500 braids in spread 9
+Finished step 53: min spread 5, max spread 8, drops 1, hits this step 0, runtime 0.14s
+Step 54: analyzing 1 braids in spread 5
+Step 54: analyzing 8 braids in spread 6
+Step 54: analyzing 60 braids in spread 7
+Step 54: analyzing 494 braids in spread 8
+Finished step 54: min spread 5, max spread 7, drops 1, hits this step 0, runtime 0.09s
+Step 55: analyzing 1 braids in spread 5
+Step 55: analyzing 8 braids in spread 6
+Step 55: analyzing 56 braids in spread 7
+Finished step 55: min spread 5, max spread 6, drops 1, hits this step 0, runtime 0.05s
+Step 56: analyzing 1 braids in spread 5
+Step 56: analyzing 8 braids in spread 6
+Finished step 56: min spread 5, max spread 5, drops 1, hits this step 0, runtime 0.02s
+Step 57: analyzing 1 braids in spread 5
+Finished step 57: no surviving buckets, drops 0, hits this step 0, runtime 0.00s
+Wrote 0 hits to data/a3_mod_p_bucket_search_p5_len60_cuda_20260309_025019.json
+real 27.04
+user 26.39
+sys 0.39

@@ -23,6 +23,17 @@ class CompiledOperator:
     max_shift: int
 
 
+@dataclass(frozen=True)
+class CompiledOperatorTable:
+    row_out: torch.Tensor
+    row_in: torch.Tensor
+    shifts: torch.Tensor
+    coeffs: torch.Tensor
+    valid_terms: torch.Tensor
+    min_shift: int
+    max_shift: int
+
+
 def _identity_operator() -> OperatorDict:
     n = len(ct.positive_letters)
     return {(row, row, 0): 1 for row in range(n)}
@@ -113,6 +124,50 @@ def compile_simple_operators(words: List[Iterable[int]], device: torch.device) -
     return [compile_word_operator(word, device=device) for word in words]
 
 
+def stack_compiled_operators(operators: List[CompiledOperator], device: torch.device) -> CompiledOperatorTable:
+    if not operators:
+        empty_long = torch.empty((0, 0), dtype=torch.long, device=device)
+        empty_int = torch.empty((0, 0), dtype=torch.int32, device=device)
+        empty_bool = torch.empty((0, 0), dtype=torch.bool, device=device)
+        return CompiledOperatorTable(
+            row_out=empty_long,
+            row_in=empty_long,
+            shifts=empty_long,
+            coeffs=empty_int,
+            valid_terms=empty_bool,
+            min_shift=0,
+            max_shift=0,
+        )
+
+    max_terms = max(int(operator.coeffs.numel()) for operator in operators)
+    num_operators = len(operators)
+    row_out = torch.zeros((num_operators, max_terms), dtype=torch.long, device=device)
+    row_in = torch.zeros((num_operators, max_terms), dtype=torch.long, device=device)
+    shifts = torch.zeros((num_operators, max_terms), dtype=torch.long, device=device)
+    coeffs = torch.zeros((num_operators, max_terms), dtype=torch.int32, device=device)
+    valid_terms = torch.zeros((num_operators, max_terms), dtype=torch.bool, device=device)
+
+    for index, operator in enumerate(operators):
+        term_count = int(operator.coeffs.numel())
+        if term_count == 0:
+            continue
+        row_out[index, :term_count] = operator.row_out
+        row_in[index, :term_count] = operator.row_in
+        shifts[index, :term_count] = operator.shifts
+        coeffs[index, :term_count] = operator.coeffs
+        valid_terms[index, :term_count] = True
+
+    return CompiledOperatorTable(
+        row_out=row_out,
+        row_in=row_in,
+        shifts=shifts,
+        coeffs=coeffs,
+        valid_terms=valid_terms,
+        min_shift=min(operator.min_shift for operator in operators),
+        max_shift=max(operator.max_shift for operator in operators),
+    )
+
+
 def _shift_rows(rows: torch.Tensor, shift: int) -> torch.Tensor:
     """
     Shift the q-degree axis with zero fill rather than wraparound.
@@ -120,15 +175,15 @@ def _shift_rows(rows: torch.Tensor, shift: int) -> torch.Tensor:
     if shift == 0:
         return rows
 
-    batch, width = rows.shape
+    width = rows.shape[-1]
     out = torch.zeros_like(rows)
     if shift > 0:
         if shift < width:
-            out[:, shift:] = rows[:, : width - shift]
+            out[..., shift:] = rows[..., : width - shift]
     else:
         offset = -shift
         if offset < width:
-            out[:, : width - offset] = rows[:, offset:]
+            out[..., : width - offset] = rows[..., offset:]
     return out
 
 
@@ -151,6 +206,49 @@ def apply_operator(states: torch.Tensor, operator: CompiledOperator, modulus: in
         else:
             out[:, row_out, :] += coeff * shifted
 
+    if modulus > 0:
+        out = torch.remainder(out, modulus)
+    return out
+
+
+def apply_operator_ids(
+    states: torch.Tensor,
+    operator_table: CompiledOperatorTable,
+    operator_ids: torch.Tensor,
+    modulus: int,
+) -> torch.Tensor:
+    """
+    Apply multiple compiled operators to the same batch of states.
+
+    Returns a tensor of shape [num_operators, batch, rows, width].
+    """
+    if operator_ids.numel() == 0:
+        rows = states.shape[1]
+        width = states.shape[2]
+        return torch.empty((0, states.shape[0], rows, width), dtype=states.dtype, device=states.device)
+
+    selected_row_out = operator_table.row_out.index_select(0, operator_ids)
+    selected_row_in = operator_table.row_in.index_select(0, operator_ids)
+    selected_shifts = operator_table.shifts.index_select(0, operator_ids)
+    selected_coeffs = operator_table.coeffs.index_select(0, operator_ids)
+    selected_valid_terms = operator_table.valid_terms.index_select(0, operator_ids)
+
+    batch_size, rows, width = states.shape
+    num_operators, max_terms = selected_coeffs.shape
+    out = torch.zeros((batch_size, num_operators, rows, width), dtype=states.dtype, device=states.device)
+    target_rows = selected_row_out.view(1, num_operators, max_terms, 1).expand(batch_size, -1, -1, width)
+    flat_row_in = selected_row_in.reshape(-1)
+
+    for shift in range(operator_table.min_shift, operator_table.max_shift + 1):
+        term_mask = selected_valid_terms & (selected_shifts == shift)
+        if not term_mask.any():
+            continue
+        shifted = _shift_rows(states, shift)
+        gathered = shifted[:, flat_row_in, :].view(batch_size, num_operators, max_terms, width)
+        weights = (selected_coeffs * term_mask.to(selected_coeffs.dtype)).to(states.dtype)
+        out.scatter_add_(2, target_rows, gathered * weights.view(1, num_operators, max_terms, 1))
+
+    out = out.permute(1, 0, 2, 3).contiguous()
     if modulus > 0:
         out = torch.remainder(out, modulus)
     return out
@@ -197,7 +295,7 @@ def normalize_states(states: torch.Tensor, modulus: int) -> tuple[torch.Tensor, 
     return normalized, spread
 
 
-def make_initial_state(width: int, device: torch.device) -> torch.Tensor:
+def make_initial_state(width: int, device: torch.device, base_point: int = 1) -> torch.Tensor:
     state = torch.zeros((1, len(ct.positive_letters), width), dtype=torch.int32, device=device)
-    state[0, 0, 0] = 1
+    state[0, base_point - 1, 0] = 1
     return state

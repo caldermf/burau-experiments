@@ -261,8 +261,17 @@ def apply_simple_actions(states, suffix_indices, simple_actions, p: int, backend
     coeff0 = actions[..., 0].to(lib.int32) if backend.is_torch else actions[..., 0].astype(np.int32, copy=False)
     coeff1 = actions[..., 1].to(lib.int32) if backend.is_torch else actions[..., 1].astype(np.int32, copy=False)
 
-    out[:, :, :width] += lib.einsum("boi,biw->bow", coeff0, parent)
-    out[:, :, 1:] += lib.einsum("boi,biw->bow", coeff1, parent)
+    if backend.is_torch and backend.device == "cuda":
+        # CUDA einsum/bmm kernels do not support int32 here on torch 2.5,
+        # so do the tiny 3x3 contractions in float32 and cast back exactly.
+        parent_f32 = parent.to(lib.float32)
+        coeff0_f32 = coeff0.to(lib.float32)
+        coeff1_f32 = coeff1.to(lib.float32)
+        out[:, :, :width] += lib.einsum("boi,biw->bow", coeff0_f32, parent_f32).round().to(lib.int32)
+        out[:, :, 1:] += lib.einsum("boi,biw->bow", coeff1_f32, parent_f32).round().to(lib.int32)
+    else:
+        out[:, :, :width] += lib.einsum("boi,biw->bow", coeff0, parent)
+        out[:, :, 1:] += lib.einsum("boi,biw->bow", coeff1, parent)
     if p:
         out %= p
     return out

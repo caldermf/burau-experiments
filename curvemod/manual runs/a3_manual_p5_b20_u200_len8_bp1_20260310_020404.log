@@ -1,0 +1,31 @@
+Start: 2026-03-10T02:04:10.408790-04:00
+Host: login2.bouchet.ycrc.yale.edu
+CUDA visible devices: (unset)
+PYTORCH_CUDA_ALLOC_CONF=(unset)
+CUDA unavailable
+Manual config: p=5 base_point=1 cap=20 total_cap=200 first_steps=12 max_g_length=8 seed=0 device=auto
+Starting A3 torch search with p= 5 caps 20 20 totalcaps 200 200 FIRST_STEPS 12 base_point 1 device cpu
+We have 6 atoms and 14 dual simples
+Initialized step 1 with spreads: {1: 2}
+Starting step 2
+Analyzing 2 states in spread 1
+Finished step 2, minimal spread 2, max spread 2, got 0 drops
+Total number of curves 8
+Starting step 3
+Analyzing 8 states in spread 2
+Finished step 3, minimal spread 3, max spread 3, got 0 drops
+Total number of curves 20
+Starting step 4
+Analyzing 20 states in spread 3
+Finished step 4, minimal spread 4, max spread 4, got 0 drops
+Total number of curves 20
+Starting step 5
+Analyzing 20 states in spread 4
+Altogether, runtime= 0.40341734886169434
+SUMMARY log_path= /nfs/roberts/project/pi_com36/com36/burau-experiments/curvemod/manual runs/a3_manual_p5_b20_u200_len8_bp1_20260310_020404.log
+SUMMARY witness_output= /nfs/roberts/project/pi_com36/com36/burau-experiments/curvemod/manual runs/a3_manual_p5_b20_u200_len8_bp1_20260310_020404_witnesses.txt
+SUMMARY found= False
+SUMMARY first_depth= None
+SUMMARY unique_witnesses= 0
+SUMMARY total_hits= 0
+SUMMARY witness_depth_histogram= {}

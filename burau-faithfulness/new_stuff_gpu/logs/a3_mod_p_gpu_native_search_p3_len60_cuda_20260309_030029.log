@@ -1,0 +1,163 @@
+[2026-03-09T03:00:29-04:00] a3_mod_p_gpu_native_search mod 3 benchmark
+cwd: /nfs/roberts/project/pi_com36/com36/burau-experiments/burau-faithfulness/new_stuff_gpu
+hostname: a1128u05n01.mghpcc.ycrc.yale.edu
+python: /home/com36/.conda/envs/burau_gpu/bin/python
+command: python a3_mod_p_gpu_native_search.py --backend torch --device cuda --p 3 --max-g-length 60 --cap-1 500 --cap-2 500 --total-cap-1 50000 --total-cap-2 50000 --first-steps 12 --output data/a3_mod_p_gpu_native_search_p3_len60_cuda_20260309_030029.json
+
+[nvidia-smi]
+Mon Mar  9 03:00:29 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.195.03             Driver Version: 570.195.03     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA RTX 5000 Ada Gene...    On  |   00000000:3D:00.0 Off |                  Off |
+| 30%   38C    P8             14W /  250W |       2MiB /  32760MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+
+[torch cuda info]
+sys.executable: /home/com36/.conda/envs/burau_gpu/bin/python
+torch.__version__: 2.5.1
+torch.version.cuda: 12.1
+torch.cuda.is_available(): True
+torch.cuda.device_count(): 1
+device[0].name: NVIDIA RTX 5000 Ada Generation
+device[0].total_memory: 33804779520
+
+[run output]
+Backend: torch on cuda
+Built 14 Garside simples for A3.
+Starting GPU-native search over Z/3Z with base vertex 1.
+Step 2: analyzing 4 braids across spreads 1..1
+Finished step 2: min spread 1, max spread 2, drops 0, hits this step 0, survivors 25, runtime 0.11s
+Step 3: analyzing 25 braids across spreads 1..2
+Finished step 3: min spread 1, max spread 3, drops 0, hits this step 0, survivors 131, runtime 0.00s
+Step 4: analyzing 131 braids across spreads 1..3
+Finished step 4: min spread 1, max spread 4, drops 0, hits this step 0, survivors 644, runtime 0.02s
+Step 5: analyzing 644 braids across spreads 1..4
+Finished step 5: min spread 1, max spread 5, drops 0, hits this step 0, survivors 1177, runtime 0.00s
+Step 6: analyzing 1177 braids across spreads 1..5
+Finished step 6: min spread 1, max spread 6, drops 0, hits this step 0, survivors 1755, runtime 0.00s
+Step 7: analyzing 1755 braids across spreads 1..6
+Finished step 7: min spread 1, max spread 7, drops 0, hits this step 0, survivors 2401, runtime 0.00s
+Step 8: analyzing 2401 braids across spreads 1..7
+Finished step 8: min spread 1, max spread 8, drops 1, hits this step 0, survivors 3081, runtime 0.00s
+Step 9: analyzing 3081 braids across spreads 1..8
+Finished step 9: min spread 1, max spread 9, drops 1, hits this step 0, survivors 3729, runtime 0.00s
+Step 10: analyzing 3729 braids across spreads 1..9
+Finished step 10: min spread 1, max spread 10, drops 0, hits this step 0, survivors 4337, runtime 0.00s
+Step 11: analyzing 4337 braids across spreads 1..10
+Finished step 11: min spread 1, max spread 11, drops 1, hits this step 0, survivors 4991, runtime 0.00s
+Step 12: analyzing 4991 braids across spreads 1..11
+Finished step 12: min spread 1, max spread 12, drops 2, hits this step 0, survivors 5657, runtime 0.00s
+Step 13: analyzing 5657 braids across spreads 1..12
+Finished step 13: min spread 1, max spread 13, drops 1, hits this step 0, survivors 6230, runtime 0.00s
+Step 14: analyzing 6230 braids across spreads 1..13
+Finished step 14: min spread 1, max spread 14, drops 0, hits this step 0, survivors 6837, runtime 0.01s
+Step 15: analyzing 6837 braids across spreads 1..14
+Finished step 15: min spread 1, max spread 15, drops 0, hits this step 0, survivors 7494, runtime 0.01s
+Step 16: analyzing 7494 braids across spreads 1..15
+Finished step 16: min spread 1, max spread 16, drops 0, hits this step 0, survivors 8000, runtime 0.01s
+Step 17: analyzing 8000 braids across spreads 1..16
+Finished step 17: min spread 1, max spread 17, drops 0, hits this step 0, survivors 8500, runtime 0.01s
+Step 18: analyzing 8500 braids across spreads 1..17
+Finished step 18: min spread 1, max spread 18, drops 0, hits this step 0, survivors 9000, runtime 0.01s
+Step 19: analyzing 9000 braids across spreads 1..18
+Finished step 19: min spread 1, max spread 19, drops 0, hits this step 0, survivors 9500, runtime 0.01s
+Step 20: analyzing 9500 braids across spreads 1..19
+Finished step 20: min spread 1, max spread 20, drops 0, hits this step 0, survivors 10000, runtime 0.01s
+Step 21: analyzing 10000 braids across spreads 1..20
+Finished step 21: min spread 1, max spread 21, drops 0, hits this step 0, survivors 10500, runtime 0.01s
+Step 22: analyzing 10500 braids across spreads 1..21
+Finished step 22: min spread 1, max spread 22, drops 0, hits this step 0, survivors 11000, runtime 0.01s
+Step 23: analyzing 11000 braids across spreads 1..22
+Finished step 23: min spread 1, max spread 23, drops 0, hits this step 0, survivors 11500, runtime 0.01s
+Step 24: analyzing 11500 braids across spreads 1..23
+Finished step 24: min spread 1, max spread 24, drops 0, hits this step 0, survivors 12000, runtime 0.01s
+Step 25: analyzing 12000 braids across spreads 1..24
+Finished step 25: min spread 1, max spread 25, drops 1, hits this step 0, survivors 12500, runtime 0.01s
+Step 26: analyzing 12500 braids across spreads 1..25
+Finished step 26: min spread 1, max spread 26, drops 1, hits this step 0, survivors 13000, runtime 0.01s
+Step 27: analyzing 13000 braids across spreads 1..26
+Finished step 27: min spread 1, max spread 27, drops 1, hits this step 0, survivors 13500, runtime 0.01s
+Step 28: analyzing 13500 braids across spreads 1..27
+Finished step 28: min spread 1, max spread 28, drops 0, hits this step 0, survivors 14000, runtime 0.01s
+Step 29: analyzing 14000 braids across spreads 1..28
+Finished step 29: min spread 1, max spread 29, drops 2, hits this step 0, survivors 14500, runtime 0.01s
+Step 30: analyzing 14500 braids across spreads 1..29
+Finished step 30: min spread 1, max spread 30, drops 2, hits this step 0, survivors 15000, runtime 0.01s
+Step 31: analyzing 15000 braids across spreads 1..30
+Finished step 31: min spread 1, max spread 30, drops 2, hits this step 0, survivors 15000, runtime 0.01s
+Step 32: analyzing 15000 braids across spreads 1..30
+Finished step 32: min spread 1, max spread 29, drops 2, hits this step 0, survivors 14500, runtime 0.01s
+Step 33: analyzing 14500 braids across spreads 1..29
+Finished step 33: min spread 1, max spread 28, drops 1, hits this step 0, survivors 14000, runtime 0.01s
+Step 34: analyzing 14000 braids across spreads 1..28
+Finished step 34: min spread 1, max spread 27, drops 0, hits this step 0, survivors 13500, runtime 0.01s
+Step 35: analyzing 13500 braids across spreads 1..27
+Finished step 35: min spread 1, max spread 26, drops 0, hits this step 0, survivors 13000, runtime 0.01s
+Step 36: analyzing 13000 braids across spreads 1..26
+Finished step 36: min spread 1, max spread 25, drops 0, hits this step 0, survivors 12500, runtime 0.01s
+Step 37: analyzing 12500 braids across spreads 1..25
+Finished step 37: min spread 1, max spread 24, drops 0, hits this step 0, survivors 12000, runtime 0.01s
+Step 38: analyzing 12000 braids across spreads 1..24
+Finished step 38: min spread 1, max spread 23, drops 0, hits this step 0, survivors 11500, runtime 0.01s
+Step 39: analyzing 11500 braids across spreads 1..23
+Finished step 39: min spread 1, max spread 22, drops 2, hits this step 0, survivors 11000, runtime 0.01s
+Step 40: analyzing 11000 braids across spreads 1..22
+Finished step 40: min spread 1, max spread 21, drops 1, hits this step 0, survivors 10500, runtime 0.01s
+Step 41: analyzing 10500 braids across spreads 1..21
+Finished step 41: min spread 1, max spread 20, drops 0, hits this step 0, survivors 10000, runtime 0.01s
+Step 42: analyzing 10000 braids across spreads 1..20
+Finished step 42: min spread 1, max spread 19, drops 1, hits this step 0, survivors 9500, runtime 0.01s
+Step 43: analyzing 9500 braids across spreads 1..19
+Finished step 43: min spread 1, max spread 18, drops 0, hits this step 0, survivors 9000, runtime 0.01s
+Step 44: analyzing 9000 braids across spreads 1..18
+Finished step 44: min spread 1, max spread 17, drops 0, hits this step 0, survivors 8500, runtime 0.01s
+Step 45: analyzing 8500 braids across spreads 1..17
+Finished step 45: min spread 1, max spread 16, drops 0, hits this step 0, survivors 8000, runtime 0.01s
+Step 46: analyzing 8000 braids across spreads 1..16
+Finished step 46: min spread 1, max spread 15, drops 0, hits this step 0, survivors 7500, runtime 0.01s
+Step 47: analyzing 7500 braids across spreads 1..15
+Finished step 47: min spread 1, max spread 14, drops 1, hits this step 0, survivors 7000, runtime 0.01s
+Step 48: analyzing 7000 braids across spreads 1..14
+Finished step 48: min spread 1, max spread 13, drops 0, hits this step 0, survivors 6500, runtime 0.00s
+Step 49: analyzing 6500 braids across spreads 1..13
+Finished step 49: min spread 1, max spread 12, drops 0, hits this step 0, survivors 6000, runtime 0.00s
+Step 50: analyzing 6000 braids across spreads 1..12
+Finished step 50: min spread 1, max spread 11, drops 0, hits this step 0, survivors 5500, runtime 0.00s
+Step 51: analyzing 5500 braids across spreads 1..11
+Finished step 51: min spread 1, max spread 10, drops 1, hits this step 0, survivors 5000, runtime 0.00s
+Step 52: analyzing 5000 braids across spreads 1..10
+Finished step 52: min spread 1, max spread 9, drops 1, hits this step 0, survivors 4500, runtime 0.00s
+Step 53: analyzing 4500 braids across spreads 1..9
+Finished step 53: min spread 1, max spread 8, drops 0, hits this step 0, survivors 4000, runtime 0.00s
+Step 54: analyzing 4000 braids across spreads 1..8
+Finished step 54: min spread 1, max spread 7, drops 1, hits this step 0, survivors 3500, runtime 0.00s
+Step 55: analyzing 3500 braids across spreads 1..7
+Finished step 55: min spread 1, max spread 6, drops 0, hits this step 0, survivors 3000, runtime 0.00s
+Step 56: analyzing 3000 braids across spreads 1..6
+Finished step 56: min spread 1, max spread 5, drops 0, hits this step 0, survivors 2500, runtime 0.00s
+Step 57: analyzing 2500 braids across spreads 1..5
+Finished step 57: min spread 1, max spread 4, drops 0, hits this step 0, survivors 2000, runtime 0.00s
+Step 58: analyzing 2000 braids across spreads 1..4
+Finished step 58: min spread 1, max spread 3, drops 0, hits this step 0, survivors 1500, runtime 0.00s
+Step 59: analyzing 1500 braids across spreads 1..3
+Finished step 59: min spread 1, max spread 2, drops 0, hits this step 0, survivors 1000, runtime 0.00s
+Step 60: analyzing 1000 braids across spreads 1..2
+Finished step 60: min spread 1, max spread 1, drops 0, hits this step 0, survivors 500, runtime 0.00s
+Wrote 0 hits to data/a3_mod_p_gpu_native_search_p3_len60_cuda_20260309_030029.json
+real 2.16
+user 1.54
+sys 0.44

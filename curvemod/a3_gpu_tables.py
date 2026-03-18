@@ -64,7 +64,7 @@ class A3TableData:
     start_mask: torch.Tensor
 
 
-def build_a3_table_data(modulus: int, device: torch.device) -> A3TableData:
+def build_a3_table_data(modulus: int, device: torch.device, base_point: int = 1) -> A3TableData:
     garside_gens = [[]] + [word[:] for word in DUAL_WORDS]
     number = 1
     while number != 0:
@@ -140,8 +140,8 @@ def build_a3_table_data(modulus: int, device: torch.device) -> A3TableData:
             continue
         valid_start = True
         for descent in right_descents_by_word.get(tuple(word), []):
-            descent_vec = _compute_oburau_vector(descent, 1)
-            if ct.poly_normalize_vector(descent_vec) == ct.dim_vectors[1]:
+            descent_vec = _compute_oburau_vector(descent, base_point)
+            if ct.poly_normalize_vector(descent_vec) == ct.dim_vectors[base_point]:
                 valid_start = False
                 break
             if ct.topdeg_vector(descent_vec) - ct.botdeg_vector(descent_vec) != 1:
@@ -150,7 +150,7 @@ def build_a3_table_data(modulus: int, device: torch.device) -> A3TableData:
         if not valid_start:
             continue
 
-        image = _make_fp_vec(_compute_oburau_vector(word, 1), modulus)
+        image = _make_fp_vec(_compute_oburau_vector(word, base_point), modulus)
         spread = ct.topdeg_vector(image) - ct.botdeg_vector(image)
         if spread == 1:
             start_simple_ids.append(simple_id)
