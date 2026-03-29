@@ -1,0 +1,361 @@
+Start: 2026-03-19T13:06:32.846123-04:00
+Host: a1122u02n01.mghpcc.ycrc.yale.edu
+CUDA_VISIBLE_DEVICES=0
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+torch=2.5.1
+cuda_available=True
+device0=NVIDIA H200
+Config: {'bucket_cap': 4000, 'total_cap': 40000, 'max_depth': 40, 'modulus': 2, 'seed': 0, 'require_sigma2': True, 'exact_commutator_generator': 1}
+Starting B5 (3,2) Hecke dual-simple reservoir search with p= 2 bucket_cap 4000 total_cap 40000 max_depth 40 device cuda
+We have 10 atoms and 42 dual simples
+Admissible start simples: 3
+Initialized step 1 with spreads: {4: 1, 6: 1, 8: 1}
+Starting step 2
+Analyzing 1 states in spread 4
+Analyzing 1 states in spread 6
+Analyzing 1 states in spread 8
+Finished step 2, minimal spread 5, max spread 21, got 0 drops
+Total number of states 22
+Starting step 3
+Analyzing 1 states in spread 5
+Analyzing 2 states in spread 8
+Analyzing 1 states in spread 9
+Analyzing 2 states in spread 10
+Analyzing 3 states in spread 12
+Analyzing 4 states in spread 14
+Analyzing 1 states in spread 15
+Analyzing 2 states in spread 16
+Analyzing 3 states in spread 18
+Analyzing 2 states in spread 19
+Analyzing 1 states in spread 21
+Finished step 3, minimal spread 5, max spread 30, got 0 drops
+Total number of states 228
+Starting step 4
+Analyzing 1 states in spread 5
+Analyzing 1 states in spread 9
+Analyzing 1 states in spread 10
+Analyzing 4 states in spread 12
+Analyzing 3 states in spread 13
+Analyzing 6 states in spread 14
+Analyzing 3 states in spread 15
+Analyzing 13 states in spread 16
+Analyzing 4 states in spread 17
+Analyzing 20 states in spread 18
+Analyzing 14 states in spread 19
+Analyzing 19 states in spread 20
+Analyzing 11 states in spread 21
+Analyzing 30 states in spread 22
+Analyzing 23 states in spread 23
+Analyzing 19 states in spread 24
+Analyzing 17 states in spread 25
+Analyzing 17 states in spread 26
+Analyzing 12 states in spread 27
+Analyzing 2 states in spread 28
+Analyzing 6 states in spread 29
+Analyzing 2 states in spread 30
+Finished step 4, minimal spread 9, max spread 41, got 103 drops
+Total number of states 2744
+Starting step 5
+Analyzing 2 states in spread 9
+Analyzing 2 states in spread 11
+Analyzing 3 states in spread 12
+Analyzing 2 states in spread 13
+Analyzing 4 states in spread 14
+Analyzing 1 states in spread 15
+Analyzing 14 states in spread 16
+Analyzing 7 states in spread 17
+Analyzing 26 states in spread 18
+Analyzing 27 states in spread 19
+Analyzing 70 states in spread 20
+Analyzing 42 states in spread 21
+Analyzing 119 states in spread 22
+Analyzing 105 states in spread 23
+Analyzing 167 states in spread 24
+Analyzing 135 states in spread 25
+Analyzing 273 states in spread 26
+Analyzing 195 states in spread 27
+Analyzing 290 states in spread 28
+Analyzing 219 states in spread 29
+Analyzing 286 states in spread 30
+Analyzing 204 states in spread 31
+Analyzing 177 states in spread 32
+Analyzing 118 states in spread 33
+Analyzing 131 states in spread 34
+Analyzing 55 states in spread 35
+Analyzing 33 states in spread 36
+Analyzing 20 states in spread 37
+Analyzing 14 states in spread 38
+Analyzing 1 states in spread 39
+Analyzing 1 states in spread 40
+Analyzing 1 states in spread 41
+Finished step 5, minimal spread 13, max spread 49, got 1250 drops
+Total number of states 34600
+Starting step 6
+Analyzing 3 states in spread 13
+Analyzing 3 states in spread 14
+Analyzing 8 states in spread 15
+Analyzing 13 states in spread 16
+Analyzing 10 states in spread 17
+Analyzing 30 states in spread 18
+Analyzing 19 states in spread 19
+Analyzing 69 states in spread 20
+Analyzing 56 states in spread 21
+Analyzing 146 states in spread 22
+Analyzing 166 states in spread 23
+Analyzing 377 states in spread 24
+Analyzing 334 states in spread 25
+Analyzing 795 states in spread 26
+Analyzing 690 states in spread 27
+Analyzing 1229 states in spread 28
+Analyzing 1183 states in spread 29
+Analyzing 2286 states in spread 30
+Analyzing 1798 states in spread 31
+Analyzing 2868 states in spread 32
+Analyzing 2453 states in spread 33
+Analyzing 3285 states in spread 34
+Analyzing 2614 states in spread 35
+Analyzing 3161 states in spread 36
+Analyzing 2351 states in spread 37
+Analyzing 2631 states in spread 38
+Analyzing 1623 states in spread 39
+Analyzing 1622 states in spread 40
+Analyzing 946 states in spread 41
+Analyzing 932 states in spread 42
+Analyzing 368 states in spread 43
+Analyzing 292 states in spread 44
+Analyzing 116 states in spread 45
+Analyzing 90 states in spread 46
+Analyzing 19 states in spread 47
+Analyzing 8 states in spread 48
+Analyzing 6 states in spread 49
+Finished step 6, minimal spread 12, max spread 58, got 16960 drops
+Total number of states 99930
+Starting step 7
+Analyzing 1 states in spread 12
+Analyzing 1 states in spread 14
+Analyzing 1 states in spread 15
+Analyzing 7 states in spread 16
+Analyzing 11 states in spread 17
+Analyzing 23 states in spread 18
+Analyzing 42 states in spread 19
+Analyzing 69 states in spread 20
+Analyzing 62 states in spread 21
+Analyzing 214 states in spread 22
+Analyzing 186 states in spread 23
+Analyzing 453 states in spread 24
+Analyzing 514 states in spread 25
+Analyzing 1080 states in spread 26
+Analyzing 1179 states in spread 27
+Analyzing 2559 states in spread 28
+Analyzing 2594 states in spread 29
+Analyzing 4000 states in spread 30
+Analyzing 4000 states in spread 31
+Analyzing 4000 states in spread 32
+Analyzing 4000 states in spread 33
+Analyzing 4000 states in spread 34
+Analyzing 4000 states in spread 35
+Analyzing 4000 states in spread 36
+Analyzing 4000 states in spread 37
+Finished step 7, minimal spread 13, max spread 56, got 10351 drops
+Total number of states 91793
+Starting step 8
+Analyzing 1 states in spread 13
+Analyzing 1 states in spread 14
+Analyzing 6 states in spread 16
+Analyzing 5 states in spread 17
+Analyzing 16 states in spread 18
+Analyzing 25 states in spread 19
+Analyzing 58 states in spread 20
+Analyzing 94 states in spread 21
+Analyzing 204 states in spread 22
+Analyzing 263 states in spread 23
+Analyzing 583 states in spread 24
+Analyzing 637 states in spread 25
+Analyzing 1571 states in spread 26
+Analyzing 1579 states in spread 27
+Analyzing 3198 states in spread 28
+Analyzing 3871 states in spread 29
+Analyzing 4000 states in spread 30
+Analyzing 4000 states in spread 31
+Analyzing 4000 states in spread 32
+Analyzing 4000 states in spread 33
+Analyzing 4000 states in spread 34
+Analyzing 4000 states in spread 35
+Analyzing 4000 states in spread 36
+Finished step 8, minimal spread 15, max spread 55, got 7871 drops
+Total number of states 89271
+Starting step 9
+Analyzing 1 states in spread 15
+Analyzing 2 states in spread 16
+Analyzing 3 states in spread 17
+Analyzing 11 states in spread 18
+Analyzing 11 states in spread 19
+Analyzing 46 states in spread 20
+Analyzing 79 states in spread 21
+Analyzing 150 states in spread 22
+Analyzing 241 states in spread 23
+Analyzing 529 states in spread 24
+Analyzing 777 states in spread 25
+Analyzing 1638 states in spread 26
+Analyzing 2049 states in spread 27
+Analyzing 3896 states in spread 28
+Analyzing 4000 states in spread 29
+Analyzing 4000 states in spread 30
+Analyzing 4000 states in spread 31
+Analyzing 4000 states in spread 32
+Analyzing 4000 states in spread 33
+Analyzing 4000 states in spread 34
+Analyzing 4000 states in spread 35
+Analyzing 4000 states in spread 36
+Finished step 9, minimal spread 15, max spread 58, got 6307 drops
+Total number of states 88865
+Starting step 10
+Analyzing 1 states in spread 15
+Analyzing 2 states in spread 17
+Analyzing 5 states in spread 18
+Analyzing 15 states in spread 19
+Analyzing 27 states in spread 20
+Analyzing 46 states in spread 21
+Analyzing 113 states in spread 22
+Analyzing 179 states in spread 23
+Analyzing 428 states in spread 24
+Analyzing 661 states in spread 25
+Analyzing 1368 states in spread 26
+Analyzing 1852 states in spread 27
+Analyzing 3511 states in spread 28
+Analyzing 4000 states in spread 29
+Analyzing 4000 states in spread 30
+Analyzing 4000 states in spread 31
+Analyzing 4000 states in spread 32
+Analyzing 4000 states in spread 33
+Analyzing 4000 states in spread 34
+Analyzing 4000 states in spread 35
+Analyzing 4000 states in spread 36
+Finished step 10, minimal spread 17, max spread 56, got 5284 drops
+Total number of states 86555
+Starting step 11
+Analyzing 2 states in spread 17
+Analyzing 4 states in spread 18
+Analyzing 4 states in spread 19
+Analyzing 17 states in spread 20
+Analyzing 29 states in spread 21
+Analyzing 91 states in spread 22
+Analyzing 138 states in spread 23
+Analyzing 290 states in spread 24
+Analyzing 514 states in spread 25
+Analyzing 1069 states in spread 26
+Analyzing 1557 states in spread 27
+Analyzing 2645 states in spread 28
+Analyzing 3599 states in spread 29
+Analyzing 4000 states in spread 30
+Analyzing 4000 states in spread 31
+Analyzing 4000 states in spread 32
+Analyzing 4000 states in spread 33
+Analyzing 4000 states in spread 34
+Analyzing 4000 states in spread 35
+Analyzing 4000 states in spread 36
+Analyzing 4000 states in spread 37
+Finished step 11, minimal spread 16, max spread 58, got 5232 drops
+Total number of states 89464
+Starting step 12
+Analyzing 1 states in spread 16
+Analyzing 2 states in spread 17
+Analyzing 1 states in spread 18
+Analyzing 4 states in spread 19
+Analyzing 12 states in spread 20
+Analyzing 26 states in spread 21
+Analyzing 60 states in spread 22
+Analyzing 91 states in spread 23
+Analyzing 237 states in spread 24
+Analyzing 394 states in spread 25
+Analyzing 786 states in spread 26
+Analyzing 1165 states in spread 27
+Analyzing 2085 states in spread 28
+Analyzing 3007 states in spread 29
+Analyzing 4000 states in spread 30
+Analyzing 4000 states in spread 31
+Analyzing 4000 states in spread 32
+Analyzing 4000 states in spread 33
+Analyzing 4000 states in spread 34
+Analyzing 4000 states in spread 35
+Analyzing 4000 states in spread 36
+Analyzing 4000 states in spread 37
+Analyzing 4000 states in spread 38
+Finished step 12, minimal spread 16, max spread 60, got 5541 drops
+Total number of states 92859
+Starting step 13
+Analyzing 1 states in spread 16
+Analyzing 1 states in spread 17
+Analyzing 4 states in spread 18
+Analyzing 6 states in spread 19
+Analyzing 16 states in spread 20
+Analyzing 23 states in spread 21
+Analyzing 59 states in spread 22
+Analyzing 85 states in spread 23
+Analyzing 190 states in spread 24
+Analyzing 314 states in spread 25
+Analyzing 635 states in spread 26
+Analyzing 908 states in spread 27
+Analyzing 1719 states in spread 28
+Analyzing 2544 states in spread 29
+Analyzing 4000 states in spread 30
+Analyzing 4000 states in spread 31
+Analyzing 4000 states in spread 32
+Analyzing 4000 states in spread 33
+Analyzing 4000 states in spread 34
+Analyzing 4000 states in spread 35
+Analyzing 4000 states in spread 36
+Analyzing 4000 states in spread 37
+Analyzing 4000 states in spread 38
+Finished step 13, minimal spread 14, max spread 60, got 5962 drops
+Total number of states 93001
+Starting step 14
+Analyzing 1 states in spread 14
+Analyzing 3 states in spread 15
+Analyzing 5 states in spread 16
+Analyzing 2 states in spread 17
+Analyzing 4 states in spread 18
+Analyzing 12 states in spread 19
+Analyzing 16 states in spread 20
+Analyzing 24 states in spread 21
+Analyzing 58 states in spread 22
+Analyzing 98 states in spread 23
+Analyzing 220 states in spread 24
+Analyzing 347 states in spread 25
+Analyzing 630 states in spread 26
+Analyzing 911 states in spread 27
+Analyzing 1631 states in spread 28
+Analyzing 2290 states in spread 29
+Analyzing 3810 states in spread 30
+Analyzing 4000 states in spread 31
+Analyzing 4000 states in spread 32
+Analyzing 4000 states in spread 33
+Analyzing 4000 states in spread 34
+Analyzing 4000 states in spread 35
+Analyzing 4000 states in spread 36
+Analyzing 4000 states in spread 37
+Analyzing 4000 states in spread 38
+Finished step 14, minimal spread 11, max spread 62, got 6604 drops
+Total number of states 94341
+Starting step 15
+Analyzing 1 states in spread 11
+Analyzing 1 states in spread 12
+Analyzing 1 states in spread 14
+Analyzing 3 states in spread 15
+Analyzing 1 states in spread 16
+Analyzing 5 states in spread 17
+Analyzing 12 states in spread 18
+Analyzing 27 states in spread 19
+Analyzing 32 states in spread 20
+Analyzing 50 states in spread 21
+Analyzing 100 states in spread 22
+Analyzing 159 states in spread 23
+Analyzing 227 states in spread 24
+Analyzing 408 states in spread 25
+Analyzing 686 states in spread 26
+Analyzing 1088 states in spread 27
+Analyzing 1817 states in spread 28
+Analyzing 2618 states in spread 29
+Analyzing 3994 states in spread 30
+Analyzing 4000 states in spread 31
+Analyzing 4000 states in spread 32

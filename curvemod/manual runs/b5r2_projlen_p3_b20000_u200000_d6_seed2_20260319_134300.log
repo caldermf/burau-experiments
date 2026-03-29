@@ -1,0 +1,142 @@
+Start: 2026-03-19T13:43:00.889602-04:00
+Host: a1122u02n01.mghpcc.ycrc.yale.edu
+CUDA_VISIBLE_DEVICES=0
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+torch=2.5.1
+cuda_available=True
+device0=NVIDIA H200
+Config: {'bucket_cap': 20000, 'total_cap': 200000, 'max_depth': 6, 'modulus': 3, 'seed': 2}
+Starting B5 (3,2) Hecke dual-simple reservoir search with p= 3 bucket_cap 20000 total_cap 200000 max_depth 6 device cuda
+We have 10 atoms and 42 dual simples
+Admissible start simples: 3
+Initialized step 1 with spreads: {4: 1, 6: 1, 8: 1}
+Starting step 2
+Analyzing 1 states in spread 4
+Analyzing 1 states in spread 6
+Analyzing 1 states in spread 8
+Finished step 2, minimal spread 5, max spread 21, got 0 drops
+Total number of states 22
+Starting step 3
+Analyzing 1 states in spread 5
+Analyzing 1 states in spread 8
+Analyzing 2 states in spread 9
+Analyzing 1 states in spread 10
+Analyzing 1 states in spread 11
+Analyzing 3 states in spread 12
+Analyzing 4 states in spread 14
+Analyzing 1 states in spread 15
+Analyzing 2 states in spread 16
+Analyzing 3 states in spread 18
+Analyzing 2 states in spread 19
+Analyzing 1 states in spread 21
+Finished step 3, minimal spread 5, max spread 30, got 0 drops
+Total number of states 228
+Starting step 4
+Analyzing 1 states in spread 5
+Analyzing 1 states in spread 9
+Analyzing 1 states in spread 10
+Analyzing 2 states in spread 12
+Analyzing 5 states in spread 13
+Analyzing 6 states in spread 14
+Analyzing 4 states in spread 15
+Analyzing 13 states in spread 16
+Analyzing 3 states in spread 17
+Analyzing 17 states in spread 18
+Analyzing 12 states in spread 19
+Analyzing 21 states in spread 20
+Analyzing 11 states in spread 21
+Analyzing 32 states in spread 22
+Analyzing 21 states in spread 23
+Analyzing 23 states in spread 24
+Analyzing 13 states in spread 25
+Analyzing 17 states in spread 26
+Analyzing 14 states in spread 27
+Analyzing 3 states in spread 28
+Analyzing 6 states in spread 29
+Analyzing 2 states in spread 30
+Finished step 4, minimal spread 9, max spread 41, got 84 drops
+Total number of states 2744
+Starting step 5
+Analyzing 2 states in spread 9
+Analyzing 2 states in spread 11
+Analyzing 3 states in spread 12
+Analyzing 2 states in spread 13
+Analyzing 3 states in spread 14
+Analyzing 1 states in spread 15
+Analyzing 9 states in spread 16
+Analyzing 10 states in spread 17
+Analyzing 32 states in spread 18
+Analyzing 20 states in spread 19
+Analyzing 63 states in spread 20
+Analyzing 36 states in spread 21
+Analyzing 105 states in spread 22
+Analyzing 85 states in spread 23
+Analyzing 161 states in spread 24
+Analyzing 115 states in spread 25
+Analyzing 281 states in spread 26
+Analyzing 179 states in spread 27
+Analyzing 327 states in spread 28
+Analyzing 204 states in spread 29
+Analyzing 292 states in spread 30
+Analyzing 187 states in spread 31
+Analyzing 205 states in spread 32
+Analyzing 146 states in spread 33
+Analyzing 137 states in spread 34
+Analyzing 60 states in spread 35
+Analyzing 36 states in spread 36
+Analyzing 22 states in spread 37
+Analyzing 16 states in spread 38
+Analyzing 1 states in spread 39
+Analyzing 1 states in spread 40
+Analyzing 1 states in spread 41
+Finished step 5, minimal spread 13, max spread 49, got 955 drops
+Total number of states 34600
+Starting step 6
+Analyzing 3 states in spread 13
+Analyzing 3 states in spread 14
+Analyzing 7 states in spread 15
+Analyzing 12 states in spread 16
+Analyzing 9 states in spread 17
+Analyzing 28 states in spread 18
+Analyzing 12 states in spread 19
+Analyzing 47 states in spread 20
+Analyzing 46 states in spread 21
+Analyzing 153 states in spread 22
+Analyzing 127 states in spread 23
+Analyzing 329 states in spread 24
+Analyzing 250 states in spread 25
+Analyzing 673 states in spread 26
+Analyzing 519 states in spread 27
+Analyzing 1100 states in spread 28
+Analyzing 948 states in spread 29
+Analyzing 2147 states in spread 30
+Analyzing 1457 states in spread 31
+Analyzing 2912 states in spread 32
+Analyzing 2291 states in spread 33
+Analyzing 3375 states in spread 34
+Analyzing 2412 states in spread 35
+Analyzing 3377 states in spread 36
+Analyzing 2483 states in spread 37
+Analyzing 2891 states in spread 38
+Analyzing 1710 states in spread 39
+Analyzing 1989 states in spread 40
+Analyzing 1049 states in spread 41
+Analyzing 1115 states in spread 42
+Analyzing 430 states in spread 43
+Analyzing 409 states in spread 44
+Analyzing 128 states in spread 45
+Analyzing 106 states in spread 46
+Analyzing 39 states in spread 47
+Analyzing 8 states in spread 48
+Analyzing 6 states in spread 49
+Finished step 6, minimal spread 12, max spread 58, got 13104 drops
+Total number of states 335030
+SUMMARY log_path= manual runs/b5r2_projlen_p3_b20000_u200000_d6_seed2_20260319_134300.log
+SUMMARY found= False
+SUMMARY first_depth= None
+SUMMARY total_hits= 0
+SUMMARY accepted_hits= 0
+SUMMARY rejected_hits= 0
+SUMMARY spreads_last= {12: 1, 15: 1, 16: 7, 17: 7, 18: 17, 19: 28, 20: 57, 21: 55, 22: 180, 23: 129, 24: 315, 25: 322, 26: 921, 27: 873, 28: 1949, 29: 1751, 30: 4284, 31: 3741, 32: 7522, 33: 7190, 34: 15431, 35: 12325, 36: 20000, 37: 19767, 38: 20000, 39: 20000, 40: 20000, 41: 20000, 42: 20000, 43: 20000, 44: 20000, 45: 20000, 46: 20000, 47: 14365, 48: 18102, 49: 7628, 50: 8818, 51: 3379, 52: 3399, 53: 1137, 54: 793, 55: 400, 56: 102, 57: 25, 58: 9}
+CUDA max_memory_allocated_bytes: 9126259712
+CUDA max_memory_reserved_bytes: 9307160576

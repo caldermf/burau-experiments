@@ -1,0 +1,858 @@
+Start: 2026-03-19T13:18:45.724519-04:00
+Host: a1122u02n01.mghpcc.ycrc.yale.edu
+CUDA visible devices: 0
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+NVIDIA H200, 143166 MiB
+Manual config: p=7 base_point=1 cap=800000 total_cap=4000000 first_steps=12 max_g_length=100 seed=0 device=auto
+Starting A3 torch search with p= 7 caps 800000 800000 totalcaps 4000000 4000000 FIRST_STEPS 12 base_point 1 device cuda
+We have 6 atoms and 14 dual simples
+Initialized step 1 with spreads: {1: 2}
+Starting step 2
+Analyzing 2 states in spread 1
+Finished step 2, minimal spread 2, max spread 2, got 0 drops
+Total number of curves 8
+Starting step 3
+Analyzing 8 states in spread 2
+Finished step 3, minimal spread 3, max spread 3, got 0 drops
+Total number of curves 36
+Starting step 4
+Analyzing 36 states in spread 3
+Finished step 4, minimal spread 4, max spread 4, got 0 drops
+Total number of curves 170
+Starting step 5
+Analyzing 170 states in spread 4
+Finished step 5, minimal spread 5, max spread 5, got 0 drops
+Total number of curves 816
+Starting step 6
+Analyzing 816 states in spread 5
+Finished step 6, minimal spread 5, max spread 6, got 0 drops
+Total number of curves 3938
+Starting step 7
+Analyzing 2 states in spread 5
+Analyzing 3936 states in spread 6
+Finished step 7, minimal spread 5, max spread 7, got 0 drops
+Total number of curves 19040
+Starting step 8
+Analyzing 2 states in spread 5
+Analyzing 38 states in spread 6
+Analyzing 19000 states in spread 7
+Finished step 8, minimal spread 6, max spread 8, got 0 drops
+Total number of curves 92118
+Starting step 9
+Analyzing 37 states in spread 6
+Analyzing 415 states in spread 7
+Analyzing 91666 states in spread 8
+Finished step 9, minimal spread 6, max spread 9, got 0 drops
+Total number of curves 445784
+Starting step 10
+Analyzing 5 states in spread 6
+Analyzing 372 states in spread 7
+Analyzing 3493 states in spread 8
+Analyzing 441914 states in spread 9
+Finished step 10, minimal spread 7, max spread 10, got 0 drops
+Total number of curves 828220
+Starting step 11
+Analyzing 84 states in spread 7
+Analyzing 2994 states in spread 8
+Analyzing 25142 states in spread 9
+Analyzing 800000 states in spread 10
+Finished step 11, minimal spread 7, max spread 11, got 0 drops
+Total number of curves 959501
+Starting step 12
+Analyzing 11 states in spread 7
+Analyzing 895 states in spread 8
+Analyzing 21049 states in spread 9
+Analyzing 137546 states in spread 10
+Analyzing 800000 states in spread 11
+Finished step 12, minimal spread 7, max spread 12, got 0 drops
+Total number of curves 1610488
+Starting step 13
+Analyzing 6 states in spread 7
+Analyzing 202 states in spread 8
+Analyzing 7479 states in spread 9
+Analyzing 118799 states in spread 10
+Analyzing 684002 states in spread 11
+Analyzing 800000 states in spread 12
+Finished step 13, minimal spread 7, max spread 13, got 0 drops
+Total number of curves 2264906
+Starting step 14
+Analyzing 5 states in spread 7
+Analyzing 90 states in spread 8
+Analyzing 2333 states in spread 9
+Analyzing 48202 states in spread 10
+Analyzing 614276 states in spread 11
+Analyzing 800000 states in spread 12
+Analyzing 800000 states in spread 13
+Finished step 14, minimal spread 7, max spread 14, got 0 drops
+Total number of curves 2698448
+Starting step 15
+Analyzing 1 states in spread 7
+Analyzing 59 states in spread 8
+Analyzing 1034 states in spread 9
+Analyzing 18722 states in spread 10
+Analyzing 278632 states in spread 11
+Analyzing 800000 states in spread 12
+Analyzing 800000 states in spread 13
+Analyzing 800000 states in spread 14
+Finished step 15, minimal spread 7, max spread 15, got 2 drops
+Total number of curves 3334914
+Starting step 16
+Analyzing 2 states in spread 7
+Analyzing 23 states in spread 8
+Analyzing 600 states in spread 9
+Analyzing 8741 states in spread 10
+Analyzing 125548 states in spread 11
+Analyzing 800000 states in spread 12
+Analyzing 800000 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Finished step 16, minimal spread 7, max spread 16, got 8 drops
+Total number of curves 3923692
+Starting step 17
+Analyzing 2 states in spread 7
+Analyzing 31 states in spread 8
+Analyzing 297 states in spread 9
+Analyzing 4882 states in spread 10
+Analyzing 62054 states in spread 11
+Analyzing 656426 states in spread 12
+Analyzing 800000 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Finished step 17, minimal spread 7, max spread 17, got 24 drops
+Total number of curves 4389545
+Starting step 18
+Analyzing 1 states in spread 7
+Analyzing 30 states in spread 8
+Analyzing 295 states in spread 9
+Analyzing 2678 states in spread 10
+Analyzing 34651 states in spread 11
+Analyzing 351890 states in spread 12
+Analyzing 800000 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Finished step 18, minimal spread 7, max spread 18, got 33 drops
+Total number of curves 5029182
+Starting step 19
+Analyzing 1 states in spread 7
+Analyzing 16 states in spread 8
+Analyzing 248 states in spread 9
+Analyzing 2259 states in spread 10
+Analyzing 20090 states in spread 11
+Analyzing 206568 states in spread 12
+Analyzing 800000 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Finished step 19, minimal spread 7, max spread 18, got 39 drops
+Total number of curves 4944283
+Starting step 20
+Analyzing 1 states in spread 7
+Analyzing 14 states in spread 8
+Analyzing 130 states in spread 9
+Analyzing 1805 states in spread 10
+Analyzing 15472 states in spread 11
+Analyzing 126861 states in spread 12
+Analyzing 800000 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Finished step 20, minimal spread 6, max spread 18, got 48 drops
+Total number of curves 4779648
+Starting step 21
+Analyzing 1 states in spread 6
+Analyzing 2 states in spread 7
+Analyzing 11 states in spread 8
+Analyzing 103 states in spread 9
+Analyzing 981 states in spread 10
+Analyzing 11939 states in spread 11
+Analyzing 95281 states in spread 12
+Analyzing 671330 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Finished step 21, minimal spread 6, max spread 19, got 48 drops
+Total number of curves 5402782
+Starting step 22
+Analyzing 1 states in spread 6
+Analyzing 8 states in spread 7
+Analyzing 12 states in spread 8
+Analyzing 83 states in spread 9
+Analyzing 749 states in spread 10
+Analyzing 6838 states in spread 11
+Analyzing 72533 states in spread 12
+Analyzing 522558 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Finished step 22, minimal spread 6, max spread 19, got 56 drops
+Total number of curves 5255852
+Starting step 23
+Analyzing 1 states in spread 6
+Analyzing 9 states in spread 7
+Analyzing 42 states in spread 8
+Analyzing 78 states in spread 9
+Analyzing 566 states in spread 10
+Analyzing 5128 states in spread 11
+Analyzing 43621 states in spread 12
+Analyzing 406407 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Finished step 23, minimal spread 6, max spread 19, got 55 drops
+Total number of curves 5092838
+Starting step 24
+Analyzing 1 states in spread 6
+Analyzing 8 states in spread 7
+Analyzing 55 states in spread 8
+Analyzing 212 states in spread 9
+Analyzing 504 states in spread 10
+Analyzing 3702 states in spread 11
+Analyzing 32480 states in spread 12
+Analyzing 255876 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Finished step 24, minimal spread 7, max spread 19, got 53 drops
+Total number of curves 5019707
+Starting step 25
+Analyzing 9 states in spread 7
+Analyzing 44 states in spread 8
+Analyzing 307 states in spread 9
+Analyzing 1086 states in spread 10
+Analyzing 3119 states in spread 11
+Analyzing 23104 states in spread 12
+Analyzing 192038 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Finished step 25, minimal spread 8, max spread 19, got 59 drops
+Total number of curves 4963723
+Starting step 26
+Analyzing 52 states in spread 8
+Analyzing 240 states in spread 9
+Analyzing 1627 states in spread 10
+Analyzing 5636 states in spread 11
+Analyzing 18715 states in spread 12
+Analyzing 137453 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Finished step 26, minimal spread 8, max spread 19, got 53 drops
+Total number of curves 4867367
+Starting step 27
+Analyzing 2 states in spread 8
+Analyzing 282 states in spread 9
+Analyzing 1285 states in spread 10
+Analyzing 8425 states in spread 11
+Analyzing 29564 states in spread 12
+Analyzing 108854 states in spread 13
+Analyzing 718955 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Finished step 27, minimal spread 8, max spread 19, got 60 drops
+Total number of curves 4790734
+Starting step 28
+Analyzing 1 states in spread 8
+Analyzing 28 states in spread 9
+Analyzing 1480 states in spread 10
+Analyzing 6793 states in spread 11
+Analyzing 43177 states in spread 12
+Analyzing 155639 states in spread 13
+Analyzing 583616 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Finished step 28, minimal spread 9, max spread 20, got 52 drops
+Total number of curves 5863675
+Starting step 29
+Analyzing 15 states in spread 9
+Analyzing 223 states in spread 10
+Analyzing 7653 states in spread 11
+Analyzing 35569 states in spread 12
+Analyzing 220215 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Finished step 29, minimal spread 9, max spread 19, got 59 drops
+Total number of curves 5025816
+Starting step 30
+Analyzing 4 states in spread 9
+Analyzing 124 states in spread 10
+Analyzing 1528 states in spread 11
+Analyzing 39406 states in spread 12
+Analyzing 184754 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Finished step 30, minimal spread 9, max spread 19, got 58 drops
+Total number of curves 5012912
+Starting step 31
+Analyzing 1 states in spread 9
+Analyzing 51 states in spread 10
+Analyzing 881 states in spread 11
+Analyzing 9734 states in spread 12
+Analyzing 202245 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Finished step 31, minimal spread 9, max spread 19, got 48 drops
+Total number of curves 4865280
+Starting step 32
+Analyzing 2 states in spread 9
+Analyzing 23 states in spread 10
+Analyzing 442 states in spread 11
+Analyzing 5807 states in spread 12
+Analyzing 59006 states in spread 13
+Analyzing 800000 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Finished step 32, minimal spread 9, max spread 19, got 46 drops
+Total number of curves 4366090
+Starting step 33
+Analyzing 1 states in spread 9
+Analyzing 24 states in spread 10
+Analyzing 252 states in spread 11
+Analyzing 3203 states in spread 12
+Analyzing 36257 states in spread 13
+Analyzing 326353 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Finished step 33, minimal spread 10, max spread 20, got 33 drops
+Total number of curves 5032181
+Starting step 34
+Analyzing 10 states in spread 10
+Analyzing 202 states in spread 11
+Analyzing 2000 states in spread 12
+Analyzing 21075 states in spread 13
+Analyzing 208894 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Finished step 34, minimal spread 10, max spread 20, got 44 drops
+Total number of curves 4942633
+Starting step 35
+Analyzing 3 states in spread 10
+Analyzing 100 states in spread 11
+Analyzing 1437 states in spread 12
+Analyzing 13725 states in spread 13
+Analyzing 127368 states in spread 14
+Analyzing 800000 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Finished step 35, minimal spread 10, max spread 20, got 33 drops
+Total number of curves 4759290
+Starting step 36
+Analyzing 2 states in spread 10
+Analyzing 51 states in spread 11
+Analyzing 788 states in spread 12
+Analyzing 9548 states in spread 13
+Analyzing 85670 states in spread 14
+Analyzing 663231 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Finished step 36, minimal spread 10, max spread 21, got 35 drops
+Total number of curves 5337161
+Starting step 37
+Analyzing 3 states in spread 10
+Analyzing 23 states in spread 11
+Analyzing 486 states in spread 12
+Analyzing 5546 states in spread 13
+Analyzing 59598 states in spread 14
+Analyzing 471505 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Finished step 37, minimal spread 10, max spread 21, got 44 drops
+Total number of curves 5178412
+Starting step 38
+Analyzing 1 states in spread 10
+Analyzing 32 states in spread 11
+Analyzing 215 states in spread 12
+Analyzing 3654 states in spread 13
+Analyzing 35937 states in spread 14
+Analyzing 338573 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Finished step 38, minimal spread 10, max spread 21, got 34 drops
+Total number of curves 5038961
+Starting step 39
+Analyzing 1 states in spread 10
+Analyzing 11 states in spread 11
+Analyzing 236 states in spread 12
+Analyzing 1746 states in spread 13
+Analyzing 24311 states in spread 14
+Analyzing 212656 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Finished step 39, minimal spread 10, max spread 21, got 56 drops
+Total number of curves 4961554
+Starting step 40
+Analyzing 1 states in spread 10
+Analyzing 13 states in spread 11
+Analyzing 92 states in spread 12
+Analyzing 1636 states in spread 13
+Analyzing 12532 states in spread 14
+Analyzing 147280 states in spread 15
+Analyzing 800000 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Finished step 40, minimal spread 10, max spread 21, got 61 drops
+Total number of curves 4854307
+Starting step 41
+Analyzing 1 states in spread 10
+Analyzing 13 states in spread 11
+Analyzing 93 states in spread 12
+Analyzing 740 states in spread 13
+Analyzing 10695 states in spread 14
+Analyzing 80930 states in spread 15
+Analyzing 761835 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Finished step 41, minimal spread 10, max spread 21, got 52 drops
+Total number of curves 4523247
+Starting step 42
+Analyzing 2 states in spread 10
+Analyzing 8 states in spread 11
+Analyzing 98 states in spread 12
+Analyzing 634 states in spread 13
+Analyzing 5324 states in spread 14
+Analyzing 65982 states in spread 15
+Analyzing 451199 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Finished step 42, minimal spread 10, max spread 22, got 66 drops
+Total number of curves 5212231
+Starting step 43
+Analyzing 3 states in spread 10
+Analyzing 15 states in spread 11
+Analyzing 55 states in spread 12
+Analyzing 650 states in spread 13
+Analyzing 4185 states in spread 14
+Analyzing 35434 states in spread 15
+Analyzing 371889 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Finished step 43, minimal spread 10, max spread 22, got 59 drops
+Total number of curves 5044361
+Starting step 44
+Analyzing 1 states in spread 10
+Analyzing 30 states in spread 11
+Analyzing 88 states in spread 12
+Analyzing 371 states in spread 13
+Analyzing 4043 states in spread 14
+Analyzing 26505 states in spread 15
+Analyzing 213323 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Finished step 44, minimal spread 10, max spread 22, got 54 drops
+Total number of curves 4985009
+Starting step 45
+Analyzing 1 states in spread 10
+Analyzing 8 states in spread 11
+Analyzing 190 states in spread 12
+Analyzing 502 states in spread 13
+Analyzing 2402 states in spread 14
+Analyzing 24161 states in spread 15
+Analyzing 157745 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Finished step 45, minimal spread 11, max spread 22, got 58 drops
+Total number of curves 4957533
+Starting step 46
+Analyzing 10 states in spread 11
+Analyzing 50 states in spread 12
+Analyzing 1064 states in spread 13
+Analyzing 2843 states in spread 14
+Analyzing 14911 states in spread 15
+Analyzing 138655 states in spread 16
+Analyzing 800000 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Finished step 46, minimal spread 11, max spread 22, got 41 drops
+Total number of curves 4841365
+Starting step 47
+Analyzing 3 states in spread 11
+Analyzing 66 states in spread 12
+Analyzing 307 states in spread 13
+Analyzing 5691 states in spread 14
+Analyzing 15973 states in spread 15
+Analyzing 88416 states in spread 16
+Analyzing 730909 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Finished step 47, minimal spread 11, max spread 22, got 37 drops
+Total number of curves 4608278
+Starting step 48
+Analyzing 4 states in spread 11
+Analyzing 33 states in spread 12
+Analyzing 390 states in spread 13
+Analyzing 1870 states in spread 14
+Analyzing 29733 states in spread 15
+Analyzing 88596 states in spread 16
+Analyzing 487652 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Finished step 48, minimal spread 11, max spread 23, got 52 drops
+Total number of curves 5444311
+Starting step 49
+Analyzing 4 states in spread 11
+Analyzing 36 states in spread 12
+Analyzing 235 states in spread 13
+Analyzing 2198 states in spread 14
+Analyzing 11021 states in spread 15
+Analyzing 153347 states in spread 16
+Analyzing 477470 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Finished step 49, minimal spread 11, max spread 23, got 61 drops
+Total number of curves 5659163
+Starting step 50
+Analyzing 1 states in spread 11
+Analyzing 38 states in spread 12
+Analyzing 225 states in spread 13
+Analyzing 1438 states in spread 14
+Analyzing 12112 states in spread 15
+Analyzing 62941 states in spread 16
+Analyzing 782408 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Finished step 50, minimal spread 11, max spread 22, got 62 drops
+Total number of curves 4425112
+Starting step 51
+Analyzing 1 states in spread 11
+Analyzing 10 states in spread 12
+Analyzing 246 states in spread 13
+Analyzing 1306 states in spread 14
+Analyzing 8276 states in spread 15
+Analyzing 65821 states in spread 16
+Analyzing 349452 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Finished step 51, minimal spread 11, max spread 23, got 52 drops
+Total number of curves 5208310
+Starting step 52
+Analyzing 1 states in spread 11
+Analyzing 11 states in spread 12
+Analyzing 78 states in spread 13
+Analyzing 1413 states in spread 14
+Analyzing 7296 states in spread 15
+Analyzing 46190 states in spread 16
+Analyzing 353321 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Finished step 52, minimal spread 12, max spread 23, got 47 drops
+Total number of curves 5101435
+Starting step 53
+Analyzing 11 states in spread 12
+Analyzing 85 states in spread 13
+Analyzing 505 states in spread 14
+Analyzing 7713 states in spread 15
+Analyzing 40070 states in spread 16
+Analyzing 253051 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Finished step 53, minimal spread 12, max spread 23, got 45 drops
+Total number of curves 5062457
+Starting step 54
+Analyzing 2 states in spread 12
+Analyzing 76 states in spread 13
+Analyzing 538 states in spread 14
+Analyzing 3107 states in spread 15
+Analyzing 41303 states in spread 16
+Analyzing 217431 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Finished step 54, minimal spread 12, max spread 23, got 45 drops
+Total number of curves 5041106
+Starting step 55
+Analyzing 3 states in spread 12
+Analyzing 28 states in spread 13
+Analyzing 453 states in spread 14
+Analyzing 3148 states in spread 15
+Analyzing 18484 states in spread 16
+Analyzing 218990 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Finished step 55, minimal spread 12, max spread 23, got 47 drops
+Total number of curves 4927215
+Starting step 56
+Analyzing 1 states in spread 12
+Analyzing 35 states in spread 13
+Analyzing 225 states in spread 14
+Analyzing 2544 states in spread 15
+Analyzing 17849 states in spread 16
+Analyzing 106561 states in spread 17
+Analyzing 800000 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Finished step 56, minimal spread 13, max spread 23, got 44 drops
+Total number of curves 4664694
+Starting step 57
+Analyzing 10 states in spread 13
+Analyzing 265 states in spread 14
+Analyzing 1515 states in spread 15
+Analyzing 14042 states in spread 16
+Analyzing 99082 states in spread 17
+Analyzing 549780 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Finished step 57, minimal spread 13, max spread 24, got 40 drops
+Total number of curves 5405821
+Starting step 58
+Analyzing 1 states in spread 13
+Analyzing 94 states in spread 14
+Analyzing 1680 states in spread 15
+Analyzing 9205 states in spread 16
+Analyzing 76942 states in spread 17
+Analyzing 517899 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Finished step 58, minimal spread 14, max spread 24, got 31 drops
+Total number of curves 5271082
+Starting step 59
+Analyzing 31 states in spread 14
+Analyzing 713 states in spread 15
+Analyzing 9707 states in spread 16
+Analyzing 53006 states in spread 17
+Analyzing 407625 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Finished step 59, minimal spread 14, max spread 24, got 24 drops
+Total number of curves 5150011
+Starting step 60
+Analyzing 11 states in spread 14
+Analyzing 321 states in spread 15
+Analyzing 4668 states in spread 16
+Analyzing 53807 states in spread 17
+Analyzing 291204 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Finished step 60, minimal spread 14, max spread 24, got 34 drops
+Total number of curves 5120621
+Starting step 61
+Analyzing 6 states in spread 14
+Analyzing 145 states in spread 15
+Analyzing 2421 states in spread 16
+Analyzing 28516 states in spread 17
+Analyzing 289533 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Finished step 61, minimal spread 14, max spread 24, got 35 drops
+Total number of curves 4982318
+Starting step 62
+Analyzing 3 states in spread 14
+Analyzing 76 states in spread 15
+Analyzing 1257 states in spread 16
+Analyzing 16066 states in spread 17
+Analyzing 164916 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Finished step 62, minimal spread 14, max spread 24, got 42 drops
+Total number of curves 4908231
+Starting step 63
+Analyzing 1 states in spread 14
+Analyzing 43 states in spread 15
+Analyzing 711 states in spread 16
+Analyzing 9058 states in spread 17
+Analyzing 98418 states in spread 18
+Analyzing 800000 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Finished step 63, minimal spread 14, max spread 24, got 36 drops
+Total number of curves 4591998
+Starting step 64
+Analyzing 1 states in spread 14
+Analyzing 27 states in spread 15
+Analyzing 421 states in spread 16
+Analyzing 5422 states in spread 17
+Analyzing 58607 states in spread 18
+Analyzing 527520 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Analyzing 800000 states in spread 24
+Finished step 64, minimal spread 13, max spread 25, got 47 drops
+Total number of curves 5174411
+Starting step 65
+Analyzing 1 states in spread 13
+Analyzing 3 states in spread 14
+Analyzing 18 states in spread 15
+Analyzing 286 states in spread 16
+Analyzing 3288 states in spread 17
+Analyzing 36484 states in spread 18
+Analyzing 334331 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Analyzing 800000 states in spread 24
+Finished step 65, minimal spread 13, max spread 25, got 39 drops
+Total number of curves 5042620
+Starting step 66
+Analyzing 1 states in spread 13
+Analyzing 8 states in spread 14
+Analyzing 24 states in spread 15
+Analyzing 179 states in spread 16
+Analyzing 2272 states in spread 17
+Analyzing 22658 states in spread 18
+Analyzing 217478 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Analyzing 800000 states in spread 24
+Finished step 66, minimal spread 14, max spread 25, got 51 drops
+Total number of curves 4956966
+Starting step 67
+Analyzing 8 states in spread 14
+Analyzing 43 states in spread 15
+Analyzing 185 states in spread 16
+Analyzing 1418 states in spread 17
+Analyzing 15638 states in spread 18
+Analyzing 139674 states in spread 19
+Analyzing 800000 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Analyzing 800000 states in spread 24
+Finished step 67, minimal spread 14, max spread 25, got 46 drops
+Total number of curves 4833303
+Starting step 68
+Analyzing 1 states in spread 14
+Analyzing 49 states in spread 15
+Analyzing 242 states in spread 16
+Analyzing 1272 states in spread 17
+Analyzing 9955 states in spread 18
+Analyzing 97332 states in spread 19
+Analyzing 724452 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Analyzing 800000 states in spread 24
+Finished step 68, minimal spread 15, max spread 25, got 44 drops
+Total number of curves 4605315
+Starting step 69
+Analyzing 16 states in spread 15
+Analyzing 281 states in spread 16
+Analyzing 1394 states in spread 17
+Analyzing 8270 states in spread 18
+Analyzing 63450 states in spread 19
+Analyzing 531904 states in spread 20
+Analyzing 800000 states in spread 21
+Analyzing 800000 states in spread 22
+Analyzing 800000 states in spread 23
+Analyzing 800000 states in spread 24
+Analyzing 800000 states in spread 25
