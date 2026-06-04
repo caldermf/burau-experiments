@@ -23,7 +23,7 @@ after normalization. Those candidates are saved for later decoding and checking.
 ## Files
 
 - `search.py`: the actual PyTorch + Triton GPU search.
-- `find_kernel.py`: compatibility entrypoint that runs `search.py`.
+- `suffix_data.py`: generated/static suffix descriptors, adjacency data, and seed matrices.
 - `decode_words.py`: decodes saved `.pt` result files back into Garside suffix words.
 - `cpu_reference_tests.py`: CPU reference tests copied from the original Triton work.
 - `requirements.txt`: minimal runtime dependencies.
@@ -69,7 +69,7 @@ after normalization. Those candidates are saved for later decoding and checking.
 From the repository root:
 
 ```bash
-python -m mod7.find_kernel \
+python -m mod7.search \
   --use-best 7 \
   --bucket-cap 12 \
   --max-steps 170 \
@@ -79,7 +79,7 @@ python -m mod7.find_kernel \
 For a small GPU smoke test, use much smaller buffers:
 
 ```bash
-python -m mod7.find_kernel \
+python -m mod7.search \
   --use-best 0.05 \
   --bucket-cap 0.05 \
   --max-steps 5 \
