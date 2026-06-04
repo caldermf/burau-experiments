@@ -1,10 +1,4 @@
-"""Static mod-7 suffix data for the standalone Triton search.
-
-These tables are generated/static math data, not control flow. Keeping them out
-of search.py makes the actual GPU pipeline easier to read while preserving the
-compile-time suffix specialization used by the Triton kernel.
-
-For output[i][j] = sum_k parent[i][k] * suffix[k][j], each output entry has
+"""For output[i][j] = sum_k parent[i][k] * suffix[k][j], each output entry has
 one to three sparse terms. Descriptor arrays encode parent entry, monomial
 degree shift, sign, and term count for the 22 proper nontrivial Garside suffixes.
 """

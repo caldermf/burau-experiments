@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 """
-Standalone mod-7 GPU reservoir/frontier search for B_4 Burau candidates.
+Mod-7 GPU reservoir search for B_4 Burau candidates.
 
 The search state is a sparse 3x3 matrix over F_7[t, t^-1], normalized after each
 suffix multiplication and packed in a bit-sliced uint64 layout. Each generation
 expands the current frontier by the 22 proper nontrivial Garside suffixes, keeps
 low-projlen children using capped per-projlen buckets, and saves any projlen-0
 candidates for later decoding.
-
-This file is intentionally self-contained for the mod-7 case: there are no
-precomputed table files and no dependency on the broader repository search code.
-It does require CUDA, PyTorch, and Triton at runtime.
 """
 
 import time
