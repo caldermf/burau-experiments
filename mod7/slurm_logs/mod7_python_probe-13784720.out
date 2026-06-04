@@ -1,0 +1,246 @@
+host: a1128u44n01.mghpcc.ycrc.yale.edu
+PATH: /apps/software/2024a/software/nodejs/20.13.1-GCCcore-13.3.0/bin:/apps/software/system/software/OpenSSL/3/bin:/apps/software/2024a/software/ICU/75.1-GCCcore-13.3.0/sbin:/apps/software/2024a/software/ICU/75.1-GCCcore-13.3.0/bin:/apps/software/system/software/GCCcore/13.3.0/bin:/home/com36/.npm-global/bin:/opt/lenovo/onecli:/home/com36/.codex/tmp/arg0/codex-arg0niuDzy:/home/com36/.npm-global/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-path:/home/com36/miniconda3/bin:/home/com36/miniconda3/condabin:/home/com36/.local/bin:/home/com36/bin:/apps/bin:/opt/slurm/current/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin
+
+[default interpreters]
+/home/com36/miniconda3/bin/python
+/home/com36/miniconda3/bin/python3
+Python 3.13.9
+sys.executable: /home/com36/miniconda3/bin/python3
+torch import failed: ModuleNotFoundError("No module named 'torch'")
+triton import failed: AttributeError("module 'triton' has no attribute '__version__'")
+
+[modules matching python/conda/torch/triton/cuda]
+AlphaFold/3.0.1-20251021-foss-2024a-CUDA-12.6.0
+AreTomo2/1.1.2-GCCcore-13.3.0-CUDA-12.6.0
+Beast/2.7.6-GCC-13.3.0-CUDA-12.8.0
+BeastX/10.5.0-GCC-13.3.0-CUDA-12.8.0
+Biopython/
+Biopython/1.84-gfbf-2024a
+Blender/4.5.7-GCCcore-13.3.0-linux-x86_64-CUDA-12.8.0
+Boost.Python-NumPy/
+Boost.Python-NumPy/1.85.0-gfbf-2024a
+CTFFIND/4.1.14-foss-2024a-CUDA-12.6.0-no-Python
+CTFFIND/4.1.14-foss-2024a-CUDA-12.6.0
+CUDA-Python/
+CUDA-Python/12.6.2.post1-gfbf-2024a-CUDA-12.6.0
+CUDA-Python/12.8.0-gfbf-2024a-CUDA-12.8.0
+ChimeraX/1.10.1-1-gfbf-2024a-CUDA-12.6.0
+ChimeraX/1.10.1-1-gfbf-2024a-CUDA-12.8.0
+Clang/18.1.8-GCCcore-13.3.0-CUDA-12.6.0
+ESM-2/2.0.0-foss-2024a-CUDA-12.6.0
+Flax/0.10.2-gfbf-2024a-CUDA-12.6.0
+GROMACS/2024.6-foss-2024a-CUDA-12.6.0-PLUMED-2.9.3
+GROMACS/2024.6-foss-2024a-CUDA-12.8.0-PLUMED-2.9.3
+Gctf/1.18-CUDA-12.6.0
+GitPython/
+GitPython/3.1.43-GCCcore-13.3.0
+HOOMD-blue/4.9.1-foss-2024a-CUDA-12.6.0
+HOOMD-blue/6.1.1-foss-2024a-CUDA-12.8.0
+IMOD/5.1.3-foss-2024a-CUDA-12.6.0
+IPython/
+IPython/8.28.0-GCCcore-13.3.0
+LAMMPS/29Aug2024_update2-foss-2024a-kokkos-CUDA-12.6.0
+MotionCor3/1.0.1-GCCcore-13.3.0-CUDA-12.6.0
+NAMD/3.0.2-foss-2024a-CUDA-12.6.0
+NCCL-tests/2.16.4-gompi-2024a-CUDA-12.6.0
+NCCL/2.22.3-GCCcore-13.3.0-CUDA-12.6.0
+NCCL/2.26.2-GCCcore-13.3.0-CUDA-12.6.0
+NCCL/2.26.2-GCCcore-13.3.0-CUDA-12.8.0
+NCCL/2.27.5-GCCcore-13.3.0-CUDA-12.8.0
+NVHPC/24.9-CUDA-12.6.0
+NVHPC/25.1-CUDA-12.6.0
+ONNX-Runtime/1.23.2-foss-2024a-CUDA-12.6.0
+OpenMM/8.4.0-foss-2024a-CUDA-12.8.0
+OpenMPI/5.0.3-GCC-13.3.0-CUDA-12.6.0
+OpenMPI/5.0.3-NVHPC-25.1-CUDA-12.6.0
+Optax/0.2.4-gfbf-2024a-CUDA-12.6.0
+PyTorch-Lightning/
+PyTorch-Lightning/2.5.6-foss-2024a-CUDA-12.6.0
+PyTorch/
+PyTorch/2.7.1-foss-2024a-CUDA-12.6.0
+PyTorch/2.7.1-foss-2024a-CUDA-12.8.0
+PyTorch/2.9.1-foss-2024a-CUDA-12.8.0
+Python-bundle-PyPI/
+Python-bundle-PyPI/2024.06-GCCcore-13.3.0
+Python/
+Python/3.12.3-GCCcore-13.3.0
+RELION/4.0.2-foss-2024a-CUDA-12.6.0
+SymEngine-python/
+SymEngine-python/0.14.1-gfbf-2024a
+Triton/
+Triton/3.1.0-foss-2024a-CUDA-12.6.0
+Triton/3.3.1-foss-2024a-CUDA-12.6.0
+Triton/3.3.1-foss-2024a-CUDA-12.8.0
+Triton/3.5.0-gfbf-2024a-CUDA-12.8.0
+UCC-CUDA/
+UCC-CUDA/1.3.0-GCCcore-13.3.0-CUDA-12.6.0
+UCX-CUDA/
+UCX-CUDA/1.16.0-GCCcore-13.3.0-CUDA-12.6.0
+UCX-CUDA/1.16.0-GCCcore-13.3.0-CUDA-12.8.0
+beagle-lib/4.0.1-GCC-13.3.0-CUDA-12.8.0
+bitsandbytes/0.46.1-foss-2024a-CUDA-12.6.0
+dm-haiku/0.0.14-foss-2024a-CUDA-12.6.0
+e3nn/0.5.9-foss-2024a-CUDA-12.6.0
+flatbuffers-python/
+flatbuffers-python/24.3.25-GCCcore-13.3.0
+googleapis-python/
+googleapis-python/2025.03-GCCcore-13.3.0
+gpu_burn/20251104-GCCcore-13.3.0-CUDA-12.8.0
+jax-triton/
+jax-triton/0.3.0-foss-2024a-CUDA-12.6.0
+jax/0.6.2-gfbf-2024a-CUDA-12.6.0
+jaxtyping/0.2.38-foss-2024a-CUDA-12.6.0
+llama.cpp/b8083-foss-2024a-CUDA-12.8.0
+magma/2.9.0-foss-2024a-CUDA-12.6.0
+magma/2.9.0-foss-2024a-CUDA-12.8.0
+meson-python/
+meson-python/0.16.0-GCCcore-13.3.0
+nvbandwidth/0.8-GCC-13.3.0-CUDA-12.8.0
+nvidia-cutlass/3.8.0.0-gfbf-2024a-CUDA-12.6.0
+nvidia-cutlass/3.8.0.0-gfbf-2024a-CUDA-12.8.0
+ollama/0.9.3-GCCcore-13.3.0-CUDA-12.6.0
+ollama/0.22.0-GCCcore-13.3.0-CUDA-12.8.0
+protobuf-python/
+protobuf-python/5.28.0-GCCcore-13.3.0
+python-isal/
+python-isal/1.7.0-GCCcore-13.3.0
+python-xxhash/
+python-xxhash/3.5.0-GCCcore-13.3.0
+python-zlib-ng/
+python-zlib-ng/0.5.1-GCCcore-13.3.0
+qsimcirq/0.22.0-foss-2024a-CUDA-12.6.0
+torchaudio/
+torchaudio/2.7.1-foss-2024a-CUDA-12.6.0
+torchvision/
+torchvision/0.21.0-foss-2024a-CUDA-12.6.0
+wxPython/
+wxPython/4.2.5-foss-2024a
+wxWidgets/3.2.6-GCC-13.3.0-no-Python
+AlphaFold/2.3.2-foss-2022b-CUDA-12.1.1
+AreTomo2/1.0.0-GCCcore-12.2.0-CUDA-12.0.0
+AreTomo2/1.0.0-GCCcore-12.2.0-CUDA-12.1.1
+Biopython/
+Biopython/1.81-foss-2022b
+Biopython/1.83-foss-2022b
+CTFFIND/4.1.14-foss-2022b-CUDA-12.0.0
+CTFFIND/4.1.14-foss-2022b-CUDA-12.1.1-no-Python
+CTFFIND/4.1.14-foss-2022b-CUDA-12.1.1
+Clang/16.0.4-GCCcore-12.2.0-CUDA-12.0.0
+CuPy/13.0.0-foss-2022b-CUDA-12.1.1
+ESM-2/2.0.0-foss-2022b-CUDA-12.1.1
+Faiss/1.7.4-foss-2022b-CUDA-12.1.1
+GROMACS/2021.5-foss-2022b-CUDA-12.1.1-PLUMED-2.7.3
+GROMACS/2023.3-foss-2022b-CUDA-12.1.1-PLUMED-2.9.2
+IPython/
+IPython/8.14.0-GCCcore-12.2.0
+MPICH/4.2.1-GCC-12.2.0-CUDA-12.1.1
+MotionCor3/1.0.1-GCCcore-12.2.0-CUDA-12.0.0
+MotionCor3/1.0.1-GCCcore-12.2.0-CUDA-12.1.1
+NCCL/2.16.2-GCCcore-12.2.0-CUDA-12.0.0
+NCCL/2.16.2-GCCcore-12.2.0-CUDA-12.1.1
+NCCL/2.18.3-GCCcore-12.2.0-CUDA-12.1.1
+NVHPC/23.7-CUDA-12.1.1
+OpenMM/8.0.0-foss-2022b-CUDA-12.1.1
+PyTorch/
+PyTorch/2.1.2-foss-2022b-CUDA-12.1.1
+Python-bundle-PyPI/
+Python-bundle-PyPI/2023.06-GCCcore-12.2.0
+Python/
+Python/2.7.18-GCCcore-12.2.0-bare
+Python/3.10.8-GCCcore-12.2.0-bare
+Python/3.10.8-GCCcore-12.2.0-noclikit
+Python/3.10.8-GCCcore-12.2.0
+RELION-python/
+RELION-python/5.0
+RELION/5.0.0-foss-2022b-CUDA-12.1.1
+TensorFlow/2.15.1-foss-2022b-CUDA-12.1.1
+UCC-CUDA/
+UCC-CUDA/1.1.0-GCCcore-12.2.0-CUDA-12.1.1
+UCX-CUDA/
+UCX-CUDA/1.13.1-GCCcore-12.2.0-CUDA-12.0.0
+UCX-CUDA/1.13.1-GCCcore-12.2.0-CUDA-12.1.1
+Z3/4.12.2-GCCcore-12.2.0-Python-3.10.8
+archspec/0.2.0-GCCcore-12.2.0-Python-3.10.8
+beagle-lib/4.0.1-GCC-12.2.0-CUDA-12.0.0
+flatbuffers-python/
+flatbuffers-python/23.5.26-GCCcore-12.2.0
+gpu_burn/20231110-GCCcore-12.2.0-CUDA-12.0.0
+jax/0.4.25-gfbf-2022b-CUDA-12.1.1
+magma/2.7.1-foss-2022b-CUDA-12.0.0
+magma/2.7.1-foss-2022b-CUDA-12.1.1
+meson-python/
+meson-python/0.11.0-GCCcore-12.2.0
+meson-python/0.15.0-GCCcore-12.2.0
+netcdf4-python/
+netcdf4-python/1.6.3-foss-2022b
+pkgconfig/1.5.5-GCCcore-12.2.0-python
+pocl/5.0-GCC-12.2.0-CUDA-12.0.0
+protobuf-python/
+protobuf-python/4.23.0-GCCcore-12.2.0
+t-SNE-CUDA/
+t-SNE-CUDA/3.0.1-foss-2022b-CUDA-12.1.1
+topaz/0.2.5.20240417-foss-2022b-CUDA-12.1.1
+torchvision/
+torchvision/0.16.0-foss-2022b-CUDA-12.1.1
+torchvision/0.16.2-foss-2022b-CUDA-12.1.1
+wxPython/
+wxPython/4.2.1-foss-2022b
+wxWidgets/3.2.2.1-GCC-12.2.0-no-Python
+CUDA/
+CUDA/12.0.0
+CUDA/12.1.1
+CUDA/12.6.0
+CUDA/12.8.0
+CUDA/12.9.1
+cuDNN/8.8.0.121-CUDA-12.0.0
+cuDNN/8.9.2.26-CUDA-12.1.1
+cuDNN/9.5.0.50-CUDA-12.6.0
+cuDNN/9.5.1.17-CUDA-12.6.0
+cuDNN/9.10.1.4-CUDA-12.8.0
+cuDNN/9.10.2.21-CUDA-12.8.0
+cuQuantum/25.03.0.11-CUDA-12.6.0
+cuSPARSELt/0.6.0.6-CUDA-12.1.1
+cuSPARSELt/0.6.3.2-CUDA-12.6.0
+cuSPARSELt/0.6.3.2-CUDA-12.8.0
+cuSPARSELt/0.8.0.4-CUDA-12.8.0
+cuTENSOR/2.0.1.2-CUDA-12.1.1
+cuTENSOR/2.0.2.5-CUDA-12.6.0
+miniconda/
+miniconda/23.5.2
+miniconda/24.7.1
+miniconda/24.11.3
+
+[miniconda module]
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) StdEnv
+conda
+
+# conda environments:
+#
+base                   /apps/software/system/software/miniconda/24.11.3
+burau_gpu              /home/com36/.conda/envs/burau_gpu
+                     * /home/com36/miniconda3
+
+
+conda activate base
+/apps/software/system/software/miniconda/24.11.3/bin/python
+Python 3.12.8
+sys.executable: /apps/software/system/software/miniconda/24.11.3/bin/python
+torch import failed: ModuleNotFoundError("No module named 'torch'")
+triton import failed: AttributeError("module 'triton' has no attribute '__version__'")
+
+conda activate burau_gpu
+/apps/software/system/software/miniconda/24.11.3/bin/python
+Python 3.12.8
+sys.executable: /apps/software/system/software/miniconda/24.11.3/bin/python
+torch import failed: ModuleNotFoundError("No module named 'torch'")
+triton import failed: AttributeError("module 'triton' has no attribute '__version__'")
+
+conda activate torch_env
+/apps/software/system/software/miniconda/24.11.3/bin/python
+Python 3.12.8
+sys.executable: /apps/software/system/software/miniconda/24.11.3/bin/python
+torch import failed: ModuleNotFoundError("No module named 'torch'")
+triton import failed: AttributeError("module 'triton' has no attribute '__version__'")
