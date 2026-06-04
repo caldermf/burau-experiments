@@ -25,7 +25,6 @@ after normalization. Those candidates are saved for later decoding and checking.
 - `search.py`: the actual PyTorch + Triton GPU search.
 - `suffix_data.py`: generated/static suffix descriptors, adjacency data, and seed matrices.
 - `decode_words.py`: decodes saved `.pt` result files back into Garside suffix words.
-- `cpu_reference_tests.py`: CPU reference tests copied from the original Triton work.
 - `requirements.txt`: minimal runtime dependencies.
 
 ## Pipeline
